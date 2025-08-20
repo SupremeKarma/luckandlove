@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { auth, db } from '@/lib/firebase';
 import {
   createUserWithEmailAndPassword,
@@ -18,6 +18,8 @@ import {
   writeBatch,
   updateDoc,
   setDoc,
+  query,
+  orderBy
 } from 'firebase/firestore';
 
 export default function TestEmulator() {
@@ -30,12 +32,17 @@ export default function TestEmulator() {
 
   // Auth state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [sessionUsers, setSessionUsers] = useState<DocumentData[]>([]); // Tracks all users created and stored in Firestore
+  const [sessionUsers, setSessionUsers] = useState<DocumentData[]>([]);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [newEmail, setNewEmail] = useState('');
+
+  // Search and sort state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('createdAt');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const usersCol = collection(db, 'test-users');
 
@@ -98,11 +105,13 @@ export default function TestEmulator() {
   useEffect(() => {
     if (!mounted) return;
 
+    const q = query(usersCol, orderBy(sortField, sortDirection));
+
     const unsubscribeUsers = onSnapshot(
-      usersCol,
+      q,
       (snapshot) => {
         const allUsers = snapshot.docs.map((d) => ({
-          id: d.id, // Use the Firestore document ID for deletion
+          id: d.id,
           ...d.data(),
         }));
         setSessionUsers(allUsers);
@@ -114,7 +123,7 @@ export default function TestEmulator() {
     );
 
     return () => unsubscribeUsers();
-  }, [mounted]);
+  }, [mounted, sortField, sortDirection]);
 
   const createTestUser = async () => {
     try {
@@ -123,11 +132,10 @@ export default function TestEmulator() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Save user to Firestore to persist them
       await setDoc(doc(usersCol, user.uid), {
         uid: user.uid,
         email: user.email,
-        createdAt: user.metadata.creationTime || new Date().toISOString(),
+        createdAt: new Date().toISOString(),
       });
 
       alert(`User created: ${email}`);
@@ -203,6 +211,21 @@ export default function TestEmulator() {
     }
   };
 
+  const handleSort = (field: string) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const filteredUsers = useMemo(() => {
+    return sessionUsers.filter(user => 
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [sessionUsers, searchTerm]);
+
 
   if (!mounted) return null;
 
@@ -210,7 +233,6 @@ export default function TestEmulator() {
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Firebase Emulator Test</h1>
 
-      {/* Firestore Section */}
       <section>
         <h2 className="text-xl font-semibold mb-2">Firestore ('/test')</h2>
         {loadingDocs && <p>Loading documents...</p>}
@@ -231,7 +253,6 @@ export default function TestEmulator() {
         </button>
       </section>
 
-      {/* Auth Section */}
       <section>
         <h2 className="text-xl font-semibold mb-2">Auth</h2>
         {loadingAuth && <p>Loading auth state...</p>}
@@ -258,8 +279,26 @@ export default function TestEmulator() {
               </button>
             )}
           </div>
+          <div className="my-2 flex items-center gap-4">
+            <input
+              type="text"
+              placeholder="Search by email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border p-2 rounded text-sm w-full max-w-xs"
+            />
+            <div className="flex items-center gap-2 text-sm">
+              <span>Sort by:</span>
+              <button onClick={() => handleSort('email')} className={`px-2 py-1 rounded ${sortField === 'email' ? 'bg-gray-300' : 'bg-gray-100'}`}>
+                Email {sortField === 'email' && (sortDirection === 'asc' ? '▲' : '▼')}
+              </button>
+              <button onClick={() => handleSort('createdAt')} className={`px-2 py-1 rounded ${sortField === 'createdAt' ? 'bg-gray-300' : 'bg-gray-100'}`}>
+                Created {sortField === 'createdAt' && (sortDirection === 'asc' ? '▲' : '▼')}
+              </button>
+            </div>
+          </div>
           <ul className="list-disc pl-6 text-sm space-y-2">
-            {sessionUsers.map((user) => (
+            {filteredUsers.map((user) => (
               <li key={user.id} className="flex items-center justify-between gap-4">
                 {editingUserId === user.id ? (
                   <div className="flex-1 flex items-center gap-2">
@@ -305,8 +344,8 @@ export default function TestEmulator() {
                 )}
               </li>
             ))}
-            {sessionUsers.length === 0 && !loadingAuth && (
-              <li>No users created yet.</li>
+            {filteredUsers.length === 0 && !loadingAuth && (
+              <li>No users match your search.</li>
             )}
           </ul>
         </div>
