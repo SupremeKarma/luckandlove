@@ -24,8 +24,7 @@ export default function RootLayout({
       <head />
       <body
         className={cn(
-          'min-h-screen bg-background text-foreground font-sans antialiased',
-          inter.className
+          'min-h-screen bg-background text-foreground font-sans antialiased'
         )}
       >
         <CartProvider>
