@@ -14,6 +14,8 @@ import {
   onSnapshot,
   QuerySnapshot,
   DocumentData,
+  doc,
+  setDoc,
 } from 'firebase/firestore';
 
 export default function TestEmulator() {
@@ -26,15 +28,17 @@ export default function TestEmulator() {
 
   // Auth state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [sessionUsers, setSessionUsers] = useState<User[]>([]); // Tracks all users created in the session
+  const [sessionUsers, setSessionUsers] = useState<DocumentData[]>([]); // Tracks all users created and stored in Firestore
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  const usersCol = collection(db, 'test-users');
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Real-time Firestore listener
+  // Real-time Firestore listener for test documents
   useEffect(() => {
     if (!mounted) return;
 
@@ -69,25 +73,42 @@ export default function TestEmulator() {
     setLoadingAuth(true);
     setAuthError(null);
 
-    try {
-      const unsubscribe = onAuthStateChanged(
-        auth,
-        (user) => {
-          setCurrentUser(user);
-          setLoadingAuth(false);
-        },
-        (error) => {
-          console.error('Auth error:', error);
-          setAuthError(error.message);
-          setLoadingAuth(false);
-        }
-      );
+    const unsubscribeAuth = onAuthStateChanged(
+      auth,
+      (user) => {
+        setCurrentUser(user);
+        setLoadingAuth(false);
+      },
+      (error) => {
+        console.error('Auth error:', error);
+        setAuthError(error.message);
+        setLoadingAuth(false);
+      }
+    );
 
-      return () => unsubscribe();
-    } catch (err: any) {
-      setAuthError(err.message);
-      setLoadingAuth(false);
-    }
+    return () => unsubscribeAuth();
+  }, [mounted]);
+
+  // Real-time listener for persisted users in Firestore
+  useEffect(() => {
+    if (!mounted) return;
+
+    const unsubscribeUsers = onSnapshot(
+      usersCol,
+      (snapshot) => {
+        const allUsers = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+        setSessionUsers(allUsers);
+      },
+      (error) => {
+        console.error('Error fetching persisted users:', error);
+        setAuthError('Could not fetch test users from Firestore.');
+      }
+    );
+
+    return () => unsubscribeUsers();
   }, [mounted]);
 
   const createTestUser = async () => {
@@ -95,8 +116,15 @@ export default function TestEmulator() {
       const email = `testuser${Date.now()}@example.com`;
       const password = 'password123';
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // Add new user to our session list
-      setSessionUsers((prevUsers) => [...prevUsers, userCredential.user]);
+      const user = userCredential.user;
+
+      // Save user to Firestore to persist them
+      await setDoc(doc(usersCol, user.uid), {
+        uid: user.uid,
+        email: user.email,
+        createdAt: user.metadata.creationTime || new Date().toISOString(),
+      });
+
       alert(`User created: ${email}`);
     } catch (err: any) {
       alert(`Error creating user: ${err.message}`);
@@ -149,21 +177,25 @@ export default function TestEmulator() {
         <div>
           <h3 className="font-semibold">Current User:</h3>
           {currentUser ? (
-             <p className="text-sm">{currentUser.email} | UID: {currentUser.uid}</p>
+            <p className="text-sm">
+              {currentUser.email} | UID: {currentUser.uid}
+            </p>
           ) : (
             <p className="text-sm">No user signed in.</p>
           )}
         </div>
         <div className="mt-4">
-          <h3 className="font-semibold">Users Created in this Session:</h3>
-           <ul className="list-disc pl-6 text-sm">
-              {sessionUsers.map((user) => (
-                <li key={user.uid}>
-                  {user.email} | UID: {user.uid} | Created: {user.metadata.creationTime}
-                </li>
-              ))}
-              {sessionUsers.length === 0 && <li>No users created yet.</li>}
-            </ul>
+          <h3 className="font-semibold">All Test Users (from Firestore):</h3>
+          <ul className="list-disc pl-6 text-sm">
+            {sessionUsers.map((user) => (
+              <li key={user.uid}>
+                {user.email} | UID: {user.uid} | Created: {user.createdAt}
+              </li>
+            ))}
+            {sessionUsers.length === 0 && !loadingAuth && (
+              <li>No users created yet.</li>
+            )}
+          </ul>
         </div>
         <button
           className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
