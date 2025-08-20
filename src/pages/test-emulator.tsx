@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -16,6 +15,7 @@ import {
   DocumentData,
   doc,
   setDoc,
+  deleteDoc,
 } from 'firebase/firestore';
 
 export default function TestEmulator() {
@@ -97,7 +97,7 @@ export default function TestEmulator() {
       usersCol,
       (snapshot) => {
         const allUsers = snapshot.docs.map((d) => ({
-          id: d.id,
+          id: d.id, // Use the Firestore document ID for deletion
           ...d.data(),
         }));
         setSessionUsers(allUsers);
@@ -128,6 +128,17 @@ export default function TestEmulator() {
       alert(`User created: ${email}`);
     } catch (err: any) {
       alert(`Error creating user: ${err.message}`);
+    }
+  };
+  
+  const deleteTestUser = async (userId: string) => {
+    if (!window.confirm('Are you sure you want to delete this user record from Firestore? This does not delete the Auth user.')) {
+      return;
+    }
+    try {
+      await deleteDoc(doc(db, 'test-users', userId));
+    } catch(err: any) {
+      alert(`Error deleting user: ${err.message}`);
     }
   };
 
@@ -186,10 +197,18 @@ export default function TestEmulator() {
         </div>
         <div className="mt-4">
           <h3 className="font-semibold">All Test Users (from Firestore):</h3>
-          <ul className="list-disc pl-6 text-sm">
+          <ul className="list-disc pl-6 text-sm space-y-1">
             {sessionUsers.map((user) => (
-              <li key={user.uid}>
-                {user.email} | UID: {user.uid} | Created: {user.createdAt}
+              <li key={user.id} className="flex items-center gap-4">
+                <span>
+                  {user.email} | UID: {user.uid}
+                </span>
+                <button
+                  onClick={() => deleteTestUser(user.id)}
+                  className="px-2 py-1 bg-red-600 text-white rounded text-xs"
+                >
+                  Delete Record
+                </button>
               </li>
             ))}
             {sessionUsers.length === 0 && !loadingAuth && (
