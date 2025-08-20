@@ -14,8 +14,8 @@ import {
   QuerySnapshot,
   DocumentData,
   doc,
-  setDoc,
   deleteDoc,
+  writeBatch,
 } from 'firebase/firestore';
 
 export default function TestEmulator() {
@@ -142,6 +142,27 @@ export default function TestEmulator() {
     }
   };
 
+  const deleteAllUsers = async () => {
+    if (sessionUsers.length === 0) {
+      alert("No users to delete.");
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete all ${sessionUsers.length} user records from Firestore? This cannot be undone.`)) {
+      return;
+    }
+    try {
+      const batch = writeBatch(db);
+      sessionUsers.forEach((user) => {
+        const docRef = doc(db, 'test-users', user.id);
+        batch.delete(docRef);
+      });
+      await batch.commit();
+      alert('All test users have been deleted from Firestore.');
+    } catch (err: any) {
+      alert(`Error deleting all users: ${err.message}`);
+    }
+  };
+
   const addTestDoc = async () => {
     try {
       await addDoc(collection(db, 'test'), {
@@ -196,7 +217,17 @@ export default function TestEmulator() {
           )}
         </div>
         <div className="mt-4">
-          <h3 className="font-semibold">All Test Users (from Firestore):</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold">All Test Users (from Firestore):</h3>
+            {sessionUsers.length > 0 && (
+              <button
+                onClick={deleteAllUsers}
+                className="px-3 py-1 bg-red-700 text-white rounded text-xs font-semibold"
+              >
+                Delete All
+              </button>
+            )}
+          </div>
           <ul className="list-disc pl-6 text-sm space-y-1">
             {sessionUsers.map((user) => (
               <li key={user.id} className="flex items-center gap-4">
