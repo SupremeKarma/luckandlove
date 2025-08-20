@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -24,8 +25,9 @@ export default function TestEmulator() {
   const [docsError, setDocsError] = useState<string | null>(null);
 
   // Auth state
-  const [users, setUsers] = useState<User[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [sessionUsers, setSessionUsers] = useState<User[]>([]); // Tracks all users created in the session
+  const [loadingAuth, setLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,31 +62,31 @@ export default function TestEmulator() {
     }
   }, [mounted]);
 
-  // Auth listener
+  // Auth listener for current user
   useEffect(() => {
     if (!mounted) return;
 
-    setLoadingUsers(true);
+    setLoadingAuth(true);
     setAuthError(null);
 
     try {
       const unsubscribe = onAuthStateChanged(
         auth,
         (user) => {
-          setUsers(user ? [user] : []);
-          setLoadingUsers(false);
+          setCurrentUser(user);
+          setLoadingAuth(false);
         },
         (error) => {
           console.error('Auth error:', error);
           setAuthError(error.message);
-          setLoadingUsers(false);
+          setLoadingAuth(false);
         }
       );
 
       return () => unsubscribe();
     } catch (err: any) {
       setAuthError(err.message);
-      setLoadingUsers(false);
+      setLoadingAuth(false);
     }
   }, [mounted]);
 
@@ -92,7 +94,9 @@ export default function TestEmulator() {
     try {
       const email = `testuser${Date.now()}@example.com`;
       const password = 'password123';
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Add new user to our session list
+      setSessionUsers((prevUsers) => [...prevUsers, userCredential.user]);
       alert(`User created: ${email}`);
     } catch (err: any) {
       alert(`Error creating user: ${err.message}`);
@@ -118,15 +122,16 @@ export default function TestEmulator() {
 
       {/* Firestore Section */}
       <section>
-        <h2 className="text-xl font-semibold mb-2">Firestore Test Collection</h2>
+        <h2 className="text-xl font-semibold mb-2">Firestore ('/test')</h2>
         {loadingDocs && <p>Loading documents...</p>}
         {docsError && <p className="text-red-500">Error: {docsError}</p>}
-        <ul className="list-disc pl-6">
+        <ul className="list-disc pl-6 text-sm">
           {docs.map((doc) => (
             <li key={doc.id}>
               ID: {doc.id} | Random: {doc.random} | Created: {doc.createdAt}
             </li>
           ))}
+          {docs.length === 0 && !loadingDocs && <li>No documents yet.</li>}
         </ul>
         <button
           className="mt-2 px-4 py-2 bg-blue-600 text-white rounded"
@@ -138,16 +143,28 @@ export default function TestEmulator() {
 
       {/* Auth Section */}
       <section>
-        <h2 className="text-xl font-semibold mb-2">Auth Users</h2>
-        {loadingUsers && <p>Loading user info...</p>}
+        <h2 className="text-xl font-semibold mb-2">Auth</h2>
+        {loadingAuth && <p>Loading auth state...</p>}
         {authError && <p className="text-red-500">Error: {authError}</p>}
-        <ul className="list-disc pl-6">
-          {users.map((user) => (
-            <li key={user.uid}>
-              {user.email} | UID: {user.uid} | Logged in: {user.metadata.creationTime}
-            </li>
-          ))}
-        </ul>
+        <div>
+          <h3 className="font-semibold">Current User:</h3>
+          {currentUser ? (
+             <p className="text-sm">{currentUser.email} | UID: {currentUser.uid}</p>
+          ) : (
+            <p className="text-sm">No user signed in.</p>
+          )}
+        </div>
+        <div className="mt-4">
+          <h3 className="font-semibold">Users Created in this Session:</h3>
+           <ul className="list-disc pl-6 text-sm">
+              {sessionUsers.map((user) => (
+                <li key={user.uid}>
+                  {user.email} | UID: {user.uid} | Created: {user.metadata.creationTime}
+                </li>
+              ))}
+              {sessionUsers.length === 0 && <li>No users created yet.</li>}
+            </ul>
+        </div>
         <button
           className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
           onClick={createTestUser}
