@@ -1,24 +1,34 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { getProductRecommendations } from '@/ai/flows/product-recommendations';
 import { PRODUCTS } from '@/lib/products';
 import { ProductCard } from './product-card';
+import type { Product } from '@/lib/types';
 
-export async function ProductRecommendations() {
-  let recommendedProductIds: string[] = [];
-  try {
-    const recommendationsOutput = await getProductRecommendations({
-      browsingHistory: ['prod-1', 'prod-3', 'prod-9'],
-      purchaseHistory: ['prod-12'],
-      cartItems: [],
-      numberOfRecommendations: 4,
-    });
-    recommendedProductIds = recommendationsOutput.productRecommendations || [];
-  } catch (error) {
-    console.error('Error getting product recommendations:', error);
-    // Silently fail if the API key is not valid.
-    // The component will render nothing.
-  }
+export function ProductRecommendations() {
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
 
-  const recommendedProducts = PRODUCTS.filter(p => recommendedProductIds.includes(p.id));
+  useEffect(() => {
+    async function fetchRecommendations() {
+      try {
+        const recommendationsOutput = await getProductRecommendations({
+          browsingHistory: ['prod-1', 'prod-3', 'prod-9'],
+          purchaseHistory: ['prod-12'],
+          cartItems: [],
+          numberOfRecommendations: 4,
+        });
+        const recommendedProductIds = recommendationsOutput.productRecommendations || [];
+        const products = PRODUCTS.filter(p => recommendedProductIds.includes(p.id));
+        setRecommendedProducts(products);
+      } catch (error) {
+        console.error('Error getting product recommendations:', error);
+        // Silently fail if the API key is not valid or other errors occur.
+      }
+    }
+
+    fetchRecommendations();
+  }, []);
 
   if (recommendedProducts.length === 0) {
     return null;
