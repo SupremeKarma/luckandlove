@@ -239,7 +239,7 @@ export default function TestEmulator() {
     <div className="container mx-auto px-4 py-12">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold tracking-tight">Firebase Emulator Test Suite</h1>
-        <p className="text-muted-foreground">An interactive panel for testing Auth and Firestore.</p>
+        <p className="text-gray-500">An interactive panel for testing Auth and Firestore.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -251,14 +251,14 @@ export default function TestEmulator() {
           <CardContent className="space-y-4">
             <div>
               <h3 className="font-semibold text-sm mb-2">Current User</h3>
-              {loadingAuth && <p className="text-sm text-muted-foreground">Loading auth state...</p>}
-              {authError && <p className="text-sm text-destructive">Error: {authError}</p>}
+              {loadingAuth && <p className="text-sm text-gray-500">Loading auth state...</p>}
+              {authError && <p className="text-sm text-red-500">Error: {authError}</p>}
               {currentUser ? (
                 <p className="text-sm">
                   {currentUser.email} (UID: {currentUser.uid})
                 </p>
               ) : (
-                <p className="text-sm text-muted-foreground">No user signed in.</p>
+                <p className="text-sm text-gray-500">No user signed in.</p>
               )}
             </div>
             
@@ -315,19 +315,19 @@ export default function TestEmulator() {
                               user.email
                             )}
                           </TableCell>
-                          <TableCell className="text-muted-foreground text-xs">
+                          <TableCell className="text-gray-500 text-xs">
                             {new Date(user.createdAt).toLocaleString()}
                           </TableCell>
                            <TableCell className="text-right">
                             {editingUserId === user.id ? (
                               <div className="flex justify-end gap-2">
                                 <Button variant="ghost" size="icon" onClick={() => handleSaveUser(user.id)}><Save className="text-green-500" /></Button>
-                                <Button variant="ghost" size="icon" onClick={handleCancelEdit}><X className="text-muted-foreground" /></Button>
+                                <Button variant="ghost" size="icon" onClick={handleCancelEdit}><X className="text-gray-500" /></Button>
                               </div>
                             ) : (
                                <div className="flex justify-end gap-2">
                                 <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)}><Edit/></Button>
-                                <Button variant="ghost" size="icon" onClick={() => deleteTestUser(user.id)}><Trash2 className="text-destructive" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => deleteTestUser(user.id)}><Trash2 className="text-red-500" /></Button>
                               </div>
                             )}
                           </TableCell>
@@ -335,7 +335,7 @@ export default function TestEmulator() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                        <TableCell colSpan={3} className="h-24 text-center text-gray-500">
                           No users found.
                         </TableCell>
                       </TableRow>
@@ -358,8 +358,8 @@ export default function TestEmulator() {
             <CardDescription>Manage documents in the '/test' collection.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-             {loadingDocs && <p className="text-sm text-muted-foreground">Loading documents...</p>}
-             {docsError && <p className="text-sm text-destructive">Error: {docsError}</p>}
+             {loadingDocs && <p className="text-sm text-gray-500">Loading documents...</p>}
+             {docsError && <p className="text-sm text-red-500">Error: {docsError}</p>}
               <div className="max-h-96 overflow-y-auto rounded-md border p-2 text-sm">
                 {docs.length > 0 ? (
                   docs.map((doc) => (
@@ -370,7 +370,7 @@ export default function TestEmulator() {
                     </div>
                   ))
                 ) : (
-                   <p className="text-muted-foreground text-center p-4">No documents yet.</p>
+                   <p className="text-gray-500 text-center p-4">No documents yet.</p>
                 )}
               </div>
             <Button onClick={addTestDoc} className="w-full">

@@ -2,7 +2,6 @@ import './globals.css';
 import { CartProvider } from '@/context/cart-context';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata = {
@@ -16,15 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head />
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
           <CartProvider>
             <div className="relative flex min-h-screen flex-col bg-background text-foreground font-sans antialiased">
               <Header />
@@ -33,7 +26,6 @@ export default function RootLayout({
             </div>
             <Toaster />
           </CartProvider>
-        </ThemeProvider>
       </body>
     </html>
   );

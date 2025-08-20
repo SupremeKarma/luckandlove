@@ -44,7 +44,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <Badge variant="secondary" className="mb-2">{product.category}</Badge>
           <CardTitle className="text-lg font-semibold leading-tight">{product.name}</CardTitle>
         </div>
-        <p className="mt-4 text-2xl font-bold text-accent">${product.price.toFixed(2)}</p>
+        <p className="mt-4 text-2xl font-bold text-blue-600">${product.price.toFixed(2)}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <Button className="w-full" onClick={handleAddToCart} disabled={product.stock === 0}>

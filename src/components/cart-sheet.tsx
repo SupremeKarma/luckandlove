@@ -16,7 +16,7 @@ export function CartSheet() {
         <Button variant="ghost" size="icon" className="relative">
           <ShoppingBag className="h-6 w-6" />
           {cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
               {cartCount}
             </span>
           )}
@@ -46,7 +46,7 @@ export function CartSheet() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                      <p className="text-sm text-gray-500">${item.price.toFixed(2)}</p>
                       <div className="mt-2 flex items-center gap-2">
                         <Button
                           variant="outline"
@@ -68,7 +68,7 @@ export function CartSheet() {
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
-                      <Trash2 className="h-5 w-5 text-muted-foreground hover:text-destructive" />
+                      <Trash2 className="h-5 w-5 text-gray-500 hover:text-red-500" />
                     </Button>
                   </div>
                 ))}
@@ -89,9 +89,9 @@ export function CartSheet() {
           </>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <ShoppingBag className="h-24 w-24 text-muted" />
+            <ShoppingBag className="h-24 w-24 text-gray-300" />
             <h2 className="text-xl font-semibold">Your cart is empty</h2>
-            <p className="text-muted-foreground">Add some products to get started.</p>
+            <p className="text-gray-500">Add some products to get started.</p>
           </div>
         )}
       </SheetContent>
