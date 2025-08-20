@@ -1,156 +1,160 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { auth, db } from '@/lib/firebase';
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  User,
+} from 'firebase/auth';
 import {
   collection,
   addDoc,
-  query,
   onSnapshot,
+  QuerySnapshot,
   DocumentData,
 } from 'firebase/firestore';
-import {
-  createUserWithEmailAndPassword,
-  UserCredential,
-} from 'firebase/auth';
 
 export default function TestEmulator() {
-  const [docs, setDocs] = useState<DocumentData[]>([]);
-  const [users, setUsers] = useState<string[]>([]);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // Firestore state
+  const [docs, setDocs] = useState<DocumentData[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(true);
+  const [docsError, setDocsError] = useState<string | null>(null);
+
+  // Auth state
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Real-time Firestore listener
   useEffect(() => {
     if (!mounted) return;
-    
-    setLoading(true);
-    const q = query(collection(db, 'test'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setDocs(data);
-      setLoading(false);
-    }, (err) => {
-      console.error("Firestore snapshot error:", err);
-      setError("Failed to load Firestore documents.");
-      setLoading(false);
-    });
 
-    return () => unsubscribe();
-  }, [mounted]);
+    setLoadingDocs(true);
+    setDocsError(null);
 
-  useEffect(() => {
-    if (!mounted) return;
-    // This is a placeholder as client SDK cannot list users.
-    // In a real app, you might fetch this from a secure backend endpoint.
-    const interval = setInterval(async () => {
-      try {
-        setUsers([]); // Placeholder
-      } catch (err) {
-        console.error('Error listing users:', err);
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [mounted]);
-
-  const addFirestoreDoc = async () => {
     try {
-      await addDoc(collection(db, 'test'), { createdAt: new Date() });
-    } catch (err) {
-      console.error(err);
-      alert('Failed to add document.');
-    }
-  };
-
-  const createAuthUser = async () => {
-    if (!email || !password) {
-      alert("Please enter email and password.");
-      return;
-    }
-    try {
-      const userCredential: UserCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
+      const unsubscribe = onSnapshot(
+        collection(db, 'test'),
+        (snapshot: QuerySnapshot<DocumentData>) => {
+          setDocs(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+          setLoadingDocs(false);
+        },
+        (error) => {
+          console.error('Firestore error:', error);
+          setDocsError(error.message);
+          setLoadingDocs(false);
+        }
       );
-      alert(`User created: ${userCredential.user.email}`);
-      setEmail('');
-      setPassword('');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to create user. See console for details.');
+
+      return () => unsubscribe();
+    } catch (err: any) {
+      setDocsError(err.message);
+      setLoadingDocs(false);
+    }
+  }, [mounted]);
+
+  // Auth listener
+  useEffect(() => {
+    if (!mounted) return;
+
+    setLoadingUsers(true);
+    setAuthError(null);
+
+    try {
+      const unsubscribe = onAuthStateChanged(
+        auth,
+        (user) => {
+          setUsers(user ? [user] : []);
+          setLoadingUsers(false);
+        },
+        (error) => {
+          console.error('Auth error:', error);
+          setAuthError(error.message);
+          setLoadingUsers(false);
+        }
+      );
+
+      return () => unsubscribe();
+    } catch (err: any) {
+      setAuthError(err.message);
+      setLoadingUsers(false);
+    }
+  }, [mounted]);
+
+  const createTestUser = async () => {
+    try {
+      const email = `testuser${Date.now()}@example.com`;
+      const password = 'password123';
+      await createUserWithEmailAndPassword(auth, email, password);
+      alert(`User created: ${email}`);
+    } catch (err: any) {
+      alert(`Error creating user: ${err.message}`);
     }
   };
 
-  if (!mounted) {
-    return (
-      <div className="p-8 text-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  const addTestDoc = async () => {
+    try {
+      await addDoc(collection(db, 'test'), {
+        createdAt: new Date().toISOString(),
+        random: Math.random(),
+      });
+    } catch (err: any) {
+      alert(`Error adding doc: ${err.message}`);
+    }
+  };
+
+  if (!mounted) return null;
 
   return (
-    <div className="p-8 space-y-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-8">Firebase Emulator Test</h1>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">Firebase Emulator Test</h1>
 
-      {error && <div className="p-4 bg-red-100 text-red-700 rounded-md text-center">{error}</div>}
-
-      <div className="p-6 border rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4">Firestore (Real-time)</h2>
+      {/* Firestore Section */}
+      <section>
+        <h2 className="text-xl font-semibold mb-2">Firestore Test Collection</h2>
+        {loadingDocs && <p>Loading documents...</p>}
+        {docsError && <p className="text-red-500">Error: {docsError}</p>}
+        <ul className="list-disc pl-6">
+          {docs.map((doc) => (
+            <li key={doc.id}>
+              ID: {doc.id} | Random: {doc.random} | Created: {doc.createdAt}
+            </li>
+          ))}
+        </ul>
         <button
-          onClick={addFirestoreDoc}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition disabled:bg-gray-400"
+          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded"
+          onClick={addTestDoc}
         >
-          Add Firestore Doc
+          Add Firestore Document
         </button>
-        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md max-h-60 overflow-y-auto">
-          <h3 className="font-semibold mb-2">Documents in 'test' collection:</h3>
-          {loading ? (
-            <p>Loading documents...</p>
-          ) : (
-            <pre className="text-sm">{JSON.stringify(docs, null, 2)}</pre>
-          )}
-        </div>
-      </div>
+      </section>
 
-      <div className="p-6 border rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4">Authentication</h2>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="border px-3 py-2 rounded-md w-full"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="border px-3 py-2 rounded-md w-full"
-          />
-          <button
-            onClick={createAuthUser}
-            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition disabled:bg-gray-400"
-          >
-            Create Auth User
-          </button>
-        </div>
-        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-          <h3 className="font-semibold mb-2">Auth Users (Emulator only):</h3>
-          <p className="text-sm text-gray-500 mb-2">Note: Real-time user listing requires Admin SDK on a backend. This is a placeholder.</p>
-          <pre className="text-sm">{JSON.stringify(users, null, 2)}</pre>
-        </div>
-      </div>
+      {/* Auth Section */}
+      <section>
+        <h2 className="text-xl font-semibold mb-2">Auth Users</h2>
+        {loadingUsers && <p>Loading user info...</p>}
+        {authError && <p className="text-red-500">Error: {authError}</p>}
+        <ul className="list-disc pl-6">
+          {users.map((user) => (
+            <li key={user.uid}>
+              {user.email} | UID: {user.uid} | Logged in: {user.metadata.creationTime}
+            </li>
+          ))}
+        </ul>
+        <button
+          className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
+          onClick={createTestUser}
+        >
+          Create Test Auth User
+        </button>
+      </section>
     </div>
   );
 }
