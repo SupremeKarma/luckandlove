@@ -21,6 +21,12 @@ import {
   query,
   orderBy
 } from 'firebase/firestore';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Trash2, Edit, Save, X, PlusCircle, Trash, ArrowUpDown } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function TestEmulator() {
   const [mounted, setMounted] = useState(false);
@@ -222,7 +228,7 @@ export default function TestEmulator() {
 
   const filteredUsers = useMemo(() => {
     return sessionUsers.filter(user => 
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [sessionUsers, searchTerm]);
 
@@ -230,132 +236,149 @@ export default function TestEmulator() {
   if (!mounted) return null;
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Firebase Emulator Test</h1>
+    <div className="container mx-auto px-4 py-12">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold tracking-tight">Firebase Emulator Test Suite</h1>
+        <p className="text-muted-foreground">An interactive panel for testing Auth and Firestore.</p>
+      </div>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Firestore ('/test')</h2>
-        {loadingDocs && <p>Loading documents...</p>}
-        {docsError && <p className="text-red-500">Error: {docsError}</p>}
-        <ul className="list-disc pl-6 text-sm">
-          {docs.map((doc) => (
-            <li key={doc.id}>
-              ID: {doc.id} | Random: {doc.random} | Created: {doc.createdAt}
-            </li>
-          ))}
-          {docs.length === 0 && !loadingDocs && <li>No documents yet.</li>}
-        </ul>
-        <button
-          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded"
-          onClick={addTestDoc}
-        >
-          Add Firestore Document
-        </button>
-      </section>
-
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Auth</h2>
-        {loadingAuth && <p>Loading auth state...</p>}
-        {authError && <p className="text-red-500">Error: {authError}</p>}
-        <div>
-          <h3 className="font-semibold">Current User:</h3>
-          {currentUser ? (
-            <p className="text-sm">
-              {currentUser.email} | UID: {currentUser.uid}
-            </p>
-          ) : (
-            <p className="text-sm">No user signed in.</p>
-          )}
-        </div>
-        <div className="mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">All Test Users (from Firestore):</h3>
-            {sessionUsers.length > 0 && (
-              <button
-                onClick={deleteAllUsers}
-                className="px-3 py-1 bg-red-700 text-white rounded text-xs font-semibold"
-              >
-                Delete All
-              </button>
-            )}
-          </div>
-          <div className="my-2 flex items-center gap-4">
-            <input
-              type="text"
-              placeholder="Search by email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="border p-2 rounded text-sm w-full max-w-xs"
-            />
-            <div className="flex items-center gap-2 text-sm">
-              <span>Sort by:</span>
-              <button onClick={() => handleSort('email')} className={`px-2 py-1 rounded ${sortField === 'email' ? 'bg-gray-300' : 'bg-gray-100'}`}>
-                Email {sortField === 'email' && (sortDirection === 'asc' ? '▲' : '▼')}
-              </button>
-              <button onClick={() => handleSort('createdAt')} className={`px-2 py-1 rounded ${sortField === 'createdAt' ? 'bg-gray-300' : 'bg-gray-100'}`}>
-                Created {sortField === 'createdAt' && (sortDirection === 'asc' ? '▲' : '▼')}
-              </button>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Auth Emulator</CardTitle>
+            <CardDescription>Create and manage test users.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h3 className="font-semibold text-sm mb-2">Current User</h3>
+              {loadingAuth && <p className="text-sm text-muted-foreground">Loading auth state...</p>}
+              {authError && <p className="text-sm text-destructive">Error: {authError}</p>}
+              {currentUser ? (
+                <p className="text-sm">
+                  {currentUser.email} (UID: {currentUser.uid})
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">No user signed in.</p>
+              )}
             </div>
-          </div>
-          <ul className="list-disc pl-6 text-sm space-y-2">
-            {filteredUsers.map((user) => (
-              <li key={user.id} className="flex items-center justify-between gap-4">
-                {editingUserId === user.id ? (
-                  <div className="flex-1 flex items-center gap-2">
-                    <input 
-                      type="email"
-                      value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
-                      className="border p-1 rounded text-sm w-full"
-                    />
-                    <button
-                      onClick={() => handleSaveUser(user.id)}
-                      className="px-2 py-1 bg-green-600 text-white rounded text-xs"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={handleCancelEdit}
-                      className="px-2 py-1 bg-gray-500 text-white rounded text-xs"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <span>
-                      {user.email} | UID: {user.uid}
-                    </span>
-                    <div className="flex items-center gap-2">
-                       <button
-                        onClick={() => handleEditUser(user)}
-                        className="px-2 py-1 bg-yellow-500 text-white rounded text-xs"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteTestUser(user.id)}
-                        className="px-2 py-1 bg-red-600 text-white rounded text-xs"
-                      >
-                        Delete
-                      </button>
+            
+            <Separator />
+
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm">Test Users in Firestore</h3>
+                <Button variant="destructive" size="sm" onClick={deleteAllUsers} disabled={sessionUsers.length === 0}>
+                  <Trash className="mr-2" /> Delete All
+                </Button>
+              </div>
+
+              <div className="flex items-center gap-2 mb-4">
+                <Input
+                  type="text"
+                  placeholder="Search by email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('email')}>
+                          Email <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                         <Button variant="ghost" size="sm" onClick={() => handleSort('createdAt')}>
+                          Created <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            {editingUserId === user.id ? (
+                               <Input 
+                                type="email"
+                                value={newEmail}
+                                onChange={(e) => setNewEmail(e.target.value)}
+                                className="h-8"
+                              />
+                            ) : (
+                              user.email
+                            )}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-xs">
+                            {new Date(user.createdAt).toLocaleString()}
+                          </TableCell>
+                           <TableCell className="text-right">
+                            {editingUserId === user.id ? (
+                              <div className="flex justify-end gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => handleSaveUser(user.id)}><Save className="text-green-500" /></Button>
+                                <Button variant="ghost" size="icon" onClick={handleCancelEdit}><X className="text-muted-foreground" /></Button>
+                              </div>
+                            ) : (
+                               <div className="flex justify-end gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)}><Edit/></Button>
+                                <Button variant="ghost" size="icon" onClick={() => deleteTestUser(user.id)}><Trash2 className="text-destructive" /></Button>
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                          No users found.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+            </div>
+            
+            <Button onClick={createTestUser} className="w-full">
+              <PlusCircle className="mr-2" /> Create Random Test User
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Firestore Emulator</CardTitle>
+            <CardDescription>Manage documents in the '/test' collection.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+             {loadingDocs && <p className="text-sm text-muted-foreground">Loading documents...</p>}
+             {docsError && <p className="text-sm text-destructive">Error: {docsError}</p>}
+              <div className="max-h-96 overflow-y-auto rounded-md border p-2 text-sm">
+                {docs.length > 0 ? (
+                  docs.map((doc) => (
+                    <div key={doc.id} className="p-2 border-b text-xs">
+                      <p><strong>ID:</strong> {doc.id}</p>
+                      <p><strong>Created:</strong> {doc.createdAt}</p>
+                      <p><strong>Random:</strong> {doc.random}</p>
                     </div>
-                  </>
+                  ))
+                ) : (
+                   <p className="text-muted-foreground text-center p-4">No documents yet.</p>
                 )}
-              </li>
-            ))}
-            {filteredUsers.length === 0 && !loadingAuth && (
-              <li>No users match your search.</li>
-            )}
-          </ul>
-        </div>
-        <button
-          className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
-          onClick={createTestUser}
-        >
-          Create Test Auth User
-        </button>
-      </section>
+              </div>
+            <Button onClick={addTestDoc} className="w-full">
+              <PlusCircle className="mr-2" /> Add Test Document
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
