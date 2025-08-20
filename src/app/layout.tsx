@@ -3,6 +3,7 @@ import { CartProvider } from '@/context/cart-context';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/toaster';
 
 export const metadata = {
   title: 'Zenith Commerce',
@@ -30,6 +31,7 @@ export default function RootLayout({
               <main className="flex-1">{children}</main>
               <Footer />
             </div>
+            <Toaster />
           </CartProvider>
         </ThemeProvider>
       </body>
