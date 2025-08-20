@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ProductCard } from './product-card';
-import type { Product, Category } from '@/lib/types';
+import type { Product } from '@/lib/types';
 import { CATEGORIES } from '@/lib/products';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ interface ProductListProps {
 }
 
 export function ProductList({ products }: ProductListProps) {
-  const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   const filteredProducts =
     selectedCategory === 'All'
@@ -33,12 +33,12 @@ export function ProductList({ products }: ProductListProps) {
           </Button>
           {CATEGORIES.map((category) => (
             <Button
-              key={category}
-              variant={selectedCategory === category ? 'default' : 'secondary'}
-              onClick={() => setSelectedCategory(category)}
-              className={cn(selectedCategory === category && "bg-accent hover:bg-accent/90")}
+              key={category.name}
+              variant={selectedCategory === category.name ? 'default' : 'secondary'}
+              onClick={() => setSelectedCategory(category.name)}
+              className={cn(selectedCategory === category.name && "bg-accent hover:bg-accent/90")}
             >
-              {category}
+              {category.name}
             </Button>
           ))}
         </div>

@@ -1,11 +1,14 @@
-export type Category = 'Electronics' | 'Apparel' | 'Books' | 'Home Goods';
+export interface Category {
+  name: string;
+  subcategories: string[];
+}
 
 export interface Product {
   id: string;
   name: string;
   description: string;
   price: number;
-  category: Category;
+  category: string;
   imageUrl: string;
   stock: number;
 }

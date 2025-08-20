@@ -5,6 +5,16 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Search, User, Package2 } from 'lucide-react';
 import { CartSheet } from './cart-sheet';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from './ui/dropdown-menu';
+import { CATEGORIES } from '@/lib/products';
 
 export function Header() {
   return (
@@ -17,8 +27,32 @@ export function Header() {
         
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
           <Link href="/" className="transition-colors hover:text-accent">Home</Link>
-          <Link href="#" className="text-muted-foreground transition-colors hover:text-accent">All Products</Link>
-          <Link href="#" className="text-muted-foreground transition-colors hover:text-accent">Categories</Link>
+          <Link href="/products" className="text-muted-foreground transition-colors hover:text-accent">All Products</Link>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <span className="cursor-pointer text-muted-foreground transition-colors hover:text-accent">Categories</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {CATEGORIES.map((category) => (
+                <DropdownMenuSub key={category.name}>
+                  <DropdownMenuSubTrigger>
+                    {category.name}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {category.subcategories.map((sub) => (
+                      <Link key={sub} href={`/products?category=${encodeURIComponent(category.name)}&subcategory=${encodeURIComponent(sub)}`}>
+                        <DropdownMenuItem>
+                          {sub}
+                        </DropdownMenuItem>
+                      </Link>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Link href="#" className="text-muted-foreground transition-colors hover:text-accent">About</Link>
         </nav>
         
