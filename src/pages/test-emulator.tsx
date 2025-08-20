@@ -19,8 +19,14 @@ export default function TestEmulator() {
   const [users, setUsers] = useState<string[]>([]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     // Real-time Firestore updates
     const q = query(collection(db, 'test'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -29,9 +35,10 @@ export default function TestEmulator() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
+    if (!mounted) return;
     // Polling emulator for users (Auth emulator doesn't have real-time listener)
     const interval = setInterval(async () => {
       try {
@@ -44,7 +51,7 @@ export default function TestEmulator() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [mounted]);
 
   const addFirestoreDoc = async () => {
     try {
@@ -69,6 +76,10 @@ export default function TestEmulator() {
       alert('Failed to create user');
     }
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="p-8 space-y-6">
@@ -99,7 +110,7 @@ export default function TestEmulator() {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.targe.value)}
+          onChange={(e) => setPassword(e.target.value)}
           className="border px-2 py-1 rounded mr-2"
         />
         <button
