@@ -1,5 +1,4 @@
 import { ProductList } from '@/components/product-list';
-import { ProductRecommendations } from '@/components/product-recommendations';
 import { Separator } from '@/components/ui/separator';
 import { PRODUCTS } from '@/lib/products';
 
@@ -14,10 +13,6 @@ export default function Home() {
           Discover our curated collection of high-quality products. Built for the modern shopper.
         </p>
       </div>
-
-      <ProductRecommendations />
-      
-      <Separator className="my-12" />
 
       <ProductList products={PRODUCTS} />
     </div>
