@@ -28,6 +28,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    // This effect runs only on the client, after the component has mounted.
     setIsMounted(true);
     try {
       const storedCart = localStorage.getItem('cart');
@@ -40,6 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
   
   useEffect(() => {
+    // This effect runs only on the client and when cartItems changes.
     if (isMounted) {
       localStorage.setItem('cart', JSON.stringify(cartItems));
     }
@@ -82,11 +84,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
     cartCount,
     cartTotal,
   };
-
+  
+  // Before the component is mounted on the client, render a version of the context
+  // that is guaranteed to match the server-rendered version.
   if (!isMounted) {
-    // Return a server-safe version or null until mounted on the client
-    const safeValue = { ...value, cartItems: [], cartCount: 0, cartTotal: 0 };
-    return <CartContext.Provider value={safeValue}>{children}</CartContext.Provider>;
+    const serverSafeValue = { 
+        ...value, 
+        cartItems: [], 
+        cartCount: 0, 
+        cartTotal: 0 
+    };
+    return <CartContext.Provider value={serverSafeValue}>{children}</CartContext.Provider>;
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
