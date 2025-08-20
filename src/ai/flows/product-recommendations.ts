@@ -62,7 +62,13 @@ const productRecommendationsFlow = ai.defineFlow(
     outputSchema: ProductRecommendationsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      return output!;
+    } catch (error) {
+      console.error('Error in productRecommendationsFlow:', error);
+      // Return an empty list of recommendations on error to prevent crashing the page
+      return { productRecommendations: [] };
+    }
   }
 );
