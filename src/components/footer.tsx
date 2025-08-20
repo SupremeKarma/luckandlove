@@ -1,20 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 export function Footer() {
-  const [year, setYear] = useState(new Date().getFullYear());
-
-  useEffect(() => {
-    setYear(new Date().getFullYear());
-  }, []);
 
   return (
     <footer className="border-t bg-background">
       <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row">
         <p className="text-sm text-muted-foreground">
-          &copy; {year} Zenith Commerce. All rights reserved.
+          &copy; {new Date().getFullYear()} Zenith Commerce. All rights reserved.
         </p>
         <nav className="flex gap-4 sm:gap-6">
           <Link href="#" className="text-sm hover:underline">
