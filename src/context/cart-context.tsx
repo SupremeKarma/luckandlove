@@ -86,7 +86,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
   
   // Before the component is mounted on the client, render a version of the context
-  // that is guaranteed to match the server-rendered version.
+  // that is guaranteed to match the server-rendered version (i.e., with an empty cart).
   if (!isMounted) {
     const serverSafeValue = { 
         ...value, 
