@@ -1,6 +1,5 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
-import { cn } from '@/lib/utils';
 import { CartProvider } from '@/context/cart-context';
 import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/header';
@@ -21,11 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head />
-      <body
-        className={cn(
-          'min-h-screen bg-background text-foreground font-sans antialiased'
-        )}
-      >
+      <body className="min-h-screen bg-background text-foreground font-sans antialiased">
         <CartProvider>
           <div className="relative flex min-h-screen flex-col">
             <Header />
