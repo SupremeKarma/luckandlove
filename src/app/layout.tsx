@@ -23,8 +23,8 @@ export default function RootLayout({
               <Header />
               <main className="flex-1">{children}</main>
               <Footer />
+              <Toaster />
             </div>
-            <Toaster />
           </CartProvider>
       </body>
     </html>
