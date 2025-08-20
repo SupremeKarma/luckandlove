@@ -23,24 +23,25 @@ export function useCart() {
   return context;
 }
 
-const getInitialCart = () => {
-  if (typeof window === 'undefined') {
-    return [];
-  }
-  try {
-    const storedCart = localStorage.getItem('cart');
-    return storedCart ? JSON.parse(storedCart) : [];
-  } catch (error) {
-    console.error("Failed to parse cart from localStorage", error);
-    return [];
-  }
-};
-
-
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>(getInitialCart);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   
   useEffect(() => {
+    // This effect runs only on the client, after the initial render.
+    // This prevents a hydration mismatch.
+    try {
+      const storedCart = localStorage.getItem('cart');
+      if (storedCart) {
+        setCartItems(JSON.parse(storedCart));
+      }
+    } catch (error) {
+      console.error("Failed to parse cart from localStorage", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    // This effect saves the cart to localStorage whenever it changes.
+    // It will not run on the initial server render.
     try {
       localStorage.setItem('cart', JSON.stringify(cartItems));
     } catch (error) {
