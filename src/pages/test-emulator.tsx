@@ -16,6 +16,8 @@ import {
   doc,
   deleteDoc,
   writeBatch,
+  updateDoc,
+  setDoc,
 } from 'firebase/firestore';
 
 export default function TestEmulator() {
@@ -31,6 +33,9 @@ export default function TestEmulator() {
   const [sessionUsers, setSessionUsers] = useState<DocumentData[]>([]); // Tracks all users created and stored in Firestore
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState('');
 
   const usersCol = collection(db, 'test-users');
 
@@ -173,6 +178,31 @@ export default function TestEmulator() {
       alert(`Error adding doc: ${err.message}`);
     }
   };
+  
+  const handleEditUser = (user: DocumentData) => {
+    setEditingUserId(user.id);
+    setNewEmail(user.email);
+  };
+  
+  const handleCancelEdit = () => {
+    setEditingUserId(null);
+    setNewEmail('');
+  };
+
+  const handleSaveUser = async (userId: string) => {
+    if (!newEmail) {
+      alert('Email cannot be empty.');
+      return;
+    }
+    try {
+      const userDocRef = doc(db, 'test-users', userId);
+      await updateDoc(userDocRef, { email: newEmail });
+      handleCancelEdit();
+    } catch (err: any) {
+      alert(`Error updating user: ${err.message}`);
+    }
+  };
+
 
   if (!mounted) return null;
 
@@ -228,18 +258,51 @@ export default function TestEmulator() {
               </button>
             )}
           </div>
-          <ul className="list-disc pl-6 text-sm space-y-1">
+          <ul className="list-disc pl-6 text-sm space-y-2">
             {sessionUsers.map((user) => (
-              <li key={user.id} className="flex items-center gap-4">
-                <span>
-                  {user.email} | UID: {user.uid}
-                </span>
-                <button
-                  onClick={() => deleteTestUser(user.id)}
-                  className="px-2 py-1 bg-red-600 text-white rounded text-xs"
-                >
-                  Delete Record
-                </button>
+              <li key={user.id} className="flex items-center justify-between gap-4">
+                {editingUserId === user.id ? (
+                  <div className="flex-1 flex items-center gap-2">
+                    <input 
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      className="border p-1 rounded text-sm w-full"
+                    />
+                    <button
+                      onClick={() => handleSaveUser(user.id)}
+                      className="px-2 py-1 bg-green-600 text-white rounded text-xs"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="px-2 py-1 bg-gray-500 text-white rounded text-xs"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span>
+                      {user.email} | UID: {user.uid}
+                    </span>
+                    <div className="flex items-center gap-2">
+                       <button
+                        onClick={() => handleEditUser(user)}
+                        className="px-2 py-1 bg-yellow-500 text-white rounded text-xs"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteTestUser(user.id)}
+                        className="px-2 py-1 bg-red-600 text-white rounded text-xs"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
             {sessionUsers.length === 0 && !loadingAuth && (
