@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -100,7 +99,7 @@ export default function TestEmulator() {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.targe.value)}
           className="border px-2 py-1 rounded mr-2"
         />
         <button
