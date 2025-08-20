@@ -64,10 +64,14 @@ const productRecommendationsFlow = ai.defineFlow(
   async input => {
     try {
       const {output} = await prompt(input);
-      return output!;
+      if (!output) {
+        // Handle cases where the prompt returns a nullish output without throwing.
+        return { productRecommendations: [] };
+      }
+      return output;
     } catch (error) {
       console.error('Error in productRecommendationsFlow:', error);
-      // Return an empty list of recommendations on error to prevent crashing the page
+      // Return an empty list of recommendations on error to prevent crashing the page.
       return { productRecommendations: [] };
     }
   }
