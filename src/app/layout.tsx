@@ -2,6 +2,7 @@ import './globals.css';
 import { CartProvider } from '@/context/cart-context';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata = {
   title: 'Zenith Commerce',
@@ -14,16 +15,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head />
-      <body className="min-h-screen bg-background text-foreground font-sans antialiased">
-        <CartProvider>
-          <div className="relative flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </CartProvider>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <CartProvider>
+            <div className="relative flex min-h-screen flex-col bg-background text-foreground font-sans antialiased">
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
