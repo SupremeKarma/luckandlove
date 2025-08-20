@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { CartItem, Product } from '@/lib/types';
@@ -83,7 +84,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   if (!isMounted) {
-    return null;
+    // Return a server-safe version or null until mounted on the client
+    const safeValue = { ...value, cartItems: [], cartCount: 0, cartTotal: 0 };
+    return <CartContext.Provider value={safeValue}>{children}</CartContext.Provider>;
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
