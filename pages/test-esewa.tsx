@@ -1,6 +1,5 @@
-typescriptreact
 import { useState } from "react";
-import EsewaButton from "../components/EsewaButton";
+import EsewaButton from "@/components/EsewaButton";
 
 export default function TestEsewa() {
   const [amount, setAmount] = useState<number>(100); // Default test amount

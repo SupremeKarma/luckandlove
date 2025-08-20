@@ -1,4 +1,3 @@
-typescriptreact
 import CheckoutButton from "@/components/CheckoutButton"
 import EsewaButton from "@/components/EsewaButton"
 import KhaltiButton from "@/components/KhaltiButton"
