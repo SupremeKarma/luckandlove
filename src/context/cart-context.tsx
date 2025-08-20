@@ -25,27 +25,30 @@ export function useCart() {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // This effect runs only on the client, after the component has mounted.
-    setIsMounted(true);
-    try {
-      const storedCart = localStorage.getItem('cart');
-      if (storedCart) {
-        setCartItems(JSON.parse(storedCart));
-      }
-    } catch (error) {
-      console.error("Failed to parse cart from localStorage", error);
-    }
+    setIsClient(true);
   }, []);
-  
+
   useEffect(() => {
-    // This effect runs only on the client and when cartItems changes.
-    if (isMounted) {
+    if (isClient) {
+      try {
+        const storedCart = localStorage.getItem('cart');
+        if (storedCart) {
+          setCartItems(JSON.parse(storedCart));
+        }
+      } catch (error) {
+        console.error("Failed to parse cart from localStorage", error);
+      }
+    }
+  }, [isClient]);
+
+  useEffect(() => {
+    if (isClient) {
       localStorage.setItem('cart', JSON.stringify(cartItems));
     }
-  }, [cartItems, isMounted]);
+  }, [cartItems, isClient]);
 
   const addToCart = (product: Product) => {
     setCartItems((prevItems) => {
@@ -84,18 +87,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     cartCount,
     cartTotal,
   };
-  
-  // Before the component is mounted on the client, render a version of the context
-  // that is guaranteed to match the server-rendered version (i.e., with an empty cart).
-  if (!isMounted) {
-    const serverSafeValue = { 
-        ...value, 
-        cartItems: [], 
-        cartCount: 0, 
-        cartTotal: 0 
-    };
-    return <CartContext.Provider value={serverSafeValue}>{children}</CartContext.Provider>;
-  }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
