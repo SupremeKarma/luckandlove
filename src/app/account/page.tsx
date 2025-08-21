@@ -8,7 +8,24 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Order } from '@/lib/types';
-import { User, MapPin, Package, CreditCard } from 'lucide-react';
+import { User, MapPin, Package, CreditCard, LogOut } from 'lucide-react';
+import { auth, db } from '@/lib/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useEffect, useState } from 'react';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { signOut, updateProfile } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+
+interface Address {
+  id?: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+}
 
 const MOCK_ORDERS: Order[] = [
   {
@@ -59,20 +76,174 @@ const MOCK_ORDERS: Order[] = [
   },
 ];
 
-
 export default function AccountPage() {
+  const [user, loading] = useAuthState(auth);
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [newAddress, setNewAddress] = useState<Address>({
+    street: '', city: '', state: '', zip: '', country: ''
+  });
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const { toast } = useToast();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName || '');
+      setEmail(user.email || '');
+      fetchAddresses(user.uid);
+    }
+  }, [user]);
+
+  const fetchAddresses = async (uid: string) => {
+    const userDocRef = doc(db, 'users', uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+      setAddresses(userData.addresses || []);
+    } else {
+      await setDoc(userDocRef, { addresses: [] });
+    }
+  };
+
+  const handleProfileUpdate = async () => {
+    if (user) {
+      try {
+        await updateProfile(user, { displayName });
+        toast({
+          title: 'Profile Updated',
+          description: 'Your profile information has been updated.',
+        });
+      } catch (error: any) {
+        toast({
+          title: 'Error',
+          description: `Failed to update profile: ${error.message}`,
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+
+  const handleAddOrUpdateAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    const userDocRef = doc(db, 'users', user.uid);
+
+    try {
+      let updatedAddresses;
+      if (editingAddress) {
+        updatedAddresses = addresses.map(addr =>
+          addr.id === editingAddress.id ? { ...editingAddress, ...newAddress } : addr
+        );
+        toast({
+          title: 'Address Updated',
+          description: 'Your address has been updated successfully.',
+        });
+      } else {
+        const addressToAdd = { ...newAddress, id: Date.now().toString() };
+        updatedAddresses = [...addresses, addressToAdd];
+        toast({
+          title: 'Address Added',
+          description: 'Your new address has been added successfully.',
+        });
+      }
+      await setDoc(userDocRef, { addresses: updatedAddresses }, { merge: true });
+      setNewAddress({ street: '', city: '', state: '', zip: '', country: '' });
+      setEditingAddress(null);
+      fetchAddresses(user.uid);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: `Failed to save address: ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  const handleDeleteAddress = async (addressId: string) => {
+    if (!user) return;
+
+    const userDocRef = doc(db, 'users', user.uid);
+    const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
+
+    try {
+      await updateDoc(userDocRef, { addresses: updatedAddresses });
+      toast({
+        title: 'Address Deleted',
+        description: 'Your address has been deleted.',
+      });
+      fetchAddresses(user.uid);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: `Failed to delete address: ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEditAddress = (address: Address) => {
+    setEditingAddress(address);
+    setNewAddress(address);
+  };
+  
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: 'Logged Out',
+        description: 'You have been successfully logged out.',
+      });
+      router.push('/');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: `Failed to log out: ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  if (loading) {
+    return <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">Loading...</div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Access Denied</CardTitle>
+            <CardDescription>Please log in to view your account details.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/login">
+              <Button className="w-full">Go to Login</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">My Account</h1>
-        <p className="text-muted-foreground">Manage your account settings, orders, and addresses.</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">My Account</h1>
+          <p className="text-muted-foreground">Manage your account settings, orders, and addresses.</p>
+        </div>
+        <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2" />Logout</Button>
       </div>
-      <Tabs defaultValue="orders" className="w-full">
+      <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-4">
-          <TabsTrigger value="profile"><User className="mr-2 h-4 w-4" />Profile</TabsTrigger>
-          <TabsTrigger value="orders"><Package className="mr-2 h-4 w-4" />Orders</TabsTrigger>
-          <TabsTrigger value="addresses"><MapPin className="mr-2 h-4 w-4" />Addresses</TabsTrigger>
-          <TabsTrigger value="payment"><CreditCard className="mr-2 h-4 w-4" />Payment</TabsTrigger>
+          <TabsTrigger value="profile"><User className="mr-2" />Profile</TabsTrigger>
+          <TabsTrigger value="orders"><Package className="mr-2" />Orders</TabsTrigger>
+          <TabsTrigger value="addresses"><MapPin className="mr-2" />Addresses</TabsTrigger>
+          <TabsTrigger value="payment"><CreditCard className="mr-2" />Payment</TabsTrigger>
         </TabsList>
         <TabsContent value="profile" className="mt-6">
           <Card>
@@ -81,21 +252,15 @@ export default function AccountPage() {
               <CardDescription>Update your personal details here.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" defaultValue="John" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" defaultValue="Doe" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="displayName">Full Name</Label>
+                <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue="john.doe@example.com" />
+                <Input id="email" type="email" value={email} disabled />
               </div>
-              <Button>Save Changes</Button>
+              <Button onClick={handleProfileUpdate}>Save Changes</Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -153,16 +318,42 @@ export default function AccountPage() {
               <CardTitle>Manage Addresses</CardTitle>
               <CardDescription>Add or remove your shipping addresses.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-               <Card className="p-4">
-                 <h3 className="font-semibold">Default Shipping Address</h3>
-                 <p className="text-muted-foreground">123 Tech Lane, Silicon Valley, CA 94043</p>
-                 <div className="mt-2 space-x-2">
-                    <Button variant="outline" size="sm">Edit</Button>
-                    <Button variant="destructive" size="sm">Remove</Button>
-                 </div>
-               </Card>
-              <Button>Add New Address</Button>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                {addresses.map((address) => (
+                  <Card key={address.id} className="p-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold">{address.street}</h3>
+                      <p className="text-muted-foreground">{address.city}, {address.state} {address.zip}, {address.country}</p>
+                    </div>
+                    <div className="space-x-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEditAddress(address)}>Edit</Button>
+                      <Button variant="destructive" size="sm" onClick={() => handleDeleteAddress(address.id!)}>Remove</Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+              <Separator />
+              <div>
+                <h3 className="font-semibold text-lg mb-2">{editingAddress ? 'Edit Address' : 'Add New Address'}</h3>
+                <form onSubmit={handleAddOrUpdateAddress} className="space-y-4">
+                  <Input placeholder="Street" value={newAddress.street} onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })} required />
+                  <Input placeholder="City" value={newAddress.city} onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })} required />
+                  <Input placeholder="State" value={newAddress.state} onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })} required />
+                  <Input placeholder="Zip Code" value={newAddress.zip} onChange={(e) => setNewAddress({ ...newAddress, zip: e.target.value })} required />
+                  <Input placeholder="Country" value={newAddress.country} onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })} required />
+                  <div className="flex gap-2">
+                    <Button type="submit">
+                      {editingAddress ? 'Update Address' : 'Add Address'}
+                    </Button>
+                    {editingAddress && (
+                      <Button type="button" variant="outline" onClick={() => {setEditingAddress(null); setNewAddress({ street: '', city: '', state: '', zip: '', country: '' });}}>
+                        Cancel Edit
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

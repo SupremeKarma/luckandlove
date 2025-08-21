@@ -9,8 +9,10 @@ export default function ProductsPage() {
   const searchParams = useSearchParams();
   const selectedCategory = searchParams.get('category');
   const selectedSubcategory = searchParams.get('subcategory');
+  const searchTerm = searchParams.get('search');
 
   const filteredProducts = PRODUCTS.filter(product => {
+    // Filter by category and subcategory
     if (selectedCategory && product.category !== selectedCategory) {
       return false;
     }
@@ -19,14 +21,28 @@ export default function ProductsPage() {
     // we'll assume that if a subcategory is selected, the main category
     // must also match, and the subcategory is implied by the main category
     // for now. For a more robust solution, products would need a subcategory field.
+
+    // Filter by search term
+    if (searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      const matchesName = product.name.toLowerCase().includes(lowerCaseSearchTerm);
+      const matchesDescription = product.description.toLowerCase().includes(lowerCaseSearchTerm);
+      const matchesCategory = product.category.toLowerCase().includes(lowerCaseSearchTerm);
+      
+      if (!matchesName && !matchesDescription && !matchesCategory) {
+        return false;
+      }
+    }
     return true;
   });
 
-  const pageTitle = selectedSubcategory 
-    ? `${selectedSubcategory} in ${selectedCategory}` 
-    : selectedCategory 
-      ? selectedCategory 
-      : 'All Products';
+  const pageTitle = searchTerm 
+    ? `Search Results for "${searchTerm}"`
+    : selectedSubcategory 
+      ? `${selectedSubcategory} in ${selectedCategory}` 
+      : selectedCategory 
+        ? selectedCategory 
+        : 'All Products';
 
   return (
     <div className="container mx-auto px-4 py-8">

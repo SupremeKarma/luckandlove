@@ -1,9 +1,7 @@
-
 'use client';
 
 import type { CartItem, Product } from '@/lib/types';
-import React, from 'react';
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -28,30 +26,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
+  // Load cart from localStorage on component mount
   useEffect(() => {
     setIsMounted(true);
-  }, []);
-  
-  useEffect(() => {
-    if (isMounted) {
-      try {
-        const storedCart = localStorage.getItem('cart');
-        if (storedCart) {
-          setCartItems(JSON.parse(storedCart));
-        }
-      } catch (error) {
-        console.error("Failed to parse cart from localStorage", error);
+    try {
+      const storedCart = localStorage.getItem('cart');
+      if (storedCart) {
+        setCartItems(JSON.parse(storedCart));
       }
+    } catch (error) {
+      console.error("Failed to parse cart from localStorage", error);
     }
-  }, [isMounted]);
+  }, []);
 
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
     if (isMounted) {
-      try {
-        localStorage.setItem('cart', JSON.stringify(cartItems));
-      } catch (error) {
-        console.error("Failed to save cart to localStorage", error);
-      }
+      localStorage.setItem('cart', JSON.stringify(cartItems));
     }
   }, [cartItems, isMounted]);
 
