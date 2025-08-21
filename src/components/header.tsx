@@ -17,7 +17,7 @@ import {
 } from './ui/dropdown-menu';
 import { CATEGORIES } from '@/lib/products';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -26,6 +26,11 @@ export function Header() {
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
   const [user] = useAuthState(auth);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +102,7 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {user ? (
+              {isClient && user ? (
                 <>
                   <DropdownMenuItem asChild>
                     <Link href="/account">My Account</Link>
@@ -107,7 +112,7 @@ export function Header() {
                     Logout
                   </DropdownMenuItem>
                 </>
-              ) : (
+              ) : isClient ? (
                 <>
                   <DropdownMenuItem asChild>
                     <Link href="/login">Login</Link>
@@ -116,7 +121,7 @@ export function Header() {
                     <Link href="/register">Register</Link>
                   </DropdownMenuItem>
                 </>
-              )}
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
           
