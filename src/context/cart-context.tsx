@@ -39,10 +39,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    // This check ensures we don't try to write to localStorage on the server
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
-    }
+    localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
   const addToCart = (product: Product) => {
