@@ -236,14 +236,14 @@ export default function AccountPage() {
           <h1 className="text-3xl font-bold tracking-tight">My Account</h1>
           <p className="text-muted-foreground">Manage your account settings, orders, and addresses.</p>
         </div>
-        <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2" />Logout</Button>
+        <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" />Logout</Button>
       </div>
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-4">
-          <TabsTrigger value="profile"><User className="mr-2" />Profile</TabsTrigger>
-          <TabsTrigger value="orders"><Package className="mr-2" />Orders</TabsTrigger>
-          <TabsTrigger value="addresses"><MapPin className="mr-2" />Addresses</TabsTrigger>
-          <TabsTrigger value="payment"><CreditCard className="mr-2" />Payment</TabsTrigger>
+          <TabsTrigger value="profile"><User className="mr-2 h-4 w-4" />Profile</TabsTrigger>
+          <TabsTrigger value="orders"><Package className="mr-2 h-4 w-4" />Orders</TabsTrigger>
+          <TabsTrigger value="addresses"><MapPin className="mr-2 h-4 w-4" />Addresses</TabsTrigger>
+          <TabsTrigger value="payment"><CreditCard className="mr-2 h-4 w-4" />Payment</TabsTrigger>
         </TabsList>
         <TabsContent value="profile" className="mt-6">
           <Card>
