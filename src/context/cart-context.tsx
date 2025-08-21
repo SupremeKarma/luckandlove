@@ -83,6 +83,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     cartCount,
     cartTotal,
   };
+  
+  if (!isMounted) {
+    return null;
+  }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
