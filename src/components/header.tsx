@@ -26,11 +26,6 @@ export function Header() {
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
   const [user] = useAuthState(auth);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +97,7 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {isClient && user ? (
+              {user ? (
                 <>
                   <DropdownMenuItem asChild>
                     <Link href="/account">My Account</Link>
@@ -112,7 +107,7 @@ export function Header() {
                     Logout
                   </DropdownMenuItem>
                 </>
-              ) : isClient ? (
+              ) : (
                 <>
                   <DropdownMenuItem asChild>
                     <Link href="/login">Login</Link>
@@ -121,7 +116,7 @@ export function Header() {
                     <Link href="/register">Register</Link>
                   </DropdownMenuItem>
                 </>
-              ) : null}
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
           
