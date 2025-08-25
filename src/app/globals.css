@@ -108,6 +108,10 @@
   .shadow-glow-cyan {
     box-shadow: 0 0 15px hsl(var(--accent) / 0.5);
   }
+
+  .bg-gradient-hero {
+    background-image: linear-gradient(120deg, hsl(var(--background)) 0%, hsl(var(--primary) / 0.2) 100%);
+  }
 }
 
 @keyframes float {

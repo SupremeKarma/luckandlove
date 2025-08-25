@@ -80,7 +80,7 @@ export function Navigation() {
               </Button>
             </Link>
 
-            <Link href="/checkout">
+            <Link href="/cart">
                 <Button variant="cyber" size="icon" className="relative">
                     <ShoppingCart size={20} />
                     {cartCount > 0 && (
