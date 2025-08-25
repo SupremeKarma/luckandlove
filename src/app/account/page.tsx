@@ -155,7 +155,7 @@ export default function AccountPage() {
       setEditingAddress(null);
       setAddresses(updatedAddresses);
 
-    } catch (error: any) => {
+    } catch (error: any) {
       toast({ title: 'Error', description: `Failed to save address: ${error.message}`, variant: 'destructive' });
     }
   };
@@ -170,7 +170,7 @@ export default function AccountPage() {
       if (error) throw error;
       toast({ title: 'Address Deleted', description: 'Your address has been deleted.' });
       setAddresses(updatedAddresses);
-    } catch (error: any) => {
+    } catch (error: any) {
       toast({ title: 'Error', description: `Failed to delete address: ${error.message}`, variant: 'destructive' });
     }
   };
