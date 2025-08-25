@@ -9,12 +9,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Order } from '@/lib/types';
 import { User, MapPin, Package, CreditCard, LogOut } from 'lucide-react';
-import { supabase } from '@/lib/firebase';
+import { getSupabase } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+const supabase = getSupabase();
 
 interface Address {
   id?: string;

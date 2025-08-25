@@ -19,8 +19,10 @@ import {
 import { CATEGORIES } from '@/lib/products';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/firebase';
+import { getSupabase } from '@/lib/firebase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+const supabase = getSupabase();
 
 export function Header() {
   const [searchTerm, setSearchTerm] = useState('');

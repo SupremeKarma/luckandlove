@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { ProductList } from '@/components/product-list';
 import type { Product } from '@/lib/types';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/lib/firebase';
+import { getSupabase } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const supabase = getSupabase();
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);

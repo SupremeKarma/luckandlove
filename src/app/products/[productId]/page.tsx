@@ -8,8 +8,10 @@ import { useToast } from '@/hooks/use-toast';
 import { ShoppingCart } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/firebase';
+import { getSupabase } from '@/lib/firebase';
 import type { Product } from '@/lib/types';
+
+const supabase = getSupabase();
 
 export default function ProductDetailPage() {
   const params = useParams();

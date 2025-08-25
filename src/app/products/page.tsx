@@ -4,8 +4,10 @@ import { useSearchParams } from 'next/navigation';
 import { ProductList } from '@/components/product-list';
 import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
-import { supabase } from '@/lib/firebase';
+import { getSupabase } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const supabase = getSupabase();
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();

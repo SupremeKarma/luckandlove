@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { supabase } from '@/lib/firebase';
+import { getSupabase } from '@/lib/firebase';
 import type { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trash2, Edit, Save, X, PlusCircle, Trash, ArrowUpDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+
+const supabase = getSupabase();
 
 type DbDoc = {
   id: number;

@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/firebase';
+import { getSupabase } from '@/lib/firebase';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
+
+const supabase = getSupabase();
 
 interface Message {
   id: string;
