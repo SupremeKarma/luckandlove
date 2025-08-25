@@ -1,3 +1,5 @@
+'use client';
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // This file is being replaced by the Supabase client.
@@ -6,18 +8,17 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 let supabase: SupabaseClient | null = null;
 
 export function getSupabase() {
-  if (!supabase) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-    if (!supabaseUrl) {
-      throw new Error('Supabase URL is not defined in environment variables.');
-    }
-    if (!supabaseAnonKey) {
-      throw new Error('Supabase Anon Key is not defined in environment variables.');
-    }
-
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  if (!supabaseUrl) {
+    throw new Error('Supabase URL is not defined in environment variables.');
   }
+  if (!supabaseAnonKey) {
+    throw new Error('Supabase Anon Key is not defined in environment variables.');
+  }
+
+  // Always create a new client to ensure env vars are loaded.
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
   return supabase;
 }
