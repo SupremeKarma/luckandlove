@@ -21,8 +21,3 @@ export function getSupabase() {
   }
   return supabase;
 }
-
-// For backward compatibility, we can export a default client instance
-// This might still cause issues if imported at the top level of certain files
-// but the getSupabase function is the recommended way.
-export const supabaseClient = getSupabase();
