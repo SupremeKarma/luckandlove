@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -66,11 +67,14 @@ export default function AccountPage() {
   const { toast } = useToast();
   const router = useRouter();
   
-  const supabase = getSupabase();
-
   useEffect(() => {
+    const supabase = getSupabase();
     const fetchUserAndProfile = async () => {
-      if (!supabase) return;
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+      
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
@@ -91,9 +95,10 @@ export default function AccountPage() {
       setLoading(false);
     };
     fetchUserAndProfile();
-  }, [supabase]);
+  }, []);
 
   const handleProfileUpdate = async () => {
+    const supabase = getSupabase();
     if (!user || !profile || !supabase) return;
     
     const { error } = await supabase
@@ -110,6 +115,7 @@ export default function AccountPage() {
   
   const handleAddOrUpdateAddress = async (e: React.FormEvent) => {
     e.preventDefault();
+    const supabase = getSupabase();
     if (!user || !supabase) return;
 
     try {
@@ -138,6 +144,7 @@ export default function AccountPage() {
   };
 
   const handleDeleteAddress = async (addressId: string) => {
+    const supabase = getSupabase();
     if (!user || !supabase) return;
 
     const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
@@ -158,6 +165,7 @@ export default function AccountPage() {
   };
   
   const handleLogout = async () => {
+    const supabase = getSupabase();
     if (!supabase) return;
     await supabase.auth.signOut();
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });

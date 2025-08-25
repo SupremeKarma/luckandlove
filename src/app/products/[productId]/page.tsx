@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams } from 'next/navigation';
@@ -21,11 +22,16 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const supabase = getSupabase();
-
   useEffect(() => {
+    const supabase = getSupabase();
+
     const fetchProduct = async () => {
-      if (!supabase) return;
+      if (!supabase) {
+        console.error("Supabase client not available.");
+        setLoading(false);
+        return;
+      }
+      
       try {
         setLoading(true);
         const { data, error } = await supabase
@@ -51,7 +57,7 @@ export default function ProductDetailPage() {
     if (productId) {
       fetchProduct();
     }
-  }, [productId, supabase]);
+  }, [productId]);
 
   const handleAddToCart = () => {
     if (product) {

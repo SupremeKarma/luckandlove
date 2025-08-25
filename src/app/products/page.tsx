@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -16,11 +17,16 @@ export default function ProductsPage() {
   const selectedSubcategory = searchParams.get('subcategory');
   const searchTerm = searchParams.get('search');
   
-  const supabase = getSupabase();
-
   useEffect(() => {
+    const supabase = getSupabase();
+    
     const fetchProducts = async () => {
-      if (!supabase) return;
+      if (!supabase) {
+        console.error("Supabase client not available.");
+        setLoading(false);
+        return;
+      };
+      
       setLoading(true);
       
       let query = supabase.from('products').select('*');
@@ -51,7 +57,7 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, [selectedCategory, selectedSubcategory, searchTerm, supabase]);
+  }, [selectedCategory, selectedSubcategory, searchTerm]);
 
 
   const pageTitle = searchTerm 

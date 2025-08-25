@@ -22,16 +22,17 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   useEffect(() => {
-    setSupabase(getSupabase());
-  }, []);
-
-  useEffect(() => {
+    const supabase = getSupabase();
+    
     const fetchProducts = async () => {
-      if (!supabase) return;
+      if (!supabase) {
+        console.error("Supabase client not available.");
+        setLoading(false);
+        return;
+      }
+      
       setLoading(true);
       const { data, error } = await supabase.from('products').select('*');
       if (error) {
@@ -47,7 +48,7 @@ export default function Home() {
     };
 
     fetchProducts();
-  }, [supabase]);
+  }, []);
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
