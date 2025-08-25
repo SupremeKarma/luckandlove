@@ -26,40 +26,10 @@ interface Address {
   country: string;
 }
 
-const MOCK_ORDERS: Order[] = [
-  {
-    id: 'ORD-001',
-    date: '2023-10-26',
-    status: 'Delivered',
-    total: 149.98,
-    items: [
-      {
-        id: 'prod-1',
-        name: 'Smart Home Hub',
-        price: 99.99,
-        quantity: 1,
-        category: 'Electronics',
-        imageUrl: 'https://placehold.co/600x400.png',
-        stock: 10,
-        description: 'A smart home hub'
-      },
-      {
-        id: 'prod-5',
-        name: 'Classic Leather Jacket',
-        price: 49.99,
-        quantity: 1,
-        category: 'Apparel',
-        imageUrl: 'https://placehold.co/600x400.png',
-        stock: 10,
-        description: 'A classic leather jacket'
-      },
-    ],
-  },
-];
-
 export default function AccountPage() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [newAddress, setNewAddress] = useState<Address>({ street: '', city: '', state: '', zip: '', country: '' });
@@ -103,6 +73,19 @@ export default function AccountPage() {
               setProfile(data);
               setAddresses(data.addresses || []);
             }
+            
+            const { data: ordersData, error: ordersError } = await supabase
+              .from('orders')
+              .select('*')
+              .eq('user_id', user.id);
+
+            if (ordersError) {
+                throw ordersError;
+            }
+            if (ordersData) {
+                setOrders(ordersData as Order[]);
+            }
+
         } catch (error) {
             console.error('Error fetching profile:', error);
         }
@@ -252,42 +235,46 @@ export default function AccountPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {MOCK_ORDERS.map((order) => (
-                  <Card key={order.id} className="overflow-hidden">
-                    <CardHeader className="flex flex-row items-center justify-between bg-muted/50 p-4">
-                      <div className="grid gap-0.5">
-                        <div className="font-semibold">Order ID: {order.id}</div>
-                        <div className="text-sm text-muted-foreground">Date: {order.date}</div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{order.status}</span>
-                         <Button size="sm" variant="outline">View Order</Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-4">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Product</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {order.items.map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell>{item.name} (x{item.quantity})</TableCell>
-                              <TableCell className="text-right">${(item.price * item.quantity).toFixed(2)}</TableCell>
+                {orders.length > 0 ? (
+                  orders.map((order) => (
+                    <Card key={order.id} className="overflow-hidden">
+                      <CardHeader className="flex flex-row items-center justify-between bg-muted/50 p-4">
+                        <div className="grid gap-0.5">
+                          <div className="font-semibold">Order ID: {order.id}</div>
+                          <div className="text-sm text-muted-foreground">Date: {new Date(order.date).toLocaleDateString()}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{order.status}</span>
+                           <Button size="sm" variant="outline">View Order</Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Product</TableHead>
+                              <TableHead className="text-right">Total</TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                       <Separator className="my-4" />
-                       <div className="text-right font-semibold">
-                         Order Total: ${order.total.toFixed(2)}
-                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                          </TableHeader>
+                          <TableBody>
+                            {order.items.map((item) => (
+                              <TableRow key={item.id}>
+                                <TableCell>{item.name} (x{item.quantity})</TableCell>
+                                <TableCell className="text-right">${(item.price * item.quantity).toFixed(2)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                         <Separator className="my-4" />
+                         <div className="text-right font-semibold">
+                           Order Total: ${order.total.toFixed(2)}
+                         </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <p>You have no past orders.</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -362,3 +349,5 @@ export default function AccountPage() {
     </div>
   );
 }
+
+    
