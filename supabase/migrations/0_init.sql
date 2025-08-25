@@ -1,4 +1,3 @@
-
 -- Create products table for the e-commerce catalog
 CREATE TABLE public.products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -94,11 +93,10 @@ ALTER TABLE public.rides ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can view products" ON public.products
   FOR SELECT USING (true);
 
-CREATE POLICY "Authenticated users can insert products" ON public.products
-  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
-CREATE POLICY "Authenticated users can update products" ON public.products
-  FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can manage products" ON public.products
+  FOR ALL
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
 
 -- RLS Policies for orders (users can only see their own)
 CREATE POLICY "Users can view their own orders" ON public.orders
@@ -156,11 +154,11 @@ CREATE POLICY "Users can update their own rides" ON public.rides
 
 -- Insert demo products
 INSERT INTO public.products (name, price, description, image_url, category, subcategory, stock, rating, in_stock) VALUES
-('Quantum Smartphone X1', 999.99, 'Next-gen smartphone with quantum computing capabilities', 'https://placehold.co/600x400.png', 'Electronics', 'Smartphones', 50, 4.8, true),
-('Neural Gaming Laptop', 2499.99, 'High-performance laptop with AI acceleration', 'https://placehold.co/600x400.png', 'Electronics', 'Laptops', 25, 4.9, true),
-('Cyber Pizza Deluxe', 24.99, 'Futuristic pizza with lab-grown ingredients', 'https://placehold.co/600x400.png', 'Food', 'Pizza', 100, 4.5, true),
-('Holographic Apartment', 2500.00, 'Luxury apartment with holographic displays', 'https://placehold.co/600x400.png', 'Rentals', 'Apartment', 5, 4.7, true),
-('Sports Car Rental', 299.99, 'High-performance electric sports car', 'https://placehold.co/600x400.png', 'Rentals', 'Vehicles', 10, 4.8, true);
+('Quantum Smartphone X1', 999.99, 'Next-gen smartphone with quantum computing capabilities', '/api/placeholder/300/200', 'Electronics', 'Smartphones', 50, 4.8, true),
+('Neural Gaming Laptop', 2499.99, 'High-performance laptop with AI acceleration', '/api/placeholder/300/200', 'Electronics', 'Laptops', 25, 4.9, true),
+('Cyber Pizza Deluxe', 24.99, 'Futuristic pizza with lab-grown ingredients', '/api/placeholder/300/200', 'Food', 'Pizza', 100, 4.5, true),
+('Holographic Apartment', 2500.00, 'Luxury apartment with holographic displays', '/api/placeholder/300/200', 'Rentals', 'Apartment', 5, 4.7, true),
+('Sports Car Rental', 299.99, 'High-performance electric sports car', '/api/placeholder/300/200', 'Rentals', 'Vehicles', 10, 4.8, true);
 
 -- Insert demo tournaments
 INSERT INTO public.tournaments (name, game, prize, start_date, status, max_participants) VALUES
@@ -170,9 +168,9 @@ INSERT INTO public.tournaments (name, game, prize, start_date, status, max_parti
 
 -- Insert demo rentals
 INSERT INTO public.rentals (name, price, location, type, amenities, image_url, available, rating) VALUES
-('Cyber Apartment Downtown', 2500, 'Neo Tokyo District', 'apartment', '["wifi", "pet_friendly", "parking"]', 'https://placehold.co/600x400.png', true, 4.8),
-('Luxury Penthouse', 5000, 'Sky Tower', 'penthouse', '["pool", "gym", "concierge"]', 'https://placehold.co/600x400.png', true, 4.9),
-('Tesla Model S', 150, 'City Center', 'car', '["autopilot", "premium_sound"]', 'https://placehold.co/600x400.png', true, 4.7);
+('Cyber Apartment Downtown', 2500, 'Neo Tokyo District', 'apartment', '["wifi", "pet_friendly", "parking"]', '/api/placeholder/300/200', true, 4.8),
+('Luxury Penthouse', 5000, 'Sky Tower', 'penthouse', '["pool", "gym", "concierge"]', '/api/placeholder/300/200', true, 4.9),
+('Tesla Model S', 150, 'City Center', 'car', '["autopilot", "premium_sound"]', '/api/placeholder/300/200', true, 4.7);
 
 -- Enable realtime for relevant tables
 ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages;
