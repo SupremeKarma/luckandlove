@@ -113,6 +113,8 @@ export function Header() {
               <DropdownMenuItem asChild><Link href="/rentals">Rentals</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/gaming">Gaming</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/chat">Chat</Link></DropdownMenuItem>
+               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild><Link href="/test-emulator">Test Emulator</Link></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
