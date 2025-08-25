@@ -13,7 +13,7 @@ import { getSupabase } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const categories = ['All', 'Electronics', 'Fashion', 'Books', 'Furniture', 'Health & Beauty', 'Sports & Entertainment', 'Home & Garden', 'Food & Drink'];
+const categories = ['All', 'Electronics', 'Apparel', 'Books', 'Home Goods', 'Beauty', 'Toys & Games', 'Sports & Outdoors'];
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -72,7 +72,7 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <HeroSection />
 
@@ -84,54 +84,27 @@ export default function Home() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
               <Input
-                placeholder="Search the quantum marketplace..."
+                placeholder="Search for products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-card/50 border-primary/30 h-12"
+                className="pl-10 h-12"
               />
             </div>
-            <Button variant="glow" size="lg">
-              <Filter size={16} />
-              Advanced Filters
-            </Button>
           </div>
 
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-            <TabsList className="w-full bg-card/50 border border-primary/30 h-12">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
               {categories.map((category) => (
                 <TabsTrigger
                   key={category}
                   value={category}
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-base"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                 >
                   {category}
                 </TabsTrigger>
               ))}
             </TabsList>
           </Tabs>
-        </div>
-
-        {/* Featured Categories */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-center neon-text">Featured Categories</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { name: "Electronics", icon: "⚡", count: "2.5K+" },
-              { name: "Food & Drink", icon: "🍕", count: "1.2K+" },
-              { name: "Gaming", icon: "🎮", count: "800+" },
-              { name: "Fashion", icon: "👕", count: "1.8K+" }
-            ].map((category, index) => (
-              <div
-                key={category.name}
-                className="group cursor-pointer p-6 bg-card/50 border border-primary/20 rounded-lg hover:border-primary/50 transition-all duration-300 hover:shadow-glow-cyan text-center"
-                onClick={() => setSelectedCategory(category.name === "Food & Drink" ? "Food & Drink" : category.name === "Gaming" ? "Sports & Entertainment" : category.name)}
-              >
-                <div className="text-4xl mb-3">{category.icon}</div>
-                <h3 className="font-semibold mb-1">{category.name}</h3>
-                <p className="text-sm text-muted-foreground">{category.count} items</p>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Products Grid */}
@@ -146,8 +119,8 @@ export default function Home() {
           </div>
 
           {loading ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
+             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="space-y-2">
                   <Skeleton className="h-64 w-full" />
                   <Skeleton className="h-6 w-3/4" />
@@ -156,7 +129,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -175,25 +148,6 @@ export default function Home() {
               </p>
             </div>
           )}
-        </div>
-
-        {/* Call to Action */}
-        <div className="text-center bg-gradient-secondary p-12 rounded-2xl">
-          <h2 className="text-3xl font-bold mb-4 text-white">
-            Ready to Experience the Future?
-          </h2>
-          <p className="text-white/80 mb-6 max-w-2xl mx-auto">
-            Join millions of users already exploring our multi-platform ecosystem. 
-            Shop, eat, rent, game, and connect in one revolutionary app.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="lg">
-              Explore All Platforms
-            </Button>
-            <Button variant="glow" size="lg">
-              Join Community
-            </Button>
-          </div>
         </div>
       </div>
     </div>

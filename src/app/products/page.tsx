@@ -3,13 +3,13 @@
 
 import { useSearchParams } from 'next/navigation';
 import { ProductList } from '@/components/product-list';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import type { Product } from '@/lib/types';
 import { getSupabase } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export default function ProductsPage() {
+function ProductsPageContent() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,17 +90,17 @@ export default function ProductsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="space-y-4 text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
+      <div className="space-y-2 text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">
           {pageTitle}
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Explore our wide range of products.
+          Browse our collection of high-quality products.
         </p>
       </div>
       
       {loading ? (
-         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="space-y-2">
               <Skeleton className="h-64 w-full" />
@@ -113,12 +113,21 @@ export default function ProductsPage() {
         <>
           <ProductList products={products} />
           {products.length === 0 && (
-            <div className="text-center text-muted-foreground mt-8">
-              No products found for this selection.
+            <div className="text-center text-muted-foreground mt-16">
+              <p className="text-xl">No products found for this selection.</p>
+              <p>Try adjusting your search or filters.</p>
             </div>
           )}
         </>
       )}
     </div>
   );
+}
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ProductsPageContent />
+        </Suspense>
+    )
 }

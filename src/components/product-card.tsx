@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import type { Product } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +22,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     addToCart(product);
     toast({
       title: 'Added to cart',
@@ -34,11 +35,12 @@ export function ProductCard({ product }: ProductCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      whileHover={{ scale: 1.03 }}
+      whileHover={{ y: -5 }}
+      className="h-full"
     >
       <Link href={`/products/${product.id}`} className="block h-full">
-        <Card className="group flex h-full flex-col bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 hover:shadow-glow-cyan overflow-hidden">
-          <div className="relative">
+        <Card className="group flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/10">
+          <CardHeader className="p-0">
             <div className="relative aspect-square w-full">
               <Image
                 src={product.imageUrl}
@@ -49,46 +51,41 @@ export function ProductCard({ product }: ProductCardProps) {
                 data-ai-hint="product image"
               />
             </div>
+          </CardHeader>
+          <CardContent className="flex flex-1 flex-col p-4">
             <Badge
-              variant="secondary"
-              className="absolute top-2 left-2 bg-primary/80 text-white"
+              variant="outline"
+              className="w-fit"
             >
               {product.category}
             </Badge>
-            {product.stock === 0 && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <Badge variant="destructive">Out of Stock</Badge>
-              </div>
-            )}
-          </div>
+            <CardTitle className="mt-2 text-lg leading-tight flex-grow">{product.name}</CardTitle>
+            <CardDescription className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                {product.description}
+            </CardDescription>
 
-          <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-lg leading-tight">{product.name}</CardTitle>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold gradient-text">${product.price.toFixed(2)}</span>
+            <div className="mt-4 flex items-center justify-between">
+              <span className="text-2xl font-bold text-accent">${product.price.toFixed(2)}</span>
               {product.rating && (
                 <div className="flex items-center space-x-1">
                   <Star size={16} className="text-yellow-400 fill-current" />
-                  <span className="text-sm text-muted-foreground">{product.rating}</span>
+                  <span className="text-sm font-semibold">{product.rating}</span>
                 </div>
               )}
             </div>
-          </CardHeader>
-
-          <CardContent className="pt-0 p-4 flex-grow flex flex-col">
-             <p className="text-sm text-muted-foreground mb-4 line-clamp-2 flex-grow">
-              {product.description}
-            </p>
+          </CardContent>
+          <CardFooter className="p-4 pt-0">
             <Button
-              variant="neon"
-              className="w-full mt-auto"
+              className="w-full"
+              variant="default"
               onClick={handleAddToCart}
               disabled={product.stock === 0}
+              aria-label="Add to cart"
             >
-              <ShoppingCart size={16} />
+              <ShoppingCart size={16} className="mr-2" />
               {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
             </Button>
-          </CardContent>
+          </CardFooter>
         </Card>
       </Link>
     </motion.div>
