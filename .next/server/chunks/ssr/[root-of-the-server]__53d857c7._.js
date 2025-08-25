@@ -1,6 +1,8 @@
 module.exports = [
-"[project]/.next-internal/server/app/gaming/page/actions.js [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__, module, exports) => {
+"[project]/.next-internal/server/app/gaming/page/actions.js [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__) => {
+"use strict";
 
+__turbopack_context__.s([]);
 }),
 "[project]/src/app/favicon.ico.mjs { IMAGE => \"[project]/src/app/favicon.ico (static in ecmascript)\" } [app-rsc] (structured image object, ecmascript, Next.js Server Component)", ((__turbopack_context__) => {
 
