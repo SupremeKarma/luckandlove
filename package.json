@@ -12,9 +12,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@genkit-ai/ai": "1.0.1",
-    "@genkit-ai/core": "1.0.1",
-    "@genkit-ai/googleai": "1.0.1",
+    "@genkit-ai/ai": "1.0.0-rc.3",
+    "@genkit-ai/core": "1.0.0-rc.3",
+    "@genkit-ai/googleai": "1.0.0-rc.3",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -53,7 +53,7 @@
     "dotenv": "^16.5.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^11.5.0",
-    "genkit": "1.0.1",
+    "genkit": "1.0.0-rc.3",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.475.0",
     "next": "latest",
