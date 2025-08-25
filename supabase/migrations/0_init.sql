@@ -90,10 +90,10 @@ ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.rides ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for products (public read, authenticated write)
-CREATE POLICY "Anyone can view products" ON public.products
+CREATE POLICY "Products are viewable by everyone." ON public.products
   FOR SELECT USING (true);
 
-CREATE POLICY "Authenticated users can manage products" ON public.products
+CREATE POLICY "Authenticated users can manage products." ON public.products
   FOR ALL
   USING (auth.role() = 'authenticated')
   WITH CHECK (auth.role() = 'authenticated');
@@ -154,11 +154,11 @@ CREATE POLICY "Users can update their own rides" ON public.rides
 
 -- Insert demo products
 INSERT INTO public.products (name, price, description, image_url, category, subcategory, stock, rating, in_stock) VALUES
-('Quantum Smartphone X1', 999.99, 'Next-gen smartphone with quantum computing capabilities', '/api/placeholder/300/200', 'Electronics', 'Smartphones', 50, 4.8, true),
-('Neural Gaming Laptop', 2499.99, 'High-performance laptop with AI acceleration', '/api/placeholder/300/200', 'Electronics', 'Laptops', 25, 4.9, true),
-('Cyber Pizza Deluxe', 24.99, 'Futuristic pizza with lab-grown ingredients', '/api/placeholder/300/200', 'Food', 'Pizza', 100, 4.5, true),
-('Holographic Apartment', 2500.00, 'Luxury apartment with holographic displays', '/api/placeholder/300/200', 'Rentals', 'Apartment', 5, 4.7, true),
-('Sports Car Rental', 299.99, 'High-performance electric sports car', '/api/placeholder/300/200', 'Rentals', 'Vehicles', 10, 4.8, true);
+('Quantum Smartphone X1', 999.99, 'Next-gen smartphone with quantum computing capabilities', 'https://www.apple.com/v/iphone-15-pro/c/images/overview/closer-look/all_colors__d4263u3s4o2y_large.jpg', 'Electronics', 'Smartphones', 50, 4.8, true),
+('Neural Gaming Laptop', 2499.99, 'High-performance laptop with AI acceleration', 'https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/notebooks/alienware-notebooks/alienware-x16-r2/media-gallery/black/notebook-alienware-x16-r2-black-gallery-1.psd?fmt=pjpg&pscan=auto&scl=1&hei=402&wid=572&qlt=100,0&resMode=sharp2&size=572,402&chrss=full', 'Electronics', 'Laptops', 25, 4.9, true),
+('Cyber Pizza Deluxe', 24.99, 'Futuristic pizza with lab-grown ingredients', 'https://placehold.co/600x400.png', 'Food', 'Pizza', 100, 4.5, true),
+('Holographic Apartment', 2500.00, 'Luxury apartment with holographic displays', 'https://placehold.co/600x400.png', 'Rentals', 'Apartment', 5, 4.7, true),
+('Sports Car Rental', 299.99, 'High-performance electric sports car', 'https://placehold.co/600x400.png', 'Rentals', 'Vehicles', 10, 4.8, true);
 
 -- Insert demo tournaments
 INSERT INTO public.tournaments (name, game, prize, start_date, status, max_participants) VALUES
@@ -168,9 +168,9 @@ INSERT INTO public.tournaments (name, game, prize, start_date, status, max_parti
 
 -- Insert demo rentals
 INSERT INTO public.rentals (name, price, location, type, amenities, image_url, available, rating) VALUES
-('Cyber Apartment Downtown', 2500, 'Neo Tokyo District', 'apartment', '["wifi", "pet_friendly", "parking"]', '/api/placeholder/300/200', true, 4.8),
-('Luxury Penthouse', 5000, 'Sky Tower', 'penthouse', '["pool", "gym", "concierge"]', '/api/placeholder/300/200', true, 4.9),
-('Tesla Model S', 150, 'City Center', 'car', '["autopilot", "premium_sound"]', '/api/placeholder/300/200', true, 4.7);
+('Cyber Apartment Downtown', 2500, 'Neo Tokyo District', 'apartment', '["wifi", "pet_friendly", "parking"]', 'https://placehold.co/600x400.png', true, 4.8),
+('Luxury Penthouse', 5000, 'Sky Tower', 'penthouse', '["pool", "gym", "concierge"]', 'https://placehold.co/600x400.png', true, 4.9),
+('Tesla Model S', 150, 'City Center', 'car', '["autopilot", "premium_sound"]', 'https://placehold.co/600x400.png', true, 4.7);
 
 -- Enable realtime for relevant tables
 ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages;
