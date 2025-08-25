@@ -2539,10 +2539,6 @@ body {
   animation-timing-function: linear;
 }
 
-.running {
-  animation-play-state: running;
-}
-
 .file\:border-0::-webkit-file-upload-button {
   border-width: 0;
 }
