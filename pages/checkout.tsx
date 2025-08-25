@@ -57,14 +57,15 @@ export default function CheckoutPage() {
     }
 
     try {
-      const response = await fetch('/api/payments/stripe', {
+      // Use the new /api/checkout endpoint
+      const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          cartItems,
-          shippingInfo: values,
+          items: cartItems,
+          shippingInfo: values, // Shipping info can be used in webhook later
         }),
       });
 
@@ -100,7 +101,7 @@ export default function CheckoutPage() {
       <h1 className="text-3xl font-bold text-center mb-8">Checkout</h1>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Card>
+          <Card className="bg-gray-800/50 border-gray-700">
             <CardHeader>
               <CardTitle>Shipping Information</CardTitle>
             </CardHeader>
@@ -114,7 +115,7 @@ export default function CheckoutPage() {
                       <FormItem>
                         <FormLabel>Full Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="John Doe" {...field} />
+                          <Input placeholder="John Doe" {...field} className="bg-gray-900/70" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -127,7 +128,7 @@ export default function CheckoutPage() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="john.doe@example.com" {...field} />
+                          <Input placeholder="john.doe@example.com" {...field} className="bg-gray-900/70" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -140,7 +141,7 @@ export default function CheckoutPage() {
                       <FormItem>
                         <FormLabel>Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="123 Main St" {...field} />
+                          <Input placeholder="123 Main St" {...field} className="bg-gray-900/70" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -154,7 +155,7 @@ export default function CheckoutPage() {
                           <FormItem>
                             <FormLabel>City</FormLabel>
                             <FormControl>
-                              <Input placeholder="New York" {...field} />
+                              <Input placeholder="New York" {...field} className="bg-gray-900/70" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -167,7 +168,7 @@ export default function CheckoutPage() {
                           <FormItem>
                             <FormLabel>State / Province</FormLabel>
                             <FormControl>
-                              <Input placeholder="NY" {...field} />
+                              <Input placeholder="NY" {...field} className="bg-gray-900/70" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -182,7 +183,7 @@ export default function CheckoutPage() {
                           <FormItem>
                             <FormLabel>ZIP Code</FormLabel>
                             <FormControl>
-                              <Input placeholder="10001" {...field} />
+                              <Input placeholder="10001" {...field} className="bg-gray-900/70" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -195,7 +196,7 @@ export default function CheckoutPage() {
                           <FormItem>
                             <FormLabel>Country</FormLabel>
                             <FormControl>
-                              <Input placeholder="USA" {...field} />
+                              <Input placeholder="USA" {...field} className="bg-gray-900/70" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -208,7 +209,7 @@ export default function CheckoutPage() {
           </Card>
         </div>
         <div className="lg:col-span-1">
-          <Card>
+          <Card className="bg-gray-800/50 border-gray-700">
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
@@ -219,7 +220,7 @@ export default function CheckoutPage() {
                   <span>${(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               ))}
-              <div className="flex justify-between font-bold">
+              <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>
                 <span>${cartTotal.toFixed(2)}</span>
               </div>

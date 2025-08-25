@@ -8,6 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetFooter,
+  SheetClose,
 } from '@/components/ui/sheet';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -29,7 +30,7 @@ export function CartSheet() {
           {cartCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 flex items-center justify-center"
+              className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-accent border-none"
             >
               {cartCount}
             </Badge>
@@ -37,17 +38,17 @@ export function CartSheet() {
           <span className="sr-only">Open cart</span>
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex w-full flex-col sm:max-w-lg">
+      <SheetContent className="flex w-full flex-col sm:max-w-lg bg-gray-900/80 backdrop-blur-sm border-l-gray-700">
         <SheetHeader>
-          <SheetTitle>Your Shopping Cart</SheetTitle>
-          <SheetDescription>
+          <SheetTitle>Shopping Cart</SheetTitle>
+          <SheetDescription className="text-gray-400">
             You have {cartCount} item(s) in your cart.
           </SheetDescription>
         </SheetHeader>
-        <Separator />
+        <Separator className="bg-gray-700" />
         {cartItems.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
-            <p className="text-muted-foreground">Your cart is empty.</p>
+            <p className="text-gray-400">Your cart is empty.</p>
           </div>
         ) : (
           <ScrollArea className="flex-1">
@@ -64,7 +65,7 @@ export function CartSheet() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-gray-400">
                       ${item.price.toFixed(2)}
                     </p>
                     <div className="mt-2 flex items-center gap-2">
@@ -102,19 +103,21 @@ export function CartSheet() {
             </div>
           </ScrollArea>
         )}
-        <Separator />
+        <Separator className="bg-gray-700"/>
         <SheetFooter className="mt-auto">
           <div className="w-full">
             <div className="flex justify-between font-semibold">
               <span>Subtotal</span>
               <span>${cartTotal.toFixed(2)}</span>
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-gray-400">
               Shipping and taxes calculated at checkout.
             </p>
-            <Link href="/checkout" className="mt-4 block">
-              <Button className="w-full">Proceed to Checkout</Button>
-            </Link>
+            <SheetClose asChild>
+              <Link href="/checkout" className="mt-4 block">
+                <Button className="w-full">Proceed to Checkout</Button>
+              </Link>
+            </SheetClose>
           </div>
         </SheetFooter>
       </SheetContent>
