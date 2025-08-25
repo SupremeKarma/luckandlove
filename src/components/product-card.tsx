@@ -1,8 +1,9 @@
+
 'use client';
 
 import Image from 'next/image';
 import type { Product } from '@/lib/types';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
@@ -48,8 +49,8 @@ export function ProductCard({ product }: ProductCardProps) {
                 data-ai-hint="product image"
               />
             </div>
-            <Badge 
-              variant="secondary" 
+            <Badge
+              variant="secondary"
               className="absolute top-2 left-2 bg-primary/80 text-white"
             >
               {product.category}
@@ -60,14 +61,20 @@ export function ProductCard({ product }: ProductCardProps) {
               </div>
             )}
           </div>
-          
+
           <CardHeader className="pb-2 p-4">
             <CardTitle className="text-lg leading-tight">{product.name}</CardTitle>
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold gradient-text">${product.price.toFixed(2)}</span>
+              {product.rating && (
+                <div className="flex items-center space-x-1">
+                  <Star size={16} className="text-yellow-400 fill-current" />
+                  <span className="text-sm text-muted-foreground">{product.rating}</span>
+                </div>
+              )}
             </div>
           </CardHeader>
-          
+
           <CardContent className="pt-0 p-4 flex-grow flex flex-col">
              <p className="text-sm text-muted-foreground mb-4 line-clamp-2 flex-grow">
               {product.description}
