@@ -95,6 +95,19 @@
   .float-animation {
     animation: float 6s ease-in-out infinite;
   }
+
+  .glass-effect {
+    background-color: hsl(var(--background) / 0.5);
+    backdrop-filter: blur(8px);
+  }
+
+  .bg-gradient-primary {
+    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+  }
+
+  .shadow-glow-cyan {
+    box-shadow: 0 0 15px hsl(var(--accent) / 0.5);
+  }
 }
 
 @keyframes float {
