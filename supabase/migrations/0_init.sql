@@ -89,7 +89,7 @@ ALTER TABLE public.tournaments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.rides ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for products (public read, admin write)
+-- RLS Policies for products (public read, authenticated write)
 CREATE POLICY "Anyone can view products" ON public.products
   FOR SELECT USING (true);
 
