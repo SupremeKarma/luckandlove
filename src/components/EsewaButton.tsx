@@ -1,4 +1,8 @@
-typescriptreact
+
+'use client';
+
+import { Button } from "./ui/button";
+
 export default function EsewaButton() {
   const handleEsewa = () => {
     const form = document.createElement("form")
@@ -6,11 +10,15 @@ export default function EsewaButton() {
     form.action = "https://esewa.com.np/epay/main"
 
     const fields = {
+      tAmt: "2000",
       amt: "2000", // price in NPR
+      txAmt: "0",
+      psc: "0",
+      pdc: "0",
       pid: "sample-product-123",
       scd: "EPAYTEST", // merchant code (from eSewa)
-      su: "http://localhost:3000/success", // success URL
-      fu: "http://localhost:3000/cancel", // failure URL
+      su: `${window.location.origin}/success`, // success URL
+      fu: `${window.location.origin}/cancel`, // failure URL
     }
 
     Object.entries(fields).forEach(([key, value]) => {
@@ -26,11 +34,11 @@ export default function EsewaButton() {
   }
 
   return (
-    <button
+    <Button
       onClick={handleEsewa}
-      className="w-full py-3 rounded-xl bg-success text-white font-semibold hover:opacity-90 transition"
+      className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold"
     >
       Pay with eSewa
-    </button>
+    </Button>
   )
 }

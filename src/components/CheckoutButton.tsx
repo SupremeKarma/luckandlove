@@ -1,6 +1,8 @@
-typescriptreact
+
+'use client';
 import { loadStripe } from "@stripe/stripe-js"
 import { useState } from "react"
+import { Button } from "./ui/button";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY!)
 
@@ -9,19 +11,31 @@ export default function CheckoutButton() {
 
   const handleCheckout = async () => {
     setLoading(true)
-    const res = await fetch("/api/payments/stripe", { method: "POST" })
-    const { id } = await res.json()
-    const stripe = await stripePromise
-    await stripe?.redirectToCheckout({ sessionId: id })
-    setLoading(false)
+    try {
+        const res = await fetch("/api/payments/stripe", { method: "POST" })
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const { id } = await res.json()
+        const stripe = await stripePromise
+        if (stripe) {
+            await stripe.redirectToCheckout({ sessionId: id })
+        }
+    } catch (error) {
+        console.error("Checkout failed:", error);
+        alert("Checkout failed. Please try again.");
+    } finally {
+        setLoading(false)
+    }
   }
 
   return (
-    <button
+    <Button
       onClick={handleCheckout}
-      className="w-full py-3 rounded-xl bg-accent text-white font-semibold hover:bg-accent-hover transition"
+      className="w-full"
+      disabled={loading}
     >
       {loading ? "Processing..." : "Pay with Card (Stripe)"}
-    </button>
+    </Button>
   )
 }
