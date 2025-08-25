@@ -22,9 +22,8 @@ import { useState, useEffect } from 'react';
 import { getSupabase } from '@/lib/firebase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-const supabase = getSupabase();
-
 export function Header() {
+  const supabase = getSupabase();
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -44,7 +43,7 @@ export function Header() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase.auth]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
