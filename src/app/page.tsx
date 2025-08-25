@@ -1,11 +1,45 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { ProductList } from '@/components/product-list';
-import { PRODUCTS } from '@/lib/products';
+import type { Product } from '@/lib/types';
 import { Input } from '@/components/ui/input';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
-  // The search functionality will be implemented in a future step.
-  // For now, we will display all products.
-  
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    setLoading(true);
+    const q = query(collection(db, 'products'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const productsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Product[];
+      setProducts(productsData);
+      setFilteredProducts(productsData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const filtered = products.filter((product) =>
+      product.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+      product.description.toLowerCase().includes(lowerCaseSearchTerm) ||
+      product.category.toLowerCase().includes(lowerCaseSearchTerm)
+    );
+    setFilteredProducts(filtered);
+  }, [searchTerm, products]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-4 text-center mb-12">
@@ -17,15 +51,29 @@ export default function Home() {
         </p>
       </div>
 
-       <div className="mb-8 max-w-md mx-auto">
-          <Input
-            type="text"
-            placeholder="Search products..."
-            className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-400"
-          />
-        </div>
+      <div className="mb-8 max-w-md mx-auto">
+        <Input
+          type="text"
+          placeholder="Search products..."
+          className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-400"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
-      <ProductList products={PRODUCTS} />
+      {loading ? (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-64 w-full" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-6 w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <ProductList products={filteredProducts} />
+      )}
     </div>
   );
 }

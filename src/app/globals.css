@@ -68,6 +68,7 @@
 
 @layer base {
   body {
-    @apply bg-gradient-to-br from-blue-900 to-purple-900 text-white;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
