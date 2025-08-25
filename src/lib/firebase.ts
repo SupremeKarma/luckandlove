@@ -13,10 +13,10 @@ let supabase: SupabaseClient | null = null;
  * Note: This function is client-side safe. The anon key is designed to be
  * public and only allows access based on your Row Level Security (RLS) policies.
  *
- * @returns {SupabaseClient | null} The Supabase client instance, or null if
- * environment variables are not set.
+ * @returns {SupabaseClient} The Supabase client instance.
+ * @throws {Error} If Supabase environment variables are not set.
  */
-export function getSupabase() {
+export function getSupabase(): SupabaseClient {
   if (supabase) {
     return supabase;
   }
@@ -25,16 +25,12 @@ export function getSupabase() {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Supabase URL or Anon Key is missing from environment variables.');
-    // In a real app, you might want to show a user-friendly message or redirect.
-    return null;
+    // This will be caught by the developer during development.
+    // In a production environment, these variables should be set.
+    throw new Error('Supabase URL or Anon Key is missing from environment variables.');
   }
 
-  try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-    return supabase;
-  } catch (error) {
-    console.error('Error creating Supabase client:', error);
-    return null;
-  }
+  // Initialize the Supabase client.
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  return supabase;
 }

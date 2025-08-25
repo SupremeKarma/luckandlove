@@ -25,8 +25,13 @@ export default function ProductDetailPage() {
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   useEffect(() => {
-    const supabaseClient = getSupabase();
-    setSupabase(supabaseClient);
+    try {
+      const supabaseClient = getSupabase();
+      setSupabase(supabaseClient);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
   }, []);
   
   useEffect(() => {
@@ -59,7 +64,9 @@ export default function ProductDetailPage() {
       }
     };
 
-    fetchProduct();
+    if (supabase) {
+      fetchProduct();
+    }
   }, [supabase, productId]);
 
   const handleAddToCart = () => {

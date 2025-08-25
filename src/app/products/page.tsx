@@ -20,8 +20,13 @@ export default function ProductsPage() {
   const searchTerm = searchParams.get('search');
 
   useEffect(() => {
-    const supabaseClient = getSupabase();
-    setSupabase(supabaseClient);
+    try {
+      const supabaseClient = getSupabase();
+      setSupabase(supabaseClient);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
   }, []);
   
   useEffect(() => {
@@ -69,7 +74,9 @@ export default function ProductsPage() {
       }
     };
 
-    fetchProducts();
+    if (supabase) {
+      fetchProducts();
+    }
   }, [supabase, selectedCategory, selectedSubcategory, searchTerm]);
 
 

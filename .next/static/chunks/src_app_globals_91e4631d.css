@@ -743,10 +743,6 @@ body {
   margin-left: .25rem;
 }
 
-.ml-2 {
-  margin-left: .5rem;
-}
-
 .ml-3 {
   margin-left: .75rem;
 }
@@ -885,10 +881,6 @@ body {
 
 .h-20 {
   height: 5rem;
-}
-
-.h-24 {
-  height: 6rem;
 }
 
 .h-3 {
@@ -1325,10 +1317,6 @@ body {
 
 .justify-start {
   justify-content: flex-start;
-}
-
-.justify-end {
-  justify-content: flex-end;
 }
 
 .justify-center {
@@ -2188,11 +2176,6 @@ body {
 .text-gray-400 {
   --tw-text-opacity: 1;
   color: rgba(156, 163, 175, var(--tw-text-opacity, 1));
-}
-
-.text-gray-500 {
-  --tw-text-opacity: 1;
-  color: rgba(107, 114, 128, var(--tw-text-opacity, 1));
 }
 
 .text-gray-700 {

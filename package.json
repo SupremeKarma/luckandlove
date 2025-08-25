@@ -11,6 +11,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@genkit-ai/ai": "latest",
+    "@genkit-ai/core": "latest",
+    "@genkit-ai/googleai": "latest",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -41,7 +44,7 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@stripe/stripe-js": "^7.8.0",
     "@supabase/supabase-js": "^2.56.0",
-    "@tanstack/react-query": "^5.83.0",
+    "@tanstack/react-query": "^5.51.15",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -49,6 +52,7 @@
     "dotenv": "^16.5.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^11.5.0",
+    "genkit": "latest",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.475.0",
     "next": "latest",

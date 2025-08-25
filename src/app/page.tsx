@@ -23,8 +23,13 @@ export default function Home() {
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   useEffect(() => {
-    const supabaseClient = getSupabase();
-    setSupabase(supabaseClient);
+    try {
+      const supabaseClient = getSupabase();
+      setSupabase(supabaseClient);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -54,7 +59,9 @@ export default function Home() {
       }
     };
 
-    fetchProducts();
+    if (supabase) {
+      fetchProducts();
+    }
   }, [supabase]);
 
   const filteredProducts = products.filter(product => {

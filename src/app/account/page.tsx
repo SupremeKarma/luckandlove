@@ -69,8 +69,13 @@ export default function AccountPage() {
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   useEffect(() => {
-    const supabaseClient = getSupabase();
-    setSupabase(supabaseClient);
+    try {
+      const supabaseClient = getSupabase();
+      setSupabase(supabaseClient);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
   }, []);
   
   useEffect(() => {
@@ -104,7 +109,10 @@ export default function AccountPage() {
       }
       setLoading(false);
     };
-    fetchUserAndProfile();
+
+    if (supabase) {
+      fetchUserAndProfile();
+    }
   }, [supabase]);
 
   const handleProfileUpdate = async () => {
@@ -113,7 +121,7 @@ export default function AccountPage() {
     try {
         const { error } = await supabase
           .from('profiles')
-          update({ full_name: profile.full_name })
+          .update({ full_name: profile.full_name })
           .eq('id', user.id);
 
         if (error) throw error;
