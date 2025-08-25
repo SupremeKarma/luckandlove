@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Filter } from 'lucide-react';
 import { getSupabase } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 const categories = ['All', 'Electronics', 'Fashion', 'Books', 'Furniture', 'Health & Beauty', 'Sports & Entertainment', 'Home & Garden', 'Food & Drink'];
 
@@ -21,7 +23,11 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   
-  const supabase = getSupabase();
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+
+  useEffect(() => {
+    setSupabase(getSupabase());
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
