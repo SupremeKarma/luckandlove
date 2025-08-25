@@ -4,32 +4,30 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { db, auth } from '@/lib/firebase';
-import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { supabase } from '@/lib/firebase';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import type { User } from '@supabase/supabase-js';
 
 interface Message {
   id: string;
   text: string;
-  uid: string;
-  displayName: string;
-  photoURL: string | null;
-  createdAt: {
-    seconds: number;
-    nanoseconds: number;
+  user_id: string;
+  profiles: {
+    full_name: string;
+    avatar_url: string | null;
   } | null;
+  created_at: string;
 }
 
 export default function ChatPage() {
-  const [user, loading] = useAuthState(auth);
+  const [user, setUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom of chat
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
         const viewport = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
@@ -40,16 +38,54 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    const q = query(collection(db, 'messages'), orderBy('createdAt'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const messagesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Message[];
-      setMessages(messagesData);
-    });
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+    };
+    fetchUser();
 
-    return () => unsubscribe();
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select(`
+          id,
+          text,
+          user_id,
+          created_at,
+          profiles ( full_name, avatar_url )
+        `)
+        .order('created_at', { ascending: true });
+        
+      if (error) {
+        console.error('Error fetching messages:', error);
+      } else {
+        setMessages(data as Message[]);
+      }
+    };
+    fetchMessages();
+    
+    const channel = supabase.channel('chat-room')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, 
+      async (payload) => {
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', payload.new.user_id)
+            .single();
+
+        if (error) {
+            console.error('Error fetching profile for new message:', error);
+        } else {
+            const newMessage = { ...payload.new, profiles: profile } as Message;
+            setMessages((prev) => [...prev, newMessage]);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -62,12 +98,9 @@ export default function ChatPage() {
       return;
     }
 
-    await addDoc(collection(db, 'messages'), {
+    await supabase.from('chat_messages').insert({
       text: newMessage,
-      uid: user.uid,
-      displayName: user.displayName || user.email,
-      photoURL: user.photoURL,
-      createdAt: serverTimestamp(),
+      user_id: user.id,
     });
 
     setNewMessage('');
@@ -101,22 +134,22 @@ export default function ChatPage() {
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
-                      className={`flex items-start gap-3 ${user.uid === msg.uid ? 'justify-end' : ''}`}
+                      className={`flex items-start gap-3 ${user.id === msg.user_id ? 'justify-end' : ''}`}
                     >
-                      {user.uid !== msg.uid && (
+                      {user.id !== msg.user_id && (
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={msg.photoURL || undefined} />
-                          <AvatarFallback>{msg.displayName?.[0] || 'U'}</AvatarFallback>
+                          <AvatarImage src={msg.profiles?.avatar_url || undefined} />
+                          <AvatarFallback>{msg.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
                         </Avatar>
                       )}
-                      <div className={`rounded-lg px-4 py-2 max-w-sm ${user.uid === msg.uid ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                        <p className="text-sm font-bold">{msg.displayName}</p>
+                      <div className={`rounded-lg px-4 py-2 max-w-sm ${user.id === msg.user_id ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                        <p className="text-sm font-bold">{msg.profiles?.full_name || 'Anonymous'}</p>
                         <p className="text-base">{msg.text}</p>
                       </div>
-                      {user.uid === msg.uid && (
+                      {user.id === msg.user_id && (
                         <Avatar className="h-8 w-8">
-                           <AvatarImage src={msg.photoURL || undefined} />
-                           <AvatarFallback>{msg.displayName?.[0] || 'U'}</AvatarFallback>
+                           <AvatarImage src={msg.profiles?.avatar_url || undefined} />
+                           <AvatarFallback>{msg.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
                         </Avatar>
                       )}
                     </div>

@@ -2,11 +2,9 @@
 
 import { useSearchParams } from 'next/navigation';
 import { ProductList } from '@/components/product-list';
-import { Separator } from '@/components/ui/separator';
 import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
-import { collection, onSnapshot, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductsPage() {
@@ -19,35 +17,39 @@ export default function ProductsPage() {
   const searchTerm = searchParams.get('search');
 
   useEffect(() => {
-    setLoading(true);
-    const q = query(collection(db, 'products'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const productsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Product[];
-      setProducts(productsData);
+    const fetchProducts = async () => {
+      setLoading(true);
+      
+      let query = supabase.from('products').select('*');
+
+      if (selectedCategory) {
+        query = query.eq('category', selectedCategory);
+      }
+      if (selectedSubcategory) {
+        query = query.eq('subcategory', selectedSubcategory);
+      }
+      if (searchTerm) {
+        query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+      }
+
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error("Error fetching products:", error);
+        setProducts([]);
+      } else {
+        const productsData = data.map(p => ({
+          ...p,
+          imageUrl: p.image_url,
+        })) as Product[]
+        setProducts(productsData);
+      }
       setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
-  }, []);
+    fetchProducts();
+  }, [selectedCategory, selectedSubcategory, searchTerm]);
 
-  const filteredProducts = products.filter(product => {
-    if (selectedCategory && product.category !== selectedCategory) {
-      return false;
-    }
-    // Note: Subcategory filtering would require a subcategory field on the product data.
-    if (searchTerm) {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      return (
-        product.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        product.description.toLowerCase().includes(lowerCaseSearchTerm) ||
-        product.category.toLowerCase().includes(lowerCaseSearchTerm)
-      );
-    }
-    return true;
-  });
 
   const pageTitle = searchTerm 
     ? `Search Results for "${searchTerm}"`
@@ -80,8 +82,8 @@ export default function ProductsPage() {
         </div>
       ) : (
         <>
-          <ProductList products={filteredProducts} />
-          {filteredProducts.length === 0 && (
+          <ProductList products={products} />
+          {products.length === 0 && (
             <div className="text-center text-muted-foreground mt-8">
               No products found for this selection.
             </div>

@@ -8,8 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ShoppingCart } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useEffect, useState } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/firebase';
 import type { Product } from '@/lib/types';
 
 export default function ProductDetailPage() {
@@ -26,11 +25,16 @@ export default function ProductDetailPage() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const docRef = doc(db, 'products', productId);
-        const docSnap = await getDoc(docRef);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single();
 
-        if (docSnap.exists()) {
-          setProduct({ id: docSnap.id, ...docSnap.data() } as Product);
+        if (error) throw error;
+        
+        if (data) {
+          setProduct({ ...data, imageUrl: data.image_url } as Product);
         } else {
           setError('Product not found.');
         }

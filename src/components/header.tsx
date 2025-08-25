@@ -19,14 +19,13 @@ import {
 import { CATEGORIES } from '@/lib/products';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
-import { signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { supabase } from '@/lib/firebase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export function Header() {
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
-  const [user] = useAuthState(auth);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isClient, setIsClient] = useState(false);
 
   // Auth form state
@@ -36,6 +35,13 @@ export function Header() {
 
   useEffect(() => {
     setIsClient(true);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -49,21 +55,15 @@ export function Header() {
     e.preventDefault();
     setAuthError('');
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // The dropdown will close automatically, and the user state will update.
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
     } catch (error: any) {
-      setAuthError('Invalid credentials. Please try again.');
+      setAuthError(error.message || 'Invalid credentials. Please try again.');
     }
-  };
-  
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError('');
-    router.push('/register');
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await supabase.auth.signOut();
     router.push('/');
   };
 
@@ -147,7 +147,7 @@ export function Header() {
               <DropdownMenuContent align="end" className="w-64">
                 {user ? (
                   <>
-                    <DropdownMenuLabel>Welcome, {user.displayName || user.email}</DropdownMenuLabel>
+                    <DropdownMenuLabel>Welcome, {user.email}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href="/account">My Account</Link>

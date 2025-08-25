@@ -9,14 +9,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Order } from '@/lib/types';
 import { User, MapPin, Package, CreditCard, LogOut } from 'lucide-react';
-import { auth, db } from '@/lib/firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { supabase } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { signOut, updateProfile } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface Address {
   id?: string;
@@ -56,81 +54,60 @@ const MOCK_ORDERS: Order[] = [
       },
     ],
   },
-  {
-    id: 'ORD-002',
-    date: '2023-11-15',
-    status: 'Shipped',
-    total: 39.99,
-    items: [
-       {
-        id: 'prod-9',
-        name: 'The Art of Programming',
-        price: 39.99,
-        quantity: 1,
-        category: 'Books',
-        imageUrl: 'https://placehold.co/600x400.png',
-        stock: 10,
-        description: 'A book on programming'
-      },
-    ],
-  },
 ];
 
 export default function AccountPage() {
-  const [user, loading] = useAuthState(auth);
-  const [displayName, setDisplayName] = useState('');
-  const [email, setEmail] = useState('');
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [newAddress, setNewAddress] = useState<Address>({
-    street: '', city: '', state: '', zip: '', country: ''
-  });
+  const [newAddress, setNewAddress] = useState<Address>({ street: '', city: '', state: '', zip: '', country: '' });
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
-    if (user) {
-      setDisplayName(user.displayName || '');
-      setEmail(user.email || '');
-      fetchAddresses(user.uid);
-    }
-  }, [user]);
+    const fetchUserAndProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
 
-  const fetchAddresses = async (uid: string) => {
-    const userDocRef = doc(db, 'users', uid);
-    const userDocSnap = await getDoc(userDocRef);
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
 
-    if (userDocSnap.exists()) {
-      const userData = userDocSnap.data();
-      setAddresses(userData.addresses || []);
-    } else {
-      await setDoc(userDocRef, { addresses: [] });
-    }
-  };
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else {
+          setProfile(data);
+          setAddresses(data.addresses || []);
+        }
+      }
+      setLoading(false);
+    };
+    fetchUserAndProfile();
+  }, []);
 
   const handleProfileUpdate = async () => {
-    if (user) {
-      try {
-        await updateProfile(user, { displayName });
-        toast({
-          title: 'Profile Updated',
-          description: 'Your profile information has been updated.',
-        });
-      } catch (error: any) {
-        toast({
-          title: 'Error',
-          description: `Failed to update profile: ${error.message}`,
-          variant: 'destructive',
-        });
-      }
+    if (!user || !profile) return;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ full_name: profile.full_name })
+      .eq('id', user.id);
+
+    if (error) {
+      toast({ title: 'Error', description: `Failed to update profile: ${error.message}`, variant: 'destructive' });
+    } else {
+      toast({ title: 'Profile Updated', description: 'Your profile information has been updated.' });
     }
   };
-
+  
   const handleAddOrUpdateAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
-    const userDocRef = doc(db, 'users', user.uid);
 
     try {
       let updatedAddresses;
@@ -138,50 +115,37 @@ export default function AccountPage() {
         updatedAddresses = addresses.map(addr =>
           addr.id === editingAddress.id ? { ...editingAddress, ...newAddress } : addr
         );
-        toast({
-          title: 'Address Updated',
-          description: 'Your address has been updated successfully.',
-        });
+        toast({ title: 'Address Updated', description: 'Your address has been updated successfully.' });
       } else {
         const addressToAdd = { ...newAddress, id: Date.now().toString() };
         updatedAddresses = [...addresses, addressToAdd];
-        toast({
-          title: 'Address Added',
-          description: 'Your new address has been added successfully.',
-        });
+        toast({ title: 'Address Added', description: 'Your new address has been added successfully.' });
       }
-      await setDoc(userDocRef, { addresses: updatedAddresses }, { merge: true });
+
+      const { error } = await supabase.from('profiles').update({ addresses: updatedAddresses }).eq('id', user.id);
+      if (error) throw error;
+      
       setNewAddress({ street: '', city: '', state: '', zip: '', country: '' });
       setEditingAddress(null);
-      fetchAddresses(user.uid);
+      setAddresses(updatedAddresses);
+
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: `Failed to save address: ${error.message}`,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: `Failed to save address: ${error.message}`, variant: 'destructive' });
     }
   };
-  
+
   const handleDeleteAddress = async (addressId: string) => {
     if (!user) return;
 
-    const userDocRef = doc(db, 'users', user.uid);
     const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
-
+    
     try {
-      await updateDoc(userDocRef, { addresses: updatedAddresses });
-      toast({
-        title: 'Address Deleted',
-        description: 'Your address has been deleted.',
-      });
-      fetchAddresses(user.uid);
+      const { error } = await supabase.from('profiles').update({ addresses: updatedAddresses }).eq('id', user.id);
+      if (error) throw error;
+      toast({ title: 'Address Deleted', description: 'Your address has been deleted.' });
+      setAddresses(updatedAddresses);
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: `Failed to delete address: ${error.message}`,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: `Failed to delete address: ${error.message}`, variant: 'destructive' });
     }
   };
 
@@ -191,20 +155,9 @@ export default function AccountPage() {
   };
   
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      toast({
-        title: 'Logged Out',
-        description: 'You have been successfully logged out.',
-      });
-      router.push('/');
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: `Failed to log out: ${error.message}`,
-        variant: 'destructive',
-      });
-    }
+    await supabase.auth.signOut();
+    toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
+    router.push('/');
   };
 
   if (loading) {
@@ -254,11 +207,11 @@ export default function AccountPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="displayName">Full Name</Label>
-                <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                <Input id="displayName" value={profile?.full_name || ''} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={email} disabled />
+                <Input id="email" type="email" value={user.email || ''} disabled />
               </div>
               <Button onClick={handleProfileUpdate}>Save Changes</Button>
             </CardContent>

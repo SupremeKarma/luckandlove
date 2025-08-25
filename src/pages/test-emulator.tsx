@@ -1,26 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { auth, db } from '@/lib/firebase';
-import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  User,
-} from 'firebase/auth';
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  QuerySnapshot,
-  DocumentData,
-  doc,
-  deleteDoc,
-  writeBatch,
-  updateDoc,
-  setDoc,
-  query,
-  orderBy
-} from 'firebase/firestore';
+import { supabase } from '@/lib/firebase';
+import type { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -28,17 +10,30 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Trash2, Edit, Save, X, PlusCircle, Trash, ArrowUpDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
+type DbDoc = {
+  id: number;
+  created_at: string;
+  random: number;
+};
+
+type DbUser = {
+  id: string; // uid
+  email?: string;
+  created_at?: string;
+  full_name?: string;
+};
+
 export default function TestEmulator() {
   const [mounted, setMounted] = useState(false);
 
   // Firestore state
-  const [docs, setDocs] = useState<DocumentData[]>([]);
+  const [docs, setDocs] = useState<DbDoc[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(true);
   const [docsError, setDocsError] = useState<string | null>(null);
 
   // Auth state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [sessionUsers, setSessionUsers] = useState<DocumentData[]>([]);
+  const [sessionUsers, setSessionUsers] = useState<DbUser[]>([]);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -47,103 +42,95 @@ export default function TestEmulator() {
 
   // Search and sort state
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState('createdAt');
+  const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
-  const usersCol = collection(db, 'test-users');
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Real-time Firestore listener for test documents
+  // Real-time listener for test documents
   useEffect(() => {
     if (!mounted) return;
-
     setLoadingDocs(true);
     setDocsError(null);
 
-    try {
-      const unsubscribe = onSnapshot(
-        collection(db, 'test'),
-        (snapshot: QuerySnapshot<DocumentData>) => {
-          setDocs(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-          setLoadingDocs(false);
-        },
-        (error) => {
-          console.error('Firestore error:', error);
-          setDocsError(error.message);
-          setLoadingDocs(false);
+    const fetchDocs = async () => {
+        const { data, error } = await supabase.from('test').select('*');
+        if (error) {
+            setDocsError(error.message);
+        } else {
+            setDocs(data as DbDoc[]);
         }
-      );
+        setLoadingDocs(false);
+    };
+    fetchDocs();
 
-      return () => unsubscribe();
-    } catch (err: any) {
-      setDocsError(err.message);
-      setLoadingDocs(false);
-    }
+    const channel = supabase.channel('test-docs')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'test' }, (payload) => {
+          fetchDocs(); // Refetch all on change for simplicity
+      })
+      .subscribe();
+      
+    return () => { supabase.removeChannel(channel); };
   }, [mounted]);
 
   // Auth listener for current user
   useEffect(() => {
     if (!mounted) return;
-
     setLoadingAuth(true);
     setAuthError(null);
 
-    const unsubscribeAuth = onAuthStateChanged(
-      auth,
-      (user) => {
+    const fetchSession = async () => {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) {
+            setAuthError(error.message);
+        }
         setCurrentUser(user);
         setLoadingAuth(false);
-      },
-      (error) => {
-        console.error('Auth error:', error);
-        setAuthError(error.message);
-        setLoadingAuth(false);
-      }
-    );
+    }
+    fetchSession();
 
-    return () => unsubscribeAuth();
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+        setCurrentUser(session?.user ?? null);
+    });
+
+    return () => authListener.subscription.unsubscribe();
   }, [mounted]);
 
-  // Real-time listener for persisted users in Firestore
+
+  // Real-time listener for persisted users in 'profiles' table
   useEffect(() => {
     if (!mounted) return;
-
-    const q = query(usersCol, orderBy(sortField, sortDirection));
-
-    const unsubscribeUsers = onSnapshot(
-      q,
-      (snapshot) => {
-        const allUsers = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
-        setSessionUsers(allUsers);
-      },
-      (error) => {
-        console.error('Error fetching persisted users:', error);
-        setAuthError('Could not fetch test users from Firestore.');
+    const fetchUsers = async () => {
+      const { data, error } = await supabase.from('profiles').select('*').order(sortField, { ascending: sortDirection === 'asc' });
+      if (error) {
+        setAuthError(error.message);
+      } else {
+        setSessionUsers(data as DbUser[]);
       }
-    );
+    };
+    fetchUsers();
 
-    return () => unsubscribeUsers();
+    const channel = supabase.channel('profiles-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchUsers)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [mounted, sortField, sortDirection]);
 
   const createTestUser = async () => {
     try {
       const email = `testuser${Date.now()}@example.com`;
       const password = 'password123';
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await setDoc(doc(usersCol, user.uid), {
-        uid: user.uid,
-        email: user.email,
-        createdAt: new Date().toISOString(),
+      const { data, error } = await supabase.auth.signUp({
+        email, password, options: { data: { full_name: 'Test User' }}
       });
-
+      if (error) throw error;
+      if (data.user) {
+        // Also create a profile, RLS should allow this
+        await supabase.from('profiles').insert({ id: data.user.id, full_name: 'Test User', email: data.user.email });
+      }
       alert(`User created: ${email}`);
     } catch (err: any) {
       alert(`Error creating user: ${err.message}`);
@@ -151,11 +138,12 @@ export default function TestEmulator() {
   };
   
   const deleteTestUser = async (userId: string) => {
-    if (!window.confirm('Are you sure you want to delete this user record from Firestore? This does not delete the Auth user.')) {
+    if (!window.confirm('Are you sure you want to delete this user record from the profiles table? This does not delete the Auth user.')) {
       return;
     }
     try {
-      await deleteDoc(doc(db, 'test-users', userId));
+      const { error } = await supabase.from('profiles').delete().eq('id', userId);
+      if (error) throw error;
     } catch(err: any) {
       alert(`Error deleting user: ${err.message}`);
     }
@@ -166,17 +154,13 @@ export default function TestEmulator() {
       alert("No users to delete.");
       return;
     }
-    if (!window.confirm(`Are you sure you want to delete all ${sessionUsers.length} user records from Firestore? This cannot be undone.`)) {
+    if (!window.confirm(`Are you sure you want to delete all ${sessionUsers.length} user records from profiles? This cannot be undone.`)) {
       return;
     }
     try {
-      const batch = writeBatch(db);
-      sessionUsers.forEach((user) => {
-        const docRef = doc(db, 'test-users', user.id);
-        batch.delete(docRef);
-      });
-      await batch.commit();
-      alert('All test users have been deleted from Firestore.');
+      const { error } = await supabase.from('profiles').delete().neq('id', '00000000-0000-0000-0000-000000000000'); // Dummy condition to delete all
+      if (error) throw error;
+      alert('All test users have been deleted from profiles table.');
     } catch (err: any) {
       alert(`Error deleting all users: ${err.message}`);
     }
@@ -184,18 +168,16 @@ export default function TestEmulator() {
 
   const addTestDoc = async () => {
     try {
-      await addDoc(collection(db, 'test'), {
-        createdAt: new Date().toISOString(),
-        random: Math.random(),
-      });
+      const { error } = await supabase.from('test').insert({ random: Math.random() });
+      if (error) throw error;
     } catch (err: any) {
       alert(`Error adding doc: ${err.message}`);
     }
   };
   
-  const handleEditUser = (user: DocumentData) => {
+  const handleEditUser = (user: DbUser) => {
     setEditingUserId(user.id);
-    setNewEmail(user.email);
+    setNewEmail(user.email || '');
   };
   
   const handleCancelEdit = () => {
@@ -209,8 +191,8 @@ export default function TestEmulator() {
       return;
     }
     try {
-      const userDocRef = doc(db, 'test-users', userId);
-      await updateDoc(userDocRef, { email: newEmail });
+      const { error } = await supabase.from('profiles').update({ email: newEmail }).eq('id', userId);
+      if (error) throw error;
       handleCancelEdit();
     } catch (err: any) {
       alert(`Error updating user: ${err.message}`);
@@ -238,14 +220,14 @@ export default function TestEmulator() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Firebase Emulator Test Suite</h1>
-        <p className="text-gray-500">An interactive panel for testing Auth and Firestore.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Supabase Connection Test Suite</h1>
+        <p className="text-gray-500">An interactive panel for testing Auth and Database connections.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Auth Emulator</CardTitle>
+            <CardTitle>Supabase Auth</CardTitle>
             <CardDescription>Create and manage test users.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -255,7 +237,7 @@ export default function TestEmulator() {
               {authError && <p className="text-sm text-red-500">Error: {authError}</p>}
               {currentUser ? (
                 <p className="text-sm">
-                  {currentUser.email} (UID: {currentUser.uid})
+                  {currentUser.email} (UID: {currentUser.id})
                 </p>
               ) : (
                 <p className="text-sm text-gray-500">No user signed in.</p>
@@ -266,9 +248,9 @@ export default function TestEmulator() {
 
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-sm">Test Users in Firestore</h3>
+                <h3 className="font-semibold text-sm">Test Users in 'profiles' table</h3>
                 <Button variant="destructive" size="sm" onClick={deleteAllUsers} disabled={sessionUsers.length === 0}>
-                  <Trash className="mr-2" /> Delete All
+                  <Trash className="mr-2 h-4 w-4" /> Delete All
                 </Button>
               </div>
 
@@ -292,7 +274,7 @@ export default function TestEmulator() {
                         </Button>
                       </TableHead>
                       <TableHead>
-                         <Button variant="ghost" size="sm" onClick={() => handleSort('createdAt')}>
+                         <Button variant="ghost" size="sm" onClick={() => handleSort('created_at')}>
                           Created <ArrowUpDown className="ml-2 h-4 w-4" />
                         </Button>
                       </TableHead>
@@ -316,18 +298,18 @@ export default function TestEmulator() {
                             )}
                           </TableCell>
                           <TableCell className="text-gray-500 text-xs">
-                            {new Date(user.createdAt).toLocaleString()}
+                             {user.created_at ? new Date(user.created_at).toLocaleString() : 'N/A'}
                           </TableCell>
                            <TableCell className="text-right">
                             {editingUserId === user.id ? (
                               <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" onClick={() => handleSaveUser(user.id)}><Save className="text-green-500" /></Button>
-                                <Button variant="ghost" size="icon" onClick={handleCancelEdit}><X className="text-gray-500" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleSaveUser(user.id)}><Save className="text-green-500 h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={handleCancelEdit}><X className="text-gray-500 h-4 w-4" /></Button>
                               </div>
                             ) : (
                                <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)}><Edit/></Button>
-                                <Button variant="ghost" size="icon" onClick={() => deleteTestUser(user.id)}><Trash2 className="text-red-500" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)}><Edit className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => deleteTestUser(user.id)}><Trash2 className="text-red-500 h-4 w-4" /></Button>
                               </div>
                             )}
                           </TableCell>
@@ -347,15 +329,15 @@ export default function TestEmulator() {
             </div>
             
             <Button onClick={createTestUser} className="w-full">
-              <PlusCircle className="mr-2" /> Create Random Test User
+              <PlusCircle className="mr-2 h-4 w-4" /> Create Random Test User
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Firestore Emulator</CardTitle>
-            <CardDescription>Manage documents in the '/test' collection.</CardDescription>
+            <CardTitle>Supabase Database</CardTitle>
+            <CardDescription>Manage documents in the 'test' collection.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
              {loadingDocs && <p className="text-sm text-gray-500">Loading documents...</p>}
@@ -365,7 +347,7 @@ export default function TestEmulator() {
                   docs.map((doc) => (
                     <div key={doc.id} className="p-2 border-b text-xs">
                       <p><strong>ID:</strong> {doc.id}</p>
-                      <p><strong>Created:</strong> {doc.createdAt}</p>
+                      <p><strong>Created:</strong> {doc.created_at}</p>
                       <p><strong>Random:</strong> {doc.random}</p>
                     </div>
                   ))
@@ -374,7 +356,7 @@ export default function TestEmulator() {
                 )}
               </div>
             <Button onClick={addTestDoc} className="w-full">
-              <PlusCircle className="mr-2" /> Add Test Document
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Test Document
             </Button>
           </CardContent>
         </Card>

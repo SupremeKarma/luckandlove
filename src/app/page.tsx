@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { ProductList } from '@/components/product-list';
 import type { Product } from '@/lib/types';
 import { Input } from '@/components/ui/input';
-import { collection, onSnapshot, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { supabase } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
@@ -15,19 +14,23 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    setLoading(true);
-    const q = query(collection(db, 'products'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const productsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Product[];
-      setProducts(productsData);
-      setFilteredProducts(productsData);
+    const fetchProducts = async () => {
+      setLoading(true);
+      const { data, error } = await supabase.from('products').select('*');
+      if (error) {
+        console.error('Error fetching products', error);
+      } else {
+        const productsData = data.map(p => ({
+          ...p,
+          imageUrl: p.image_url, // Remap image_url to imageUrl
+        })) as Product[]
+        setProducts(productsData);
+        setFilteredProducts(productsData);
+      }
       setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
+    fetchProducts();
   }, []);
 
   useEffect(() => {
