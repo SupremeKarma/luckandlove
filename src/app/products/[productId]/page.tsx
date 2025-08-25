@@ -11,8 +11,6 @@ import { useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/firebase';
 import type { Product } from '@/lib/types';
 
-const supabase = getSupabase();
-
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
@@ -22,9 +20,12 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const supabase = getSupabase();
 
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!supabase) return;
       try {
         setLoading(true);
         const { data, error } = await supabase
@@ -50,7 +51,7 @@ export default function ProductDetailPage() {
     if (productId) {
       fetchProduct();
     }
-  }, [productId]);
+  }, [productId, supabase]);
 
   const handleAddToCart = () => {
     if (product) {

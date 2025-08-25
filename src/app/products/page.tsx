@@ -7,8 +7,6 @@ import type { Product } from '@/lib/types';
 import { getSupabase } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const supabase = getSupabase();
-
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -17,9 +15,12 @@ export default function ProductsPage() {
   const selectedCategory = searchParams.get('category');
   const selectedSubcategory = searchParams.get('subcategory');
   const searchTerm = searchParams.get('search');
+  
+  const supabase = getSupabase();
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!supabase) return;
       setLoading(true);
       
       let query = supabase.from('products').select('*');
@@ -50,7 +51,7 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, [selectedCategory, selectedSubcategory, searchTerm]);
+  }, [selectedCategory, selectedSubcategory, searchTerm, supabase]);
 
 
   const pageTitle = searchTerm 

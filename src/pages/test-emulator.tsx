@@ -10,8 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Trash2, Edit, Save, X, PlusCircle, Trash, ArrowUpDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
-const supabase = getSupabase();
-
 type DbDoc = {
   id: number;
   created_at: string;
@@ -47,13 +45,15 @@ export default function TestEmulator() {
   const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
+  const supabase = getSupabase();
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   // Real-time listener for test documents
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !supabase) return;
     setLoadingDocs(true);
     setDocsError(null);
 
@@ -75,11 +75,11 @@ export default function TestEmulator() {
       .subscribe();
       
     return () => { supabase.removeChannel(channel); };
-  }, [mounted]);
+  }, [mounted, supabase]);
 
   // Auth listener for current user
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !supabase) return;
     setLoadingAuth(true);
     setAuthError(null);
 
@@ -98,12 +98,12 @@ export default function TestEmulator() {
     });
 
     return () => authListener.subscription.unsubscribe();
-  }, [mounted]);
+  }, [mounted, supabase]);
 
 
   // Real-time listener for persisted users in 'profiles' table
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !supabase) return;
     const fetchUsers = async () => {
       const { data, error } = await supabase.from('profiles').select('*').order(sortField, { ascending: sortDirection === 'asc' });
       if (error) {
@@ -119,9 +119,10 @@ export default function TestEmulator() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [mounted, sortField, sortDirection]);
+  }, [mounted, sortField, sortDirection, supabase]);
 
   const createTestUser = async () => {
+    if (!supabase) return;
     try {
       const email = `testuser${Date.now()}@example.com`;
       const password = 'password123';
@@ -140,6 +141,7 @@ export default function TestEmulator() {
   };
   
   const deleteTestUser = async (userId: string) => {
+    if (!supabase) return;
     if (!window.confirm('Are you sure you want to delete this user record from the profiles table? This does not delete the Auth user.')) {
       return;
     }
@@ -152,6 +154,7 @@ export default function TestEmulator() {
   };
 
   const deleteAllUsers = async () => {
+    if (!supabase) return;
     if (sessionUsers.length === 0) {
       alert("No users to delete.");
       return;
@@ -169,6 +172,7 @@ export default function TestEmulator() {
   };
 
   const addTestDoc = async () => {
+    if (!supabase) return;
     try {
       const { error } = await supabase.from('test').insert({ random: Math.random() });
       if (error) throw error;
@@ -188,6 +192,7 @@ export default function TestEmulator() {
   };
 
   const handleSaveUser = async (userId: string) => {
+    if (!supabase) return;
     if (!newEmail) {
       alert('Email cannot be empty.');
       return;

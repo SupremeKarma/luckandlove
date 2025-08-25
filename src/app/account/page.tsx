@@ -16,8 +16,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-const supabase = getSupabase();
-
 interface Address {
   id?: string;
   street: string;
@@ -67,9 +65,12 @@ export default function AccountPage() {
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const { toast } = useToast();
   const router = useRouter();
+  
+  const supabase = getSupabase();
 
   useEffect(() => {
     const fetchUserAndProfile = async () => {
+      if (!supabase) return;
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
@@ -90,10 +91,10 @@ export default function AccountPage() {
       setLoading(false);
     };
     fetchUserAndProfile();
-  }, []);
+  }, [supabase]);
 
   const handleProfileUpdate = async () => {
-    if (!user || !profile) return;
+    if (!user || !profile || !supabase) return;
     
     const { error } = await supabase
       .from('profiles')
@@ -109,7 +110,7 @@ export default function AccountPage() {
   
   const handleAddOrUpdateAddress = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !supabase) return;
 
     try {
       let updatedAddresses;
@@ -137,7 +138,7 @@ export default function AccountPage() {
   };
 
   const handleDeleteAddress = async (addressId: string) => {
-    if (!user) return;
+    if (!user || !supabase) return;
 
     const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
     
@@ -157,6 +158,7 @@ export default function AccountPage() {
   };
   
   const handleLogout = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
     router.push('/');

@@ -10,8 +10,6 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
-const supabase = getSupabase();
-
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -21,6 +19,8 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const supabase = getSupabase();
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -29,6 +29,8 @@ export default function RegisterPage() {
       setError('Passwords do not match');
       return;
     }
+    
+    if (!supabase) return;
 
     try {
       const { data, error } = await supabase.auth.signUp({ 

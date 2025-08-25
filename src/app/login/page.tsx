@@ -10,18 +10,19 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
-const supabase = getSupabase();
-
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
   const { toast } = useToast();
+  
+  const supabase = getSupabase();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!supabase) return;
 
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });

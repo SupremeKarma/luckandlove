@@ -7,16 +7,17 @@ import { Input } from '@/components/ui/input';
 import { getSupabase } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const supabase = getSupabase();
-
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const supabase = getSupabase();
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!supabase) return;
       setLoading(true);
       const { data, error } = await supabase.from('products').select('*');
       if (error) {
@@ -33,7 +34,7 @@ export default function Home() {
     };
 
     fetchProducts();
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();

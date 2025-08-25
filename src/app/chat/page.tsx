@@ -10,8 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
 
-const supabase = getSupabase();
-
 interface Message {
   id: string;
   text: string;
@@ -29,6 +27,8 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  
+  const supabase = getSupabase();
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -40,6 +40,7 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
+    if (!supabase) return;
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -88,7 +89,7 @@ export default function ChatPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     scrollToBottom();
@@ -96,7 +97,7 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMessage.trim() === '' || !user) {
+    if (newMessage.trim() === '' || !user || !supabase) {
       return;
     }
 
