@@ -626,7 +626,7 @@ function getSupabase() {
         return supabase;
     }
     const supabaseUrl = ("TURBOPACK compile-time value", "https://kkocuxnaiiyxwimzbqkd.supabase.co");
-    const supabaseAnonKey = ("TURBOPACK compile-time value", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtrb2N1eG5haWl5eHdpbXpicWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwNjM3MzMsImV4cCI6MjA3MDYzOTczM30._QHOBr4QfARij4zfCO-aWakt7tK8q6ndJoVoLqOmMa8");
+    const supabaseAnonKey = ("TURBOPACK compile-time value", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtrb2N1eG5haWl5eHdpbXpicWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY0NTg2MjksImV4cCI6MjAzMjAzNDYyOX0.8i3v1oBUEy-g_R91s-v_2e1-a0H2S-u-8j2A8W_oA1A");
     // Gracefully handle missing env vars without crashing the app.
     if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
     ;
