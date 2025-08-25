@@ -23,7 +23,6 @@ import { getSupabase } from '@/lib/firebase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export function Header() {
-  const supabase = getSupabase();
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -33,9 +32,17 @@ export function Header() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
+  
+  // Get Supabase client only on the client-side
+  const supabase = getSupabase();
 
   useEffect(() => {
     setIsClient(true);
+    if (!supabase) {
+      console.error("Supabase client is not available.");
+      return;
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -43,7 +50,7 @@ export function Header() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, [supabase]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +62,7 @@ export function Header() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
+    if (!supabase) return;
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
@@ -64,6 +72,7 @@ export function Header() {
   };
 
   const handleLogout = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
     router.push('/');
   };
@@ -170,7 +179,7 @@ export function Header() {
                           <Input id="password" type="password" placeholder="Password" required value={password} onChange={(e) => setPassword(e.target.value)} className="bg-gray-800/80"/>
                          {authError && <p className="text-destructive text-xs p-1">{authError}</p>}
                          <div className="flex gap-2 pt-2">
-                            <Button type="submit" className="w-full">Login</Button>
+                            <Button type="submit" className="w-full" disabled={!supabase}>Login</Button>
                          </div>
                        </form>
                        <div className="mt-4 text-center text-sm">

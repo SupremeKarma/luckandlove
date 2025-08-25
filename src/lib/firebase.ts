@@ -12,17 +12,20 @@ export function getSupabase() {
     return supabase;
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl) {
-    throw new Error('Supabase URL is not defined in environment variables.');
-  }
-  if (!supabaseAnonKey) {
-    throw new Error('Supabase Anon Key is not defined in environment variables.');
+  // Gracefully handle missing env vars without crashing the app.
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Supabase URL or Anon Key is not defined in environment variables.');
+    return null;
   }
 
-  // Always create a new client to ensure env vars are loaded.
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-  return supabase;
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    return supabase;
+  } catch (error) {
+    console.error('Error creating Supabase client:', error);
+    return null;
+  }
 }
