@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Filter } from 'lucide-react';
-import { getSupabase } from '@/lib/firebase';
+import { getSupabase } from '@/lib/supabase';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { SupabaseClient } from '@supabase/supabase-js';
 

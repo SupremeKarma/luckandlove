@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ShoppingCart, Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useEffect, useState } from 'react';
-import { getSupabase } from '@/lib/firebase';
+import { getSupabase } from '@/lib/supabase';
 import type { Product } from '@/lib/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Skeleton } from '@/components/ui/skeleton';

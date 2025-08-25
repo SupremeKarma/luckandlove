@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { ProductList } from '@/components/product-list';
 import { useEffect, useState, Suspense } from 'react';
 import type { Product } from '@/lib/types';
-import { getSupabase } from '@/lib/firebase';
+import { getSupabase } from '@/lib/supabase';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
