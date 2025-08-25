@@ -1,131 +1,171 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
 @layer base {
   :root {
-    --background: 215 28% 17%; /* #222831 */
+    --background: 220 25% 8%;
     --foreground: 210 40% 98%;
 
-    --card: 215 28% 17%;
+    --card: 220 20% 12%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 215 28% 17%;
+    --popover: 220 20% 12%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 206 32% 32%; /* #3A506B */
-    --primary-foreground: 210 40% 98%;
+    --primary: 195 100% 50%;
+    --primary-foreground: 220 25% 8%;
 
-    --secondary: 215 28% 22%;
+    --secondary: 270 80% 60%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 215 28% 22%;
+    --muted: 220 15% 18%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 191 100% 36%; /* #009FB7 */
+    --accent: 300 100% 50%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 215 28% 22%;
-    --input: 215 28% 22%;
-    --ring: 191 100% 36%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 195 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Futuristic color palette */
+    --neon-cyan: 195 100% 50%;
+    --neon-purple: 270 80% 60%;
+    --neon-pink: 300 100% 50%;
+    --neon-green: 120 100% 50%;
+    --electric-blue: 210 100% 60%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--neon-cyan)), hsl(var(--neon-purple)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--neon-purple)), hsl(var(--neon-pink)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--electric-blue)), hsl(var(--neon-cyan)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--background)), hsl(220 15% 18%));
+    
+    /* Glows and shadows */
+    --glow-cyan: 0 0 20px hsl(var(--neon-cyan) / 0.5);
+    --glow-purple: 0 0 20px hsl(var(--neon-purple) / 0.5);
+    --glow-pink: 0 0 20px hsl(var(--neon-pink) / 0.5);
+    --shadow-neon: 0 0 30px hsl(var(--primary) / 0.3);
+    
+    /* Animations */
+    --transition-glow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --pulse-duration: 2s;
+
+    --sidebar-background: 220 20% 12%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 195 100% 50%;
+    --sidebar-primary-foreground: 220 25% 8%;
+    --sidebar-accent: 220 15% 18%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 195 100% 50%;
   }
 
   .dark {
-    --background: 215 28% 17%;
+    --background: 220 25% 8%;
     --foreground: 210 40% 98%;
 
-    --card: 215 28% 17%;
+    --card: 220 20% 12%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 215 28% 17%;
+    --popover: 220 20% 12%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 206 32% 32%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 195 100% 50%;
+    --primary-foreground: 220 25% 8%;
 
-    --secondary: 215 28% 22%;
+    --secondary: 270 80% 60%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 215 28% 22%;
+    --muted: 220 15% 18%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 191 100% 36%;
+    --accent: 300 100% 50%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 215 28% 22%;
-    --input: 215 28% 22%;
-    --ring: 191 100% 36%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 195 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
   }
 
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
 
 @layer components {
-  .cyber-grid {
-    background-image:
-      linear-gradient(to right, hsl(var(--primary) / 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--primary) / 0.1) 1px, transparent 1px);
-    background-size: 3rem 3rem;
-  }
-
-  .gradient-text {
-    @apply bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent;
+  .neon-text {
+    text-shadow: 0 0 10px hsl(var(--neon-cyan) / 0.8), 
+                 0 0 20px hsl(var(--neon-cyan) / 0.6),
+                 0 0 30px hsl(var(--neon-cyan) / 0.4);
   }
   
-  .neon-text {
-    text-shadow:
-      0 0 5px hsl(var(--accent) / 0.8),
-      0 0 10px hsl(var(--accent) / 0.8),
-      0 0 20px hsl(var(--accent) / 0.6),
-      0 0 40px hsl(var(--accent) / 0.4),
-      0 0 80px hsl(var(--accent) / 0.2);
+  .neon-border {
+    border: 1px solid hsl(var(--primary));
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.3),
+                inset 0 0 10px hsl(var(--primary) / 0.1);
   }
-
-  .float-animation {
-    animation: float 6s ease-in-out infinite;
+  
+  .gradient-bg {
+    background: var(--gradient-primary);
   }
-
+  
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
   .glass-effect {
-    background-color: hsl(var(--background) / 0.5);
-    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
-
-  .bg-gradient-primary {
-    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+  
+  .cyber-grid {
+    background-image: 
+      linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
   }
-
-  .shadow-glow-cyan {
-    box-shadow: 0 0 15px hsl(var(--accent) / 0.5);
+  
+  .pulse-glow {
+    animation: pulse-glow var(--pulse-duration) ease-in-out infinite alternate;
   }
-
-  .bg-gradient-hero {
-    background-image: linear-gradient(120deg, hsl(var(--background)) 0%, hsl(var(--primary) / 0.2) 100%);
+  
+  @keyframes pulse-glow {
+    from { box-shadow: var(--glow-cyan); }
+    to { box-shadow: var(--glow-purple); }
   }
-
-  .bg-gradient-secondary {
-    background-image: linear-gradient(to right, hsl(var(--secondary)), hsl(var(--primary)));
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
   }
-}
-
-@keyframes float {
-	0% {
-		transform: translatey(0px);
-	}
-	50% {
-		transform: translatey(-10px);
-	}
-	100% {
-		transform: translatey(0px);
-	}
+  
+  .float-animation {
+    animation: float 3s ease-in-out infinite;
+  }
 }
