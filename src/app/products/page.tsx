@@ -7,57 +7,70 @@ import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
 import { getSupabase } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   const selectedCategory = searchParams.get('category');
   const selectedSubcategory = searchParams.get('subcategory');
   const searchTerm = searchParams.get('search');
+
+  useEffect(() => {
+    const supabaseClient = getSupabase();
+    setSupabase(supabaseClient);
+  }, []);
   
   useEffect(() => {
-    const supabase = getSupabase();
-    
     const fetchProducts = async () => {
       if (!supabase) {
-        console.error("Supabase client not available.");
         setLoading(false);
         return;
       };
       
       setLoading(true);
       
-      let query = supabase.from('products').select('*');
+      try {
+        let query = supabase.from('products').select('*');
 
-      if (selectedCategory) {
-        query = query.eq('category', selectedCategory);
-      }
-      if (selectedSubcategory) {
-        query = query.eq('subcategory', selectedSubcategory);
-      }
-      if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
-      }
+        if (selectedCategory) {
+          query = query.eq('category', selectedCategory);
+        }
+        if (selectedSubcategory) {
+          query = query.eq('subcategory', selectedSubcategory);
+        }
+        if (searchTerm) {
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+        }
 
-      const { data, error } = await query;
-      
-      if (error) {
+        const { data, error } = await query;
+        
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          const productsData = data.map(p => ({
+            ...p,
+            imageUrl: p.image_url,
+          })) as Product[]
+          setProducts(productsData);
+        } else {
+          setProducts([]);
+        }
+      } catch (error) {
         console.error("Error fetching products:", error);
         setProducts([]);
-      } else {
-        const productsData = data.map(p => ({
-          ...p,
-          imageUrl: p.image_url,
-        })) as Product[]
-        setProducts(productsData);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchProducts();
-  }, [selectedCategory, selectedSubcategory, searchTerm]);
+  }, [supabase, selectedCategory, selectedSubcategory, searchTerm]);
 
 
   const pageTitle = searchTerm 

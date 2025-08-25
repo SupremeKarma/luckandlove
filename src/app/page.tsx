@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { HeroSection } from '@/components/HeroSection';
 import { ProductCard } from '@/components/product-card';
 import type { Product } from '@/lib/types';
-import { useCart } from '@/context/cart-context';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,38 +16,46 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 const categories = ['All', 'Electronics', 'Fashion', 'Books', 'Furniture', 'Health & Beauty', 'Sports & Entertainment', 'Home & Garden', 'Food & Drink'];
 
 export default function Home() {
-  const { addToCart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   useEffect(() => {
-    const supabase = getSupabase();
-    
+    const supabaseClient = getSupabase();
+    setSupabase(supabaseClient);
+  }, []);
+
+  useEffect(() => {
     const fetchProducts = async () => {
       if (!supabase) {
-        console.error("Supabase client not available.");
         setLoading(false);
         return;
       }
       
       setLoading(true);
-      const { data, error } = await supabase.from('products').select('*');
-      if (error) {
-        console.error('Error fetching products', error);
-      } else {
-        const productsData = data.map(p => ({
-          ...p,
-          imageUrl: p.image_url, // Remap image_url to imageUrl
-        })) as Product[]
-        setProducts(productsData);
+      try {
+        const { data, error } = await supabase.from('products').select('*');
+        if (error) {
+          throw error;
+        }
+        if (data) {
+            const productsData = data.map(p => ({
+              ...p,
+              imageUrl: p.image_url, // Remap image_url to imageUrl
+            })) as Product[];
+            setProducts(productsData);
+        }
+      } catch (error) {
+          console.error('Error fetching products', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchProducts();
-  }, []);
+  }, [supabase]);
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

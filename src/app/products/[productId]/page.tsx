@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/firebase';
 import type { Product } from '@/lib/types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -21,13 +22,16 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+
+  useEffect(() => {
+    const supabaseClient = getSupabase();
+    setSupabase(supabaseClient);
+  }, []);
   
   useEffect(() => {
-    const supabase = getSupabase();
-
     const fetchProduct = async () => {
-      if (!supabase) {
-        console.error("Supabase client not available.");
+      if (!supabase || !productId) {
         setLoading(false);
         return;
       }
@@ -48,16 +52,15 @@ export default function ProductDetailPage() {
           setError('Product not found.');
         }
       } catch (err: any) {
-        setError(`Failed to fetch product: ${err.message}`);
+        console.error(`Failed to fetch product: ${err.message}`);
+        setError(`Failed to fetch product.`);
       } finally {
         setLoading(false);
       }
     };
 
-    if (productId) {
-      fetchProduct();
-    }
-  }, [productId]);
+    fetchProduct();
+  }, [supabase, productId]);
 
   const handleAddToCart = () => {
     if (product) {

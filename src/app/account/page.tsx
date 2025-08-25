@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import type { User as SupabaseUser, SupabaseClient } from '@supabase/supabase-js';
 
 interface Address {
   id?: string;
@@ -66,9 +66,14 @@ export default function AccountPage() {
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const { toast } = useToast();
   const router = useRouter();
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+
+  useEffect(() => {
+    const supabaseClient = getSupabase();
+    setSupabase(supabaseClient);
+  }, []);
   
   useEffect(() => {
-    const supabase = getSupabase();
     const fetchUserAndProfile = async () => {
       if (!supabase) {
         setLoading(false);
@@ -79,43 +84,47 @@ export default function AccountPage() {
       setUser(user);
 
       if (user) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+        try {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single();
 
-        if (error) {
-          console.error('Error fetching profile:', error);
-        } else {
-          setProfile(data);
-          setAddresses(data.addresses || []);
+            if (error) {
+              throw error;
+            }
+            if (data) {
+              setProfile(data);
+              setAddresses(data.addresses || []);
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
         }
       }
       setLoading(false);
     };
     fetchUserAndProfile();
-  }, []);
+  }, [supabase]);
 
   const handleProfileUpdate = async () => {
-    const supabase = getSupabase();
     if (!user || !profile || !supabase) return;
     
-    const { error } = await supabase
-      .from('profiles')
-      .update({ full_name: profile.full_name })
-      .eq('id', user.id);
+    try {
+        const { error } = await supabase
+          .from('profiles')
+          update({ full_name: profile.full_name })
+          .eq('id', user.id);
 
-    if (error) {
-      toast({ title: 'Error', description: `Failed to update profile: ${error.message}`, variant: 'destructive' });
-    } else {
-      toast({ title: 'Profile Updated', description: 'Your profile information has been updated.' });
+        if (error) throw error;
+        toast({ title: 'Profile Updated', description: 'Your profile information has been updated.' });
+    } catch (error: any) {
+        toast({ title: 'Error', description: `Failed to update profile: ${error.message}`, variant: 'destructive' });
     }
   };
   
   const handleAddOrUpdateAddress = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = getSupabase();
     if (!user || !supabase) return;
 
     try {
@@ -144,7 +153,6 @@ export default function AccountPage() {
   };
 
   const handleDeleteAddress = async (addressId: string) => {
-    const supabase = getSupabase();
     if (!user || !supabase) return;
 
     const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
@@ -165,7 +173,6 @@ export default function AccountPage() {
   };
   
   const handleLogout = async () => {
-    const supabase = getSupabase();
     if (!supabase) return;
     await supabase.auth.signOut();
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
