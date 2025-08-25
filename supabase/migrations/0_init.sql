@@ -1,93 +1,64 @@
--- Initial database schema setup
--- Create products table
-CREATE TABLE IF NOT EXISTS public.products (
-    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    name text NOT NULL,
-    description text,
-    price numeric(10, 2) NOT NULL,
-    category text,
-    subcategory text,
-    image_url text,
-    stock integer DEFAULT 0,
-    rating numeric(2, 1),
-    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+-- Create the products table
+CREATE TABLE products (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  price REAL NOT NULL,
+  category TEXT,
+  subcategory TEXT,
+  image_url TEXT,
+  stock INTEGER NOT NULL,
+  rating REAL
 );
 
--- Enable RLS for products table
+-- Create the profiles table
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id),
+  full_name TEXT,
+  addresses JSONB,
+  email TEXT
+);
+
+-- RLS (Row Level Security) POLICIES
+
+-- PRODUCTS
+-- 1. Enable RLS for the products table
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
--- Remove all previous, potentially incorrect policies for the products table
-DROP POLICY IF EXISTS "Anyone can view products" ON public.products;
-DROP POLICY IF EXISTS "Authenticated users can insert products" ON public.products;
-DROP POLICY IF EXISTS "Authenticated users can update products" ON public.products;
+-- 2. Drop all existing policies on the products table to ensure a clean slate.
 DROP POLICY IF EXISTS "Allow public read access to products" ON public.products;
-DROP POLICY IF EXISTS "Allow authenticated users to manage products" ON public.products;
-DROP POLICY IF EXISTS "Products are viewable by everyone and editable by authenticated users" ON public.products;
+DROP POLICY IF EXISTS "Allow all access to products" ON public.products;
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.products;
 
--- Create a single, definitive policy to allow public read access
-CREATE POLICY "Products are viewable by everyone" ON public.products
-  FOR SELECT USING (true);
-
--- Policies for authenticated users to manage products
-CREATE POLICY "Authenticated users can insert products" ON public.products
-  FOR INSERT TO authenticated WITH CHECK (true);
-
-CREATE POLICY "Authenticated users can update products" ON public.products
-  FOR UPDATE TO authenticated USING (true);
-
-CREATE POLICY "Authenticated users can delete products" ON public.products
-  FOR DELETE TO authenticated USING (true);
+-- 3. Create a single, simple policy to allow public read access (SELECT) to everyone.
+CREATE POLICY "Allow public read access to products"
+ON public.products
+FOR SELECT
+USING (true);
 
 
--- Create profiles table linked to auth.users
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    username text UNIQUE,
-    full_name text,
-    avatar_url text,
-    website text,
-    addresses jsonb,
-    updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- Enable RLS on profiles table
+-- PROFILES
+-- 1. Enable RLS for the profiles table
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Policy to allow users to view their own profile
-CREATE POLICY "Users can view own profile" ON public.profiles
-FOR SELECT USING ((SELECT auth.uid()) = id);
-
--- Policy to allow users to update their own profile
-CREATE POLICY "Users can update own profile" ON public.profiles
-FOR UPDATE USING ((SELECT auth.uid()) = id)
-WITH CHECK ((SELECT auth.uid()) = id);
-
--- Policy to allow authenticated users to insert their profile
-CREATE POLICY "Users can insert own profile" ON public.profiles
-FOR INSERT WITH CHECK ((SELECT auth.uid()) = id);
+-- 2. Drop all existing policies on the profiles table.
+DROP POLICY IF EXISTS "Users can insert their own profile." ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
 
 
--- Insert initial product data
-INSERT INTO public.products (name, description, price, category, subcategory, image_url, stock, rating) VALUES
-('Smart Home Hub', 'Control all your smart devices from one central hub.', 99.99, 'Electronics', 'Smart Home', 'https://placehold.co/600x400.png', 25, 4.5),
-('Noise-Cancelling Headphones', 'Immerse yourself in music with these high-fidelity headphones.', 199.99, 'Electronics', 'Audio', 'https://placehold.co/600x400.png', 15, 4.8),
-('4K Ultra HD Monitor', 'A 27-inch 4K monitor with stunning clarity and color accuracy.', 449.50, 'Electronics', 'Computers', 'https://placehold.co/600x400.png', 10, 4.7),
-('Mechanical Keyboard', 'A durable and responsive mechanical keyboard for the ultimate typing experience.', 120.00, 'Computer & Office', 'Keyboards & Mice', 'https://placehold.co/600x400.png', 30, 4.6),
-('Classic Leather Jacket', 'A timeless leather jacket made from 100% genuine leather.', 249.99, 'Fashion', 'Men''s Apparel', 'https://placehold.co/600x400.png', 20, 4.9),
-('Modern Fit T-Shirt', 'A comfortable and stylish t-shirt made from premium cotton.', 29.99, 'Fashion', 'Men''s Apparel', 'https://placehold.co/600x400.png', 100, 4.4),
-('Performance Running Shoes', 'Lightweight and breathable running shoes for maximum comfort.', 130.00, 'Fashion', 'Footwear', 'https://placehold.co/600x400.png', 50, 4.7),
-('The Art of Programming', 'A comprehensive guide to computer science and software design.', 39.99, 'Books', 'Non-Fiction', 'https://placehold.co/600x400.png', 60, 4.8),
-('Ergonomic Office Chair', 'Improve your posture and comfort with this adjustable office chair.', 350.00, 'Furniture', 'Office Furniture', 'https://placehold.co/600x400.png', 5, 4.9),
-('Gaming Console X', 'Next-gen gaming console for immersive gaming experiences.', 499.99, 'Sports & Entertainment', 'Video Games', 'https://placehold.co/600x400.png', 8, 4.9);
+-- 3. Create policies for the profiles table.
+CREATE POLICY "Users can insert their own profile."
+ON public.profiles
+FOR INSERT
+WITH CHECK (auth.uid() = id);
 
--- Create test table for emulator testing
-CREATE TABLE IF NOT EXISTS public.test (
-  id bigint GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  random real
-);
+CREATE POLICY "Users can update own profile."
+ON public.profiles
+FOR UPDATE
+USING (auth.uid() = id);
 
--- Enable RLS on test table
-ALTER TABLE public.test ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow all access to test table" ON public.test FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Users can view their own profile"
+ON public.profiles
+FOR SELECT
+USING (auth.uid() = id);
