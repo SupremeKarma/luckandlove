@@ -1,64 +1,62 @@
--- Create the products table
-CREATE TABLE products (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  description TEXT,
-  price REAL NOT NULL,
-  category TEXT,
-  subcategory TEXT,
-  image_url TEXT,
-  stock INTEGER NOT NULL,
-  rating REAL
-);
+-- Create a table for public profiles
+create table
+  profiles (
+    id uuid not null references auth.users on delete cascade,
+    full_name text,
+    avatar_url text,
+    primary key (id)
+  );
 
--- Create the profiles table
-CREATE TABLE profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id),
-  full_name TEXT,
-  addresses JSONB,
-  email TEXT
-);
+-- Set up Row Level Security (RLS)
+-- See https://supabase.com/docs/guides/auth/row-level-security
+alter table profiles enable row level security;
 
--- RLS (Row Level Security) POLICIES
+create policy "Public profiles are viewable by everyone." on profiles for
+select
+  using (true);
 
--- PRODUCTS
--- 1. Enable RLS for the products table
-ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+create policy "Users can insert their own profile." on profiles for
+insert
+  with check (auth.uid () = id);
 
--- 2. Drop all existing policies on the products table to ensure a clean slate.
-DROP POLICY IF EXISTS "Allow public read access to products" ON public.products;
-DROP POLICY IF EXISTS "Allow all access to products" ON public.products;
-DROP POLICY IF EXISTS "Enable read access for all users" ON public.products;
+create policy "Users can update own profile." on profiles for
+update
+  using (auth.uid () = id);
 
--- 3. Create a single, simple policy to allow public read access (SELECT) to everyone.
-CREATE POLICY "Allow public read access to products"
-ON public.products
-FOR SELECT
-USING (true);
+-- This trigger automatically creates a profile for new users
+create function public.handle_new_user () returns trigger as $$
+begin
+  insert into public.profiles (id, full_name, avatar_url)
+  values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url');
+  return new;
+end;
+$$ language plpgsql security definer;
 
+create trigger on_auth_user_created
+after insert on auth.users for each row
+execute procedure public.handle_new_user ();
 
--- PROFILES
--- 1. Enable RLS for the profiles table
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+-- Create products table
+create table
+  products (
+    id text not null primary key,
+    name text,
+    description text,
+    price real,
+    category text,
+    image_url text,
+    stock integer,
+    subcategory text,
+    rating real
+  );
+  
+alter table products enable row level security;
 
--- 2. Drop all existing policies on the profiles table.
-DROP POLICY IF EXISTS "Users can insert their own profile." ON public.profiles;
-DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
-DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
+-- Clear any previous policies that were incorrect
+drop policy if exists "Products are viewable by everyone." on products;
+drop policy if exists "Allow public read access to products" on products;
+drop policy if exists "Allow authorized users to manage products" on products;
 
-
--- 3. Create policies for the profiles table.
-CREATE POLICY "Users can insert their own profile."
-ON public.profiles
-FOR INSERT
-WITH CHECK (auth.uid() = id);
-
-CREATE POLICY "Users can update own profile."
-ON public.profiles
-FOR UPDATE
-USING (auth.uid() = id);
-
-CREATE POLICY "Users can view their own profile"
-ON public.profiles
-FOR SELECT
-USING (auth.uid() = id);
+-- Create a single, correct policy for reading products
+create policy "Allow public read access to all products" on products for
+select using (true);
