@@ -11,6 +11,8 @@ export interface Product {
   category: string;
   imageUrl: string;
   stock: number;
+  subcategory?: string;
+  rating?: number;
 }
 
 export interface CartItem extends Product {

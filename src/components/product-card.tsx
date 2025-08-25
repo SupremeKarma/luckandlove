@@ -6,9 +6,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Star } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { Badge } from './ui/badge';
 
 interface ProductCardProps {
   product: Product;
@@ -34,33 +35,53 @@ export function ProductCard({ product }: ProductCardProps) {
       transition={{ duration: 0.5 }}
       whileHover={{ scale: 1.03 }}
     >
-      <Link href={`/products/${product.id}`} className="block">
-        <Card className="flex h-full flex-col overflow-hidden transition-all bg-gray-800/50 border-gray-700 hover:border-primary">
-          <CardHeader className="p-0">
+      <Link href={`/products/${product.id}`} className="block h-full">
+        <Card className="group flex h-full flex-col bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300 hover:shadow-glow-cyan overflow-hidden">
+          <div className="relative">
             <div className="relative aspect-square w-full">
               <Image
                 src={product.imageUrl}
                 alt={product.name}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
                 data-ai-hint="product image"
               />
             </div>
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col p-4">
-            <div className="flex-1">
-              <CardTitle className="text-lg font-semibold leading-tight">{product.name}</CardTitle>
-               <p className="text-sm text-gray-400 mt-1">{product.category}</p>
+            <Badge 
+              variant="secondary" 
+              className="absolute top-2 left-2 bg-primary/80 text-white"
+            >
+              {product.category}
+            </Badge>
+            {product.stock === 0 && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <Badge variant="destructive">Out of Stock</Badge>
+              </div>
+            )}
+          </div>
+          
+          <CardHeader className="pb-2 p-4">
+            <CardTitle className="text-lg leading-tight">{product.name}</CardTitle>
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold gradient-text">${product.price.toFixed(2)}</span>
             </div>
-            <p className="mt-4 text-2xl font-bold text-accent">${product.price.toFixed(2)}</p>
-          </CardContent>
-          <CardFooter className="p-4 pt-0">
-            <Button className="w-full" onClick={handleAddToCart} disabled={product.stock === 0}>
-              {product.stock > 0 ? <ShoppingCart className="mr-2 h-4 w-4" /> : null}
+          </CardHeader>
+          
+          <CardContent className="pt-0 p-4 flex-grow flex flex-col">
+             <p className="text-sm text-muted-foreground mb-4 line-clamp-2 flex-grow">
+              {product.description}
+            </p>
+            <Button
+              variant="neon"
+              className="w-full mt-auto"
+              onClick={handleAddToCart}
+              disabled={product.stock === 0}
+            >
+              <ShoppingCart size={16} />
               {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
             </Button>
-          </CardFooter>
+          </CardContent>
         </Card>
       </Link>
     </motion.div>
