@@ -1,178 +1,424 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { getSupabase } from '@/lib/firebase';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import Link from 'next/link';
-import type { User } from '@supabase/supabase-js';
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  Send, 
+  Smile, 
+  Settings, 
+  UserPlus, 
+  Hash, 
+  Users, 
+  Mic, 
+  Video,
+  Shield,
+  Crown,
+  Zap
+} from "lucide-react";
 
 interface Message {
   id: string;
-  text: string;
-  user_id: string;
-  profiles: {
-    full_name: string;
-    avatar_url: string | null;
-  } | null;
-  created_at: string;
+  user: string;
+  content: string;
+  timestamp: Date;
+  avatar?: string;
+  role?: "admin" | "moderator" | "premium" | "user";
 }
 
-export default function ChatPage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(true);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  
-  const supabase = getSupabase();
+interface Channel {
+  id: string;
+  name: string;
+  type: "text" | "voice";
+  memberCount: number;
+  isPrivate?: boolean;
+}
+
+const demoMessages: Message[] = [
+  {
+    id: "1",
+    user: "CyberNinja",
+    content: "Just finished the new tournament! That final round was insane 🔥",
+    timestamp: new Date(Date.now() - 300000),
+    role: "premium"
+  },
+  {
+    id: "2",
+    user: "QuantumWarrior",
+    content: "GG everyone! See you in the next championship",
+    timestamp: new Date(Date.now() - 240000),
+    role: "moderator"
+  },
+  {
+    id: "3",
+    user: "NeonStriker",
+    content: "Anyone want to team up for the food delivery challenge? 🍕",
+    timestamp: new Date(Date.now() - 180000),
+    role: "user"
+  },
+  {
+    id: "4",
+    user: "Admin",
+    content: "🚀 New rental properties just added to the platform! Check them out in the #rentals channel",
+    timestamp: new Date(Date.now() - 120000),
+    role: "admin"
+  }
+];
+
+const channels: Channel[] = [
+  { id: "general", name: "general", type: "text", memberCount: 1547 },
+  { id: "gaming", name: "gaming", type: "text", memberCount: 892 },
+  { id: "food", name: "food-talk", type: "text", memberCount: 634 },
+  { id: "rentals", name: "rentals", type: "text", memberCount: 423 },
+  { id: "voice1", name: "Gaming Lounge", type: "voice", memberCount: 12 },
+  { id: "voice2", name: "Chill Zone", type: "voice", memberCount: 8 }
+];
+
+export default function Chat() {
+  const [messages, setMessages] = useState<Message[]>(demoMessages);
+  const [newMessage, setNewMessage] = useState("");
+  const [activeChannel, setActiveChannel] = useState("general");
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    if (scrollAreaRef.current) {
-        const viewport = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
-        if (viewport) {
-            viewport.scrollTop = viewport.scrollHeight;
-        }
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  useEffect(() => {
-    if (!supabase) return;
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-    };
-    fetchUser();
-
-    const fetchMessages = async () => {
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .select(`
-          id,
-          text,
-          user_id,
-          created_at,
-          profiles ( full_name, avatar_url )
-        `)
-        .order('created_at', { ascending: true });
-        
-      if (error) {
-        console.error('Error fetching messages:', error);
-      } else {
-        setMessages(data as Message[]);
-      }
-    };
-    fetchMessages();
-    
-    const channel = supabase.channel('chat-room')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, 
-      async (payload) => {
-        const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url')
-            .eq('id', payload.new.user_id)
-            .single();
-
-        if (error) {
-            console.error('Error fetching profile for new message:', error);
-        } else {
-            const newMessage = { ...payload.new, profiles: profile } as Message;
-            setMessages((prev) => [...prev, newMessage]);
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newMessage.trim() === '' || !user || !supabase) {
-      return;
-    }
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return;
 
-    await supabase.from('chat_messages').insert({
-      text: newMessage,
-      user_id: user.id,
-    });
+    const message: Message = {
+      id: Date.now().toString(),
+      user: "You",
+      content: newMessage,
+      timestamp: new Date(),
+      role: "user"
+    };
 
-    setNewMessage('');
+    setMessages([...messages, message]);
+    setNewMessage("");
+
+    // Simulate typing indicator
+    setIsTyping(true);
+    setTimeout(() => {
+      setIsTyping(false);
+      const botResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        user: "AI Assistant",
+        content: "Thanks for your message! This is a demo response.",
+        timestamp: new Date(),
+        role: "admin"
+      };
+      setMessages(prev => [...prev, botResponse]);
+    }, 2000);
   };
 
-  if (loading) {
-    return <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">Loading Chat...</div>;
-  }
+  const getRoleIcon = (role?: string) => {
+    switch (role) {
+      case "admin": return <Crown size={12} className="text-yellow-400" />;
+      case "moderator": return <Shield size={12} className="text-blue-400" />;
+      case "premium": return <Zap size={12} className="text-purple-400" />;
+      default: return null;
+    }
+  };
+
+  const getRoleColor = (role?: string) => {
+    switch (role) {
+      case "admin": return "text-yellow-400";
+      case "moderator": return "text-blue-400";
+      case "premium": return "text-purple-400";
+      default: return "text-foreground";
+    }
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[calc(100vh-10rem)]">
-      <Card className="w-full max-w-2xl bg-gray-800/50 border-gray-700">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Global Chat Room</CardTitle>
-          <CardDescription>
-            Join the conversation with the community.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col h-[60vh]">
-          {!user ? (
-            <div className="flex flex-col items-center justify-center flex-1">
-              <p className="text-muted-foreground mb-4">You must be logged in to chat.</p>
-              <Link href="/login">
-                <Button>Login</Button>
-              </Link>
-            </div>
-          ) : (
-            <>
-              <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
-                <div className="space-y-4">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex items-start gap-3 ${user.id === msg.user_id ? 'justify-end' : ''}`}
-                    >
-                      {user.id !== msg.user_id && (
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={msg.profiles?.avatar_url || undefined} />
-                          <AvatarFallback>{msg.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
-                        </Avatar>
-                      )}
-                      <div className={`rounded-lg px-4 py-2 max-w-sm ${user.id === msg.user_id ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                        <p className="text-sm font-bold">{msg.profiles?.full_name || 'Anonymous'}</p>
-                        <p className="text-base">{msg.text}</p>
-                      </div>
-                      {user.id === msg.user_id && (
-                        <Avatar className="h-8 w-8">
-                           <AvatarImage src={msg.profiles?.avatar_url || undefined} />
-                           <AvatarFallback>{msg.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
-                        </Avatar>
-                      )}
-                    </div>
-                  ))}
+    <div className="min-h-screen bg-gradient-hero py-8">
+      <div className="container mx-auto px-4 max-w-7xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold mb-4">
+            <span className="gradient-text">Global</span>
+            <span className="neon-text ml-3">Chat</span>
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Connect with the community across all platforms
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[800px]">
+          {/* Sidebar - Channels & Users */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* User Profile */}
+            <Card className="bg-card/50 border-primary/30">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar className="border-2 border-primary/50">
+                    <AvatarImage src="" />
+                    <AvatarFallback className="bg-primary/20">YU</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="font-semibold text-sm">You</div>
+                    <div className="text-xs text-muted-foreground">Online</div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Settings size={16} />
+                  </Button>
                 </div>
-              </ScrollArea>
-              <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="Type a message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  className="flex-1 bg-gray-900/70"
-                />
-                <Button type="submit">Send</Button>
-              </form>
-            </>
-          )}
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
+
+            {/* Channels */}
+            <Card className="bg-card/50 border-primary/30 flex-1">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center justify-between">
+                  Channels
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <UserPlus size={14} />
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-1 p-4 pt-0">
+                    {channels.map((channel) => (
+                      <Button
+                        key={channel.id}
+                        variant={activeChannel === channel.id ? "secondary" : "ghost"}
+                        className={`w-full justify-start text-sm h-8 ${
+                          activeChannel === channel.id 
+                            ? "bg-primary/20 text-primary border border-primary/30" 
+                            : "hover:bg-primary/10"
+                        }`}
+                        onClick={() => setActiveChannel(channel.id)}
+                      >
+                        {channel.type === "text" ? (
+                          <Hash size={14} className="mr-2" />
+                        ) : (
+                          <Mic size={14} className="mr-2" />
+                        )}
+                        <span className="truncate">{channel.name}</span>
+                        <Badge variant="outline" className="ml-auto text-xs border-primary/30">
+                          {channel.memberCount}
+                        </Badge>
+                      </Button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Online Users */}
+            <Card className="bg-card/50 border-primary/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center">
+                  <Users size={16} className="mr-2" />
+                  Online - 1,547
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ScrollArea className="h-[200px]">
+                  <div className="space-y-2 p-4 pt-0">
+                    {["CyberNinja", "QuantumWarrior", "NeonStriker", "DigitalPhantom", "ElectricViper"].map((user, index) => (
+                      <div key={user} className="flex items-center space-x-2 text-sm">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="bg-primary/20 text-xs">
+                            {user.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm truncate">{user}</span>
+                        <div className="w-2 h-2 bg-green-400 rounded-full ml-auto"></div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Chat Area */}
+          <div className="lg:col-span-2">
+            <Card className="bg-card/50 border-primary/30 h-full flex flex-col">
+              {/* Chat Header */}
+              <CardHeader className="pb-3 border-b border-primary/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Hash size={20} className="text-primary" />
+                    <CardTitle className="text-lg">
+                      {channels.find(c => c.id === activeChannel)?.name || "general"}
+                    </CardTitle>
+                    <Badge variant="outline" className="border-primary/30">
+                      {channels.find(c => c.id === activeChannel)?.memberCount} members
+                    </Badge>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Video size={16} />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Mic size={16} />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+
+              {/* Messages */}
+              <CardContent className="flex-1 p-0 overflow-hidden">
+                <ScrollArea className="h-full p-4">
+                  <div className="space-y-4">
+                    {messages.map((message) => (
+                      <div key={message.id} className="flex space-x-3 group">
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src={message.avatar} />
+                          <AvatarFallback className="bg-primary/20 text-xs">
+                            {message.user.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className={`font-semibold text-sm ${getRoleColor(message.role)}`}>
+                              {message.user}
+                            </span>
+                            {getRoleIcon(message.role)}
+                            <span className="text-xs text-muted-foreground">
+                              {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground break-words">{message.content}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {isTyping && (
+                      <div className="flex space-x-3 text-muted-foreground">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="bg-primary/20 text-xs">AI</AvatarFallback>
+                        </Avatar>
+                        <div className="flex items-center space-x-1 text-sm">
+                          <span>AI Assistant is typing</span>
+                          <div className="flex space-x-1">
+                            <div className="w-1 h-1 bg-primary rounded-full animate-pulse"></div>
+                            <div className="w-1 h-1 bg-primary rounded-full animate-pulse delay-100"></div>
+                            <div className="w-1 h-1 bg-primary rounded-full animate-pulse delay-200"></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+                </ScrollArea>
+              </CardContent>
+
+              {/* Message Input */}
+              <div className="p-4 border-t border-primary/20">
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder={`Message #${channels.find(c => c.id === activeChannel)?.name || "general"}`}
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    className="flex-1 bg-background/50 border-primary/30"
+                  />
+                  <Button variant="ghost" size="icon" className="h-10 w-10">
+                    <Smile size={16} />
+                  </Button>
+                  <Button 
+                    variant="neon" 
+                    size="icon" 
+                    className="h-10 w-10"
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim()}
+                  >
+                    <Send size={16} />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Right Sidebar - Activity & Friends */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* Activity Feed */}
+            <Card className="bg-card/50 border-primary/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Recent Activity</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-3 p-4 pt-0">
+                    {[
+                      { user: "CyberNinja", action: "won a tournament", time: "2m ago" },
+                      { user: "QuantumWarrior", action: "ordered food", time: "5m ago" },
+                      { user: "NeonStriker", action: "rented an apartment", time: "10m ago" },
+                      { user: "DigitalPhantom", action: "joined chat", time: "15m ago" }
+                    ].map((activity, index) => (
+                      <div key={index} className="text-xs">
+                        <div className="font-medium text-primary">{activity.user}</div>
+                        <div className="text-muted-foreground">{activity.action}</div>
+                        <div className="text-muted-foreground">{activity.time}</div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Direct Messages */}
+            <Card className="bg-card/50 border-primary/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Direct Messages</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ScrollArea className="h-[200px]">
+                  <div className="space-y-2 p-4 pt-0">
+                    {["CyberNinja", "QuantumWarrior", "NeonStriker"].map((user) => (
+                      <Button
+                        key={user}
+                        variant="ghost"
+                        className="w-full justify-start text-sm h-8 hover:bg-primary/10"
+                      >
+                        <Avatar className="h-6 w-6 mr-2">
+                          <AvatarFallback className="bg-primary/20 text-xs">
+                            {user.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="truncate">{user}</span>
+                        <div className="w-2 h-2 bg-green-400 rounded-full ml-auto"></div>
+                      </Button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Voice Chat */}
+            <Card className="bg-card/50 border-primary/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center">
+                  <Mic size={16} className="mr-2" />
+                  Voice Chat
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button variant="neon" className="w-full">
+                  Join Gaming Lounge
+                </Button>
+                <Button variant="cyber" className="w-full">
+                  Create Room
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
