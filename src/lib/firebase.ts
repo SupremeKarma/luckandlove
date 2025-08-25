@@ -1,6 +1,6 @@
 'use client';
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 let supabase: SupabaseClient | null = null;
 
@@ -27,7 +27,7 @@ export function getSupabase(): SupabaseClient {
   if (!supabaseUrl || !supabaseAnonKey) {
     // This will be caught by the developer during development.
     // In a production environment, these variables should be set.
-    throw new Error('Supabase URL or Anon Key is missing from environment variables.');
+    throw new Error('Supabase URL or Anon Key is missing. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.');
   }
 
   // Initialize the Supabase client.
