@@ -625,8 +625,11 @@ function getSupabase() {
     }
     const supabaseUrl = ("TURBOPACK compile-time value", "YOUR_SUPABASE_URL");
     const supabaseAnonKey = ("TURBOPACK compile-time value", "YOUR_SUPABASE_ANON_KEY");
-    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-    ;
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.trim() === '' || supabaseAnonKey.trim() === '') {
+        // This will be caught by the developer during development.
+        // In a production environment, these variables should be set.
+        throw new Error('Supabase URL or Anon Key is missing or empty. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.');
+    }
     // Initialize the Supabase client.
     supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$module$2f$index$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$locals$3e$__["createClient"])(supabaseUrl, supabaseAnonKey);
     return supabase;

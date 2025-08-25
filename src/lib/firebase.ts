@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
@@ -14,7 +15,7 @@ let supabase: SupabaseClient | null = null;
  * public and only allows access based on your Row Level Security (RLS) policies.
  *
  * @returns {SupabaseClient} The Supabase client instance.
- * @throws {Error} If Supabase environment variables are not set.
+ * @throws {Error} If Supabase environment variables are not set or are empty.
  */
 export function getSupabase(): SupabaseClient {
   if (supabase) {
@@ -24,10 +25,10 @@ export function getSupabase(): SupabaseClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.trim() === '' || supabaseAnonKey.trim() === '') {
     // This will be caught by the developer during development.
     // In a production environment, these variables should be set.
-    throw new Error('Supabase URL or Anon Key is missing. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.');
+    throw new Error('Supabase URL or Anon Key is missing or empty. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.');
   }
 
   // Initialize the Supabase client.

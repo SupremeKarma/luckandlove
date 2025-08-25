@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -46,8 +47,7 @@ export default function RegisterPage() {
       if (error) throw error;
       
       if (data.user) {
-         // Optionally create a profile row if you have a separate profiles table
-         // await supabase.from('profiles').insert({ id: data.user.id, username: name });
+         // The trigger will automatically create a profile row.
       }
 
       toast({
