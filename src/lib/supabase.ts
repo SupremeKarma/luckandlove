@@ -30,7 +30,12 @@ export function getSupabase(): SupabaseClient {
     throw new Error('Supabase URL or Anon Key is missing. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env file.');
   }
 
-  // Initialize the Supabase client.
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-  return supabase;
+  try {
+    // Initialize the Supabase client.
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    return supabase;
+  } catch (error) {
+    console.error("Error initializing Supabase client:", error);
+    throw new Error("Failed to initialize Supabase client. Please check if the Supabase URL is valid in your environment variables.");
+  }
 }
