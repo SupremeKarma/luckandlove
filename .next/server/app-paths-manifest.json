@@ -5,5 +5,6 @@
   "/food-delivery/page": "app/food-delivery/page.js",
   "/gaming/page": "app/gaming/page.js",
   "/page": "app/page.js",
-  "/products/page": "app/products/page.js"
+  "/products/page": "app/products/page.js",
+  "/rentals/page": "app/rentals/page.js"
 }
