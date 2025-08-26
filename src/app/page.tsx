@@ -2,13 +2,13 @@
 'use client';
 
 import { HeroSection } from '@/components/HeroSection';
-import { ServicesShowcase } from '@/components/services-showcase';
+import { FeaturesShowcase } from '@/components/features-showcase';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <HeroSection />
-      <ServicesShowcase />
+      <FeaturesShowcase />
     </div>
   );
 }

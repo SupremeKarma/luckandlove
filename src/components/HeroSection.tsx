@@ -1,12 +1,12 @@
 
 import { Button } from "./ui/button";
 import Link from "next/link";
-import { MoveDown } from "lucide-react";
+import Image from "next/image";
+import { motion } from "framer-motion";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-background">
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background z-10" />
+    <section className="relative overflow-hidden bg-background py-20 md:py-32">
       <div
         className="absolute inset-0 opacity-10"
         style={{
@@ -15,28 +15,44 @@ export function HeroSection() {
         }}
       />
       <div className="container mx-auto px-4 z-20">
-        <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-7xl font-bold mb-6 tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-b from-white to-neutral-400">
-            Welcome to <span className="text-accent">Zenith</span>
-          </h1>
-
-          <p className="text-lg md:text-2xl text-muted-foreground mb-10">
-            Your one-stop shop for premium products, services, and experiences.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
-              <Link href="#services">Explore Features</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/account">Get Started</Link>
-            </Button>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center md:text-left"
+          >
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight text-foreground">
+              One App for Everything You Need
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground mb-10">
+              Welcome to Zenith. Your portal to gaming, food, rentals, and rides. Everything you need, all in one place.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                <Link href="#features">Explore Features</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/register">Get Started</Link>
+              </Button>
+            </div>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative w-full h-64 md:h-96"
+          >
+            <Image
+              src="https://picsum.photos/800/600"
+              alt="Cartoon illustration of services"
+              width={800}
+              height={600}
+              data-ai-hint="friendly cartoon robot mascot showing services"
+              className="rounded-xl object-cover shadow-2xl"
+            />
+          </motion.div>
         </div>
-      </div>
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-muted-foreground animate-bounce">
-          <span className="text-sm">Scroll Down</span>
-          <MoveDown className="w-5 h-5"/>
       </div>
     </section>
   );
