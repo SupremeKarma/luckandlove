@@ -13,7 +13,7 @@ import { getSupabase } from '@/lib/supabase';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const categories = ['All', 'Electronics', 'Apparel', 'Books', 'Home Goods', 'Beauty', 'Toys & Games', 'Sports & Outdoors'];
+const categories = ['All', 'Electronics', 'Apparel', 'Home Goods', 'Sports & Outdoors'];
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -80,20 +80,18 @@ export default function Home() {
       <div className="container mx-auto px-4 py-16">
         {/* Search and Filters */}
         <div className="max-w-4xl mx-auto mb-12">
-          <div className="flex flex-col md:flex-row gap-4 mb-8">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
-              <Input
-                placeholder="Search for products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12"
-              />
-            </div>
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+            <Input
+              placeholder="Search for products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-12 text-base"
+            />
           </div>
 
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5">
               {categories.map((category) => (
                 <TabsTrigger
                   key={category}
@@ -113,23 +111,23 @@ export default function Home() {
             <h2 className="text-2xl font-bold">
               {selectedCategory === "All" ? "All Products" : selectedCategory}
             </h2>
-            <span className="text-muted-foreground">
-              {filteredProducts.length} products found
+            <span className="text-muted-foreground text-sm">
+              {filteredProducts.length} products
             </span>
           </div>
 
           {loading ? (
-             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="space-y-2">
-                  <Skeleton className="h-64 w-full" />
+                  <Skeleton className="h-48 md:h-64 w-full" />
                   <Skeleton className="h-6 w-3/4" />
                   <Skeleton className="h-6 w-1/2" />
                 </div>
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}

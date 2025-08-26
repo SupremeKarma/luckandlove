@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from "react";
@@ -19,8 +20,15 @@ import {
   Video,
   Shield,
   Crown,
-  Zap
+  Zap,
+  Menu
 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+
 
 interface Message {
   id: string;
@@ -78,6 +86,103 @@ const channels: Channel[] = [
   { id: "voice1", name: "Gaming Lounge", type: "voice", memberCount: 12 },
   { id: "voice2", name: "Chill Zone", type: "voice", memberCount: 8 }
 ];
+
+
+const UserProfile = () => (
+    <Card className="bg-card/50 border-primary/30">
+      <CardContent className="p-4">
+        <div className="flex items-center space-x-3">
+          <Avatar className="border-2 border-primary/50">
+            <AvatarImage src="" />
+            <AvatarFallback className="bg-primary/20">YU</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <div className="font-semibold text-sm">You</div>
+            <div className="text-xs text-muted-foreground">Online</div>
+          </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Settings size={16} />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+);
+
+const ChannelsList = ({activeChannel, setActiveChannel} : {activeChannel: string, setActiveChannel: (channel: string) => void}) => (
+    <Card className="bg-card/50 border-primary/30 flex-1">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg flex items-center justify-between">
+          Channels
+          <Button variant="ghost" size="icon" className="h-6 w-6">
+            <UserPlus size={14} />
+          </Button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <ScrollArea className="h-[calc(100vh_-_20rem)] sm:h-[300px]">
+          <div className="space-y-1 p-4 pt-0">
+            {channels.map((channel) => (
+              <Button
+                key={channel.id}
+                variant={activeChannel === channel.id ? "secondary" : "ghost"}
+                className={`w-full justify-start text-sm h-8 ${
+                  activeChannel === channel.id 
+                    ? "bg-primary/20 text-primary border border-primary/30" 
+                    : "hover:bg-primary/10"
+                }`}
+                onClick={() => setActiveChannel(channel.id)}
+              >
+                {channel.type === "text" ? (
+                  <Hash size={14} className="mr-2" />
+                ) : (
+                  <Mic size={14} className="mr-2" />
+                )}
+                <span className="truncate">{channel.name}</span>
+                <Badge variant="outline" className="ml-auto text-xs border-primary/30">
+                  {channel.memberCount}
+                </Badge>
+              </Button>
+            ))}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+);
+
+const OnlineUsers = () => (
+    <Card className="bg-card/50 border-primary/30">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg flex items-center">
+          <Users size={16} className="mr-2" />
+          Online - 1,547
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <ScrollArea className="h-[200px]">
+          <div className="space-y-2 p-4 pt-0">
+            {["CyberNinja", "QuantumWarrior", "NeonStriker", "DigitalPhantom", "ElectricViper"].map((user, index) => (
+              <div key={user} className="flex items-center space-x-2 text-sm">
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback className="bg-primary/20 text-xs">
+                    {user.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm truncate">{user}</span>
+                <div className="w-2 h-2 bg-green-400 rounded-full ml-auto"></div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+)
+
+const LeftSidebar = ({activeChannel, setActiveChannel} : {activeChannel: string, setActiveChannel: (channel: string) => void}) => (
+    <div className="space-y-4">
+        <UserProfile/>
+        <ChannelsList activeChannel={activeChannel} setActiveChannel={setActiveChannel} />
+    </div>
+)
 
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>(demoMessages);
@@ -142,111 +247,30 @@ export default function Chat() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold mb-4">
-            <span className="gradient-text">Global</span>
-            <span className="neon-text ml-3">Chat</span>
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Connect with the community across all platforms
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-hero">
+      <div className="container mx-auto px-4 max-w-7xl h-screen py-4">
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[800px]">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+            {/* Mobile Sidebar */}
+            <div className="lg:hidden">
+                 <Sheet>
+                    <SheetTrigger asChild>
+                       <Button variant="ghost" size="icon">
+                        <Menu/>
+                       </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-[300px] sm:w-[400px] bg-background p-4">
+                        <LeftSidebar activeChannel={activeChannel} setActiveChannel={setActiveChannel}/>
+                    </SheetContent>
+                </Sheet>
+            </div>
           {/* Sidebar - Channels & Users */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* User Profile */}
-            <Card className="bg-card/50 border-primary/30">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="border-2 border-primary/50">
-                    <AvatarImage src="" />
-                    <AvatarFallback className="bg-primary/20">YU</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm">You</div>
-                    <div className="text-xs text-muted-foreground">Online</div>
-                  </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Settings size={16} />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Channels */}
-            <Card className="bg-card/50 border-primary/30 flex-1">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  Channels
-                  <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <UserPlus size={14} />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[300px]">
-                  <div className="space-y-1 p-4 pt-0">
-                    {channels.map((channel) => (
-                      <Button
-                        key={channel.id}
-                        variant={activeChannel === channel.id ? "secondary" : "ghost"}
-                        className={`w-full justify-start text-sm h-8 ${
-                          activeChannel === channel.id 
-                            ? "bg-primary/20 text-primary border border-primary/30" 
-                            : "hover:bg-primary/10"
-                        }`}
-                        onClick={() => setActiveChannel(channel.id)}
-                      >
-                        {channel.type === "text" ? (
-                          <Hash size={14} className="mr-2" />
-                        ) : (
-                          <Mic size={14} className="mr-2" />
-                        )}
-                        <span className="truncate">{channel.name}</span>
-                        <Badge variant="outline" className="ml-auto text-xs border-primary/30">
-                          {channel.memberCount}
-                        </Badge>
-                      </Button>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-
-            {/* Online Users */}
-            <Card className="bg-card/50 border-primary/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <Users size={16} className="mr-2" />
-                  Online - 1,547
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[200px]">
-                  <div className="space-y-2 p-4 pt-0">
-                    {["CyberNinja", "QuantumWarrior", "NeonStriker", "DigitalPhantom", "ElectricViper"].map((user, index) => (
-                      <div key={user} className="flex items-center space-x-2 text-sm">
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="bg-primary/20 text-xs">
-                            {user.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm truncate">{user}</span>
-                        <div className="w-2 h-2 bg-green-400 rounded-full ml-auto"></div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
+          <div className="hidden lg:block lg:col-span-1">
+                <LeftSidebar activeChannel={activeChannel} setActiveChannel={setActiveChannel}/>
           </div>
 
           {/* Main Chat Area */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <Card className="bg-card/50 border-primary/30 h-full flex flex-col">
               {/* Chat Header */}
               <CardHeader className="pb-3 border-b border-primary/20">
@@ -344,79 +368,6 @@ export default function Chat() {
             </Card>
           </div>
 
-          {/* Right Sidebar - Activity & Friends */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* Activity Feed */}
-            <Card className="bg-card/50 border-primary/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[300px]">
-                  <div className="space-y-3 p-4 pt-0">
-                    {[
-                      { user: "CyberNinja", action: "won a tournament", time: "2m ago" },
-                      { user: "QuantumWarrior", action: "ordered food", time: "5m ago" },
-                      { user: "NeonStriker", action: "rented an apartment", time: "10m ago" },
-                      { user: "DigitalPhantom", action: "joined chat", time: "15m ago" }
-                    ].map((activity, index) => (
-                      <div key={index} className="text-xs">
-                        <div className="font-medium text-primary">{activity.user}</div>
-                        <div className="text-muted-foreground">{activity.action}</div>
-                        <div className="text-muted-foreground">{activity.time}</div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-
-            {/* Direct Messages */}
-            <Card className="bg-card/50 border-primary/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Direct Messages</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[200px]">
-                  <div className="space-y-2 p-4 pt-0">
-                    {["CyberNinja", "QuantumWarrior", "NeonStriker"].map((user) => (
-                      <Button
-                        key={user}
-                        variant="ghost"
-                        className="w-full justify-start text-sm h-8 hover:bg-primary/10"
-                      >
-                        <Avatar className="h-6 w-6 mr-2">
-                          <AvatarFallback className="bg-primary/20 text-xs">
-                            {user.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="truncate">{user}</span>
-                        <div className="w-2 h-2 bg-green-400 rounded-full ml-auto"></div>
-                      </Button>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-
-            {/* Voice Chat */}
-            <Card className="bg-card/50 border-primary/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center">
-                  <Mic size={16} className="mr-2" />
-                  Voice Chat
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="neon" className="w-full">
-                  Join Gaming Lounge
-                </Button>
-                <Button variant="cyber" className="w-full">
-                  Create Room
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </div>

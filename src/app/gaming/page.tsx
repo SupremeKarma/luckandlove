@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from "react";
@@ -80,11 +81,11 @@ export default function GamingPage() {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="gradient-text">Gaming</span>
             <span className="neon-text ml-3">Tournaments</span>
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-lg md:text-xl text-muted-foreground">
             Compete in the ultimate esports arena and claim your digital glory
           </p>
         </div>
@@ -100,17 +101,16 @@ export default function GamingPage() {
             <Card key={index} className="bg-card/50 border-primary/20 text-center">
               <CardContent className="p-4">
                 <stat.icon className="mx-auto mb-2 text-primary" size={24} />
-                <div className="text-2xl font-bold neon-text">{stat.count}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-xl md:text-2xl font-bold neon-text">{stat.count}</div>
+                <div className="text-xs md:text-sm text-muted-foreground">{stat.label}</div>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Filters */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="bg-card/50 border-primary/30 p-2">
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+            <Card className="bg-card/50 border-primary/30 p-2 flex-1">
               <h3 className="text-sm font-semibold text-muted-foreground px-2 mb-2">Filter by Game</h3>
               <div className="flex flex-wrap gap-2">
                   {games.map((game) => (
@@ -119,13 +119,14 @@ export default function GamingPage() {
                       variant={selectedGame === game ? "neon" : "cyber"}
                       size="sm"
                       onClick={() => setSelectedGame(game)}
+                      className="text-xs"
                     >
                       {game}
                     </Button>
                   ))}
               </div>
             </Card>
-            <Card className="bg-card/50 border-primary/30 p-2">
+            <Card className="bg-card/50 border-primary/30 p-2 flex-1">
                <h3 className="text-sm font-semibold text-muted-foreground px-2 mb-2">Filter by Difficulty</h3>
                <div className="flex flex-wrap gap-2">
                 {difficulties.map((difficulty) => (
@@ -134,6 +135,7 @@ export default function GamingPage() {
                       variant={selectedDifficulty === difficulty ? "neon" : "cyber"}
                       size="sm"
                       onClick={() => setSelectedDifficulty(difficulty)}
+                      className="text-xs"
                     >
                       {difficulty}
                     </Button>
@@ -141,7 +143,7 @@ export default function GamingPage() {
               </div>
             </Card>
           </div>
-        </div>
+        
 
         {/* Featured Tournament */}
         <div className="mb-8">
@@ -149,21 +151,21 @@ export default function GamingPage() {
             <Card className="bg-card/90 border-0">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
+                  <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-400/30 text-xs">
                     🔥 FEATURED
                   </Badge>
-                  <Badge className="bg-green-500/20 text-green-400 border-green-400/30">
+                  <Badge className="bg-green-500/20 text-green-400 border-green-400/30 text-xs">
                     LIVE NOW
                   </Badge>
                 </div>
-                <h2 className="text-3xl font-bold mb-2 gradient-text">
+                <h2 className="text-2xl md:text-3xl font-bold mb-2 gradient-text">
                   Global Championship Finals 2024
                 </h2>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-muted-foreground mb-4 text-sm md:text-base">
                   The ultimate showdown of the world's best players. Winner takes all in this 
                   once-in-a-lifetime tournament with $100,000 prize pool.
                 </p>
-                <div className="flex items-center space-x-6 text-sm">
+                <div className="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-6 text-sm">
                   <div className="flex items-center">
                     <Trophy className="mr-1 text-yellow-400" size={16} />
                     $100,000 Prize
@@ -177,7 +179,7 @@ export default function GamingPage() {
                     Live Now
                   </div>
                 </div>
-                <Button variant="hero" className="mt-4">
+                <Button variant="hero" className="mt-4 w-full md:w-auto">
                   Watch Live Stream
                 </Button>
               </CardContent>
@@ -203,24 +205,24 @@ export default function GamingPage() {
                   />
                   <Badge 
                     variant="outline" 
-                    className={`absolute top-2 left-2 ${getDifficultyColor(tournament.difficulty)}`}
+                    className={`absolute top-2 left-2 text-xs ${getDifficultyColor(tournament.difficulty)}`}
                   >
                     {tournament.difficulty}
                   </Badge>
-                  <Badge variant="secondary" className="absolute top-2 right-2 bg-primary/80 text-white">
+                  <Badge variant="secondary" className="absolute top-2 right-2 bg-primary/80 text-white text-xs">
                     {tournament.game}
                   </Badge>
-                  <div className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-sm text-white">
+                  <div className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-xs text-white">
                     {tournament.status}
                   </div>
                 </div>
                 
-                <CardHeader className="pb-2">
+                <CardHeader className="p-4 pb-2">
                   <CardTitle className="text-lg leading-tight">{tournament.name}</CardTitle>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-1">
                       <Trophy className="text-yellow-400" size={16} />
-                      <span className="text-2xl font-bold gradient-text">${tournament.prize.toLocaleString()}</span>
+                      <span className="text-xl md:text-2xl font-bold gradient-text">${tournament.prize.toLocaleString()}</span>
                     </div>
                     <Badge variant="outline" className="text-xs border-primary/30">
                       ${tournament.entryFee} Entry
@@ -228,7 +230,7 @@ export default function GamingPage() {
                   </div>
                 </CardHeader>
                 
-                <CardContent className="pt-0">
+                <CardContent className="p-4 pt-0">
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Participants</span>
@@ -247,7 +249,7 @@ export default function GamingPage() {
                     className="w-full"
                     disabled={tournament.status === "Full"}
                   >
-                    <Target size={16} />
+                    <Target size={16} className="mr-2" />
                     {tournament.status === "Full" ? "Tournament Full" : "Join Tournament"}
                   </Button>
                 </CardContent>
@@ -260,7 +262,7 @@ export default function GamingPage() {
         <div className="mt-12">
           <h2 className="text-3xl font-bold mb-6 text-center neon-text">Top Players</h2>
           <Card className="bg-card/50 border-primary/30">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="space-y-4">
                 {[
                   { rank: 1, name: "CyberNinja", points: 15420, wins: 147 },
@@ -280,13 +282,13 @@ export default function GamingPage() {
                         {player.rank}
                       </div>
                       <div>
-                        <div className="font-semibold">{player.name}</div>
-                        <div className="text-sm text-muted-foreground">{player.wins} wins</div>
+                        <div className="font-semibold text-sm md:text-base">{player.name}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">{player.wins} wins</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold gradient-text">{player.points.toLocaleString()}</div>
-                      <div className="text-sm text-muted-foreground">points</div>
+                      <div className="font-bold gradient-text text-sm md:text-base">{player.points.toLocaleString()}</div>
+                      <div className="text-xs md:text-sm text-muted-foreground">points</div>
                     </div>
                   </div>
                 ))}

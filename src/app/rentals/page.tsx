@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from "react";
@@ -5,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Star, Car, Home, Bed, Wifi, Zap } from "lucide-react";
+import { MapPin, Star, Car, Home, Bed, Zap } from "lucide-react";
 import Image from "next/image";
 
 const rentals = [
@@ -51,7 +52,7 @@ const rentals = [
   }
 ];
 
-const rentalTypes = ["All", "Apartments", "Houses", "Cars", "Rooms"];
+const rentalTypes = ["All", "Apartments", "Houses", "Cars"];
 
 export default function RentalsPage() {
   const [selectedType, setSelectedType] = useState("All");
@@ -74,43 +75,33 @@ export default function RentalsPage() {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="gradient-text">Rental</span>
             <span className="neon-text ml-3">Finder</span>
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-lg md:text-xl text-muted-foreground">
             Find your perfect space or ride in the digital age
           </p>
         </div>
 
         {/* Search and Filters */}
-        <div className="max-w-6xl mx-auto mb-8">
+        <div className="mb-8">
           <Card className="bg-card/50 border-primary/30">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Input
                   placeholder="Location..."
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="bg-background/50 border-primary/30"
+                  className="bg-background/50 border-primary/30 md:col-span-2"
                 />
                 
-                <Select value={selectedType} onValueChange={setSelectedType}>
-                  <SelectTrigger className="bg-background/50 border-primary/30">
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {rentalTypes.map((type) => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
                 <Select value={priceRange} onValueChange={setPriceRange}>
                   <SelectTrigger className="bg-background/50 border-primary/30">
                     <SelectValue placeholder="Price Range" />
                   </SelectTrigger>
                   <SelectContent>
+                     <SelectItem value="all">Any Price</SelectItem>
                     <SelectItem value="low">Under $1000</SelectItem>
                     <SelectItem value="medium">$1000 - $3000</SelectItem>
                     <SelectItem value="high">$3000+</SelectItem>
@@ -118,7 +109,7 @@ export default function RentalsPage() {
                 </Select>
 
                 <Button variant="neon" className="w-full">
-                  <MapPin size={16} />
+                  <MapPin size={16} className="mr-2"/>
                   Search
                 </Button>
               </div>
@@ -128,8 +119,8 @@ export default function RentalsPage() {
 
         {/* Rental Categories */}
         <div className="mb-8">
-          <Tabs value={selectedType} onValueChange={setSelectedType}>
-            <TabsList className="w-full bg-card/50 border border-primary/30">
+           <Tabs value={selectedType} onValueChange={setSelectedType} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-card/50 border border-primary/30">
               {rentalTypes.map((type) => (
                 <TabsTrigger
                   key={type}
@@ -141,24 +132,6 @@ export default function RentalsPage() {
               ))}
             </TabsList>
           </Tabs>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {[
-            { icon: Home, label: "Properties", count: "2.5K+" },
-            { icon: Car, label: "Vehicles", count: "800+" },
-            { icon: MapPin, label: "Locations", count: "50+" },
-            { icon: Star, label: "Avg Rating", count: "4.8" }
-          ].map((stat, index) => (
-            <Card key={index} className="bg-card/50 border-primary/20 text-center">
-              <CardContent className="p-4">
-                <stat.icon className="mx-auto mb-2 text-primary" size={24} />
-                <div className="text-2xl font-bold neon-text">{stat.count}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </CardContent>
-            </Card>
-          ))}
         </div>
 
         {/* Rental Listings */}
@@ -174,7 +147,7 @@ export default function RentalsPage() {
                   className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                   data-ai-hint={rental.hint}
                 />
-                <Badge variant="secondary" className="absolute top-2 left-2 bg-primary/80 text-white capitalize">
+                <Badge variant="secondary" className="absolute top-2 left-2 bg-primary/80 text-white capitalize text-xs">
                   {rental.type}
                 </Badge>
                 <div className="absolute top-2 right-2 bg-black/70 px-2 py-1 rounded text-sm text-white flex items-center">
@@ -183,7 +156,7 @@ export default function RentalsPage() {
                 </div>
               </div>
               
-              <CardHeader className="pb-2">
+              <CardHeader className="p-4 pb-2">
                 <CardTitle className="text-lg leading-tight">{rental.name}</CardTitle>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <MapPin size={12} className="mr-1" />
@@ -205,7 +178,7 @@ export default function RentalsPage() {
                 </div>
               </CardHeader>
               
-              <CardContent className="pt-0">
+              <CardContent className="p-4 pt-0">
                 <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                   {rental.description}
                 </p>
@@ -219,7 +192,7 @@ export default function RentalsPage() {
                 </div>
                 
                 <Button variant="neon" className="w-full">
-                  <Zap size={16} />
+                  <Zap size={16} className="mr-2"/>
                   {rental.type === "car" ? "Rent Now" : "View Details"}
                 </Button>
               </CardContent>

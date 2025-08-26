@@ -13,16 +13,38 @@ import {
   X,
   User,
   Package2,
+  Home,
+  ShoppingBag,
+  Gamepad2,
+  Car,
+  Utensils,
+  MessageSquare
 } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { cartCount } = useCart();
 
-  const navItems = [
+  const mainNavItems = [
     { path: '/', label: 'Home'},
     { path: '/products', label: 'Products' },
+  ];
+
+  const allNavItems = [
+    { path: '/', label: 'Home', icon: Home },
+    { path: '/products', label: 'Products', icon: ShoppingBag },
+    { path: '/gaming', label: 'Gaming', icon: Gamepad2 },
+    { path: '/rentals', label: 'Rentals', icon: Car },
+    { path: '/food-delivery', label: 'Food Delivery', icon: Utensils },
+    { path: '/chat', label: 'Chat', icon: MessageSquare },
   ];
 
   const isActive = (path: string) => {
@@ -39,12 +61,12 @@ export function Navigation() {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Package2 className="text-primary-foreground h-5 w-5" />
             </div>
-            <span className="text-xl font-bold text-foreground">Zenith Commerce</span>
+            <span className="text-xl font-bold text-foreground">Zenith</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            {navItems.map((item) => (
+            {mainNavItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
@@ -82,39 +104,52 @@ export function Navigation() {
             </Link>
 
             {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle mobile menu"
-            >
-              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </Button>
+             <div className="md:hidden">
+                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                    <SheetTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Toggle mobile menu"
+                        >
+                          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-[300px] bg-background/95">
+                        <SheetHeader>
+                            <SheetTitle>
+                                <Link href="/" className="flex items-center space-x-3" onClick={() => setIsMobileMenuOpen(false)}>
+                                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                                      <Package2 className="text-primary-foreground h-5 w-5" />
+                                    </div>
+                                    <span className="text-xl font-bold text-foreground">Zenith Commerce</span>
+                                  </Link>
+                            </SheetTitle>
+                        </SheetHeader>
+                        <nav className="mt-8">
+                            <div className="grid gap-2">
+                              {allNavItems.map((item) => (
+                                <Link
+                                  key={item.path}
+                                  href={item.path}
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                                  className={`flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
+                                    isActive(item.path)
+                                      ? 'bg-accent text-accent-foreground'
+                                      : 'text-muted-foreground'
+                                  }`}
+                                >
+                                  <item.icon size={20} />
+                                  {item.label}
+                                </Link>
+                              ))}
+                            </div>
+                        </nav>
+                    </SheetContent>
+                </Sheet>
+            </div>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <nav className="md:hidden pt-2 pb-4">
-            <div className="grid gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
-                    isActive(item.path)
-                      ? 'bg-accent text-accent-foreground'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        )}
       </div>
     </header>
   );
