@@ -85,29 +85,3 @@ All colors MUST be HSL.
     font-family: 'Inter', sans-serif;
   }
 }
-
-@layer utilities {
-  .bg-gradient-hero {
-    background-image: linear-gradient(145deg, hsl(var(--background)) 0%, hsl(var(--primary) / 0.2) 100%);
-  }
-
-  .bg-gradient-secondary {
-    background-image: linear-gradient(145deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
-  }
-
-  .gradient-text {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(145deg, hsl(var(--foreground)), hsl(var(--secondary)));
-  }
-
-  .neon-text {
-    text-shadow:
-      0 0 5px hsl(var(--secondary) / 0.8),
-      0 0 10px hsl(var(--secondary) / 0.6),
-      0 0 15px hsl(var(--secondary) / 0.4);
-  }
-
-  .shadow-glow-cyan {
-    box-shadow: 0 0 15px 0px hsl(var(--secondary) / 0.2);
-  }
-}

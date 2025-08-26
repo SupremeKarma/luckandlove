@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -6,17 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { Search } from 'lucide-react';
 
 const FoodDeliveryPage = () => {
   const [search, setSearch] = useState('');
   
   const restaurants = [
-    { id: '1', name: 'Pizza Palace', image: 'https://placehold.co/600x400.png', category: 'Fast Food', hint: 'pizza restaurant' },
-    { id: '2', name: 'Sushi Stop', image: 'https://placehold.co/600x400.png', category: 'Japanese', hint: 'sushi restaurant' },
-    { id: '3', name: 'Burger Barn', image: 'https://placehold.co/600x400.png', category: 'American', hint: 'burger joint' },
-    { id: '4', name: 'Taco Town', image: 'https://placehold.co/600x400.png', category: 'Mexican', hint: 'taco stand' },
-    { id: '5', name: 'Pasta Place', image: 'https://placehold.co/600x400.png', category: 'Italian', hint: 'italian pasta' },
-    { id: '6', name: 'Salad Station', image: 'https://placehold.co/600x400.png', category: 'Healthy', hint: 'fresh salad' },
+    { id: '1', name: 'Pizza Palace', image: 'https://picsum.photos/600/400', category: 'Fast Food', hint: 'pizza restaurant' },
+    { id: '2', name: 'Sushi Stop', image: 'https://picsum.photos/600/400', category: 'Japanese', hint: 'sushi restaurant' },
+    { id: '3', name: 'Burger Barn', image: 'https://picsum.photos/600/400', category: 'American', hint: 'burger joint' },
+    { id: '4', name: 'Taco Town', image: 'https://picsum.photos/600/400', category: 'Mexican', hint: 'taco stand' },
+    { id: '5', name: 'Pasta Place', image: 'https://picsum.photos/600/400', category: 'Italian', hint: 'italian pasta' },
+    { id: '6', name: 'Salad Station', image: 'https://picsum.photos/600/400', category: 'Healthy', hint: 'fresh salad' },
   ];
 
   const filteredRestaurants = restaurants.filter(
@@ -31,18 +33,19 @@ const FoodDeliveryPage = () => {
         <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">
           Order Food Delivery
         </h1>
-        <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-          Craving something? Find your favorite restaurants and dishes, delivered right to your door.
+        <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+          Craving something? Find your favorite restaurants and get it delivered to your door.
         </p>
       </div>
 
-      <div className="mb-8 max-w-md mx-auto">
+      <div className="mb-8 max-w-md mx-auto relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search restaurants or dishes..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-400"
+            className="pl-10 h-11"
           />
       </div>
 
@@ -55,13 +58,14 @@ const FoodDeliveryPage = () => {
             transition={{ duration: 0.5, delay: index * 0.1 }}
             whileHover={{ scale: 1.03 }}
           >
-            <Card className="flex h-full flex-col overflow-hidden transition-all bg-gray-800/50 border-gray-700 hover:border-primary">
+            <Card className="flex h-full flex-col overflow-hidden transition-all hover:border-primary/50 hover:shadow-md">
               <CardHeader className="p-0">
                   <div className="relative aspect-video w-full">
                     <Image 
                       src={restaurant.image} 
                       alt={restaurant.name} 
-                      fill 
+                      width={600}
+                      height={400}
                       className="object-cover"
                       data-ai-hint={restaurant.hint}
                     />
@@ -69,7 +73,7 @@ const FoodDeliveryPage = () => {
               </CardHeader>
               <CardContent className="p-4 flex flex-col flex-1">
                 <CardTitle className="text-xl font-semibold">{restaurant.name}</CardTitle>
-                <p className="text-sm text-gray-400 mt-1">{restaurant.category}</p>
+                <p className="text-sm text-muted-foreground mt-1">{restaurant.category}</p>
                 <div className="flex-grow" />
                 <Button className="w-full mt-4">View Menu</Button>
               </CardContent>
@@ -78,7 +82,7 @@ const FoodDeliveryPage = () => {
         ))}
       </div>
        {filteredRestaurants.length === 0 && (
-          <div className="text-center text-gray-400 mt-8">
+          <div className="text-center text-muted-foreground mt-8">
             <p>No restaurants found for "{search}". Try a different search.</p>
           </div>
         )}

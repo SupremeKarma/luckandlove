@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Send, 
@@ -89,12 +88,12 @@ const channels: Channel[] = [
 
 
 const UserProfile = () => (
-    <Card className="bg-card/50 border-primary/30">
+    <Card className="bg-card/50">
       <CardContent className="p-4">
         <div className="flex items-center space-x-3">
-          <Avatar className="border-2 border-primary/50">
+          <Avatar>
             <AvatarImage src="" />
-            <AvatarFallback className="bg-primary/20">YU</AvatarFallback>
+            <AvatarFallback>YOU</AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <div className="font-semibold text-sm">You</div>
@@ -109,9 +108,9 @@ const UserProfile = () => (
 );
 
 const ChannelsList = ({activeChannel, setActiveChannel} : {activeChannel: string, setActiveChannel: (channel: string) => void}) => (
-    <Card className="bg-card/50 border-primary/30 flex-1">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center justify-between">
+    <Card className="bg-card/50 flex-1">
+      <CardHeader className="p-4">
+        <CardTitle className="text-base flex items-center justify-between">
           Channels
           <Button variant="ghost" size="icon" className="h-6 w-6">
             <UserPlus size={14} />
@@ -120,16 +119,12 @@ const ChannelsList = ({activeChannel, setActiveChannel} : {activeChannel: string
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[calc(100vh_-_20rem)] sm:h-[300px]">
-          <div className="space-y-1 p-4 pt-0">
+          <div className="space-y-1 p-2">
             {channels.map((channel) => (
               <Button
                 key={channel.id}
                 variant={activeChannel === channel.id ? "secondary" : "ghost"}
-                className={`w-full justify-start text-sm h-8 ${
-                  activeChannel === channel.id 
-                    ? "bg-primary/20 text-primary border border-primary/30" 
-                    : "hover:bg-primary/10"
-                }`}
+                className="w-full justify-start text-sm h-9"
                 onClick={() => setActiveChannel(channel.id)}
               >
                 {channel.type === "text" ? (
@@ -137,8 +132,8 @@ const ChannelsList = ({activeChannel, setActiveChannel} : {activeChannel: string
                 ) : (
                   <Mic size={14} className="mr-2" />
                 )}
-                <span className="truncate">{channel.name}</span>
-                <Badge variant="outline" className="ml-auto text-xs border-primary/30">
+                <span className="truncate flex-1 text-left">{channel.name}</span>
+                <Badge variant="outline" className="ml-2">
                   {channel.memberCount}
                 </Badge>
               </Button>
@@ -149,36 +144,8 @@ const ChannelsList = ({activeChannel, setActiveChannel} : {activeChannel: string
     </Card>
 );
 
-const OnlineUsers = () => (
-    <Card className="bg-card/50 border-primary/30">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center">
-          <Users size={16} className="mr-2" />
-          Online - 1,547
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[200px]">
-          <div className="space-y-2 p-4 pt-0">
-            {["CyberNinja", "QuantumWarrior", "NeonStriker", "DigitalPhantom", "ElectricViper"].map((user, index) => (
-              <div key={user} className="flex items-center space-x-2 text-sm">
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback className="bg-primary/20 text-xs">
-                    {user.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm truncate">{user}</span>
-                <div className="w-2 h-2 bg-green-400 rounded-full ml-auto"></div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
-)
-
 const LeftSidebar = ({activeChannel, setActiveChannel} : {activeChannel: string, setActiveChannel: (channel: string) => void}) => (
-    <div className="space-y-4">
+    <div className="space-y-4 flex flex-col h-full">
         <UserProfile/>
         <ChannelsList activeChannel={activeChannel} setActiveChannel={setActiveChannel} />
     </div>
@@ -247,44 +214,41 @@ export default function Chat() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      <div className="container mx-auto px-4 max-w-7xl h-screen py-4">
+    <div className="bg-background">
+      <div className="container mx-auto px-0 sm:px-4 h-screen py-0 sm:py-4">
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
-            {/* Mobile Sidebar */}
-            <div className="lg:hidden">
-                 <Sheet>
-                    <SheetTrigger asChild>
-                       <Button variant="ghost" size="icon">
-                        <Menu/>
-                       </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="w-[300px] sm:w-[400px] bg-background p-4">
-                        <LeftSidebar activeChannel={activeChannel} setActiveChannel={setActiveChannel}/>
-                    </SheetContent>
-                </Sheet>
-            </div>
+            
           {/* Sidebar - Channels & Users */}
-          <div className="hidden lg:block lg:col-span-1">
+          <div className="hidden lg:block lg:col-span-1 h-full">
                 <LeftSidebar activeChannel={activeChannel} setActiveChannel={setActiveChannel}/>
           </div>
 
           {/* Main Chat Area */}
-          <div className="lg:col-span-3">
-            <Card className="bg-card/50 border-primary/30 h-full flex flex-col">
+          <div className="lg:col-span-3 h-full">
+            <Card className="border-0 sm:border h-full flex flex-col rounded-none sm:rounded-lg">
               {/* Chat Header */}
-              <CardHeader className="pb-3 border-b border-primary/20">
+              <CardHeader className="pb-3 border-b">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Hash size={20} className="text-primary" />
+                    <div className="lg:hidden">
+                      <Sheet>
+                          <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <Menu/>
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent side="left" className="w-[300px] bg-background p-4">
+                              <LeftSidebar activeChannel={activeChannel} setActiveChannel={setActiveChannel}/>
+                          </SheetContent>
+                      </Sheet>
+                    </div>
+                    <Hash size={20} className="text-muted-foreground" />
                     <CardTitle className="text-lg">
                       {channels.find(c => c.id === activeChannel)?.name || "general"}
                     </CardTitle>
-                    <Badge variant="outline" className="border-primary/30">
-                      {channels.find(c => c.id === activeChannel)?.memberCount} members
-                    </Badge>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1">
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <Video size={16} />
                     </Button>
@@ -303,7 +267,7 @@ export default function Chat() {
                       <div key={message.id} className="flex space-x-3 group">
                         <Avatar className="h-8 w-8 flex-shrink-0">
                           <AvatarImage src={message.avatar} />
-                          <AvatarFallback className="bg-primary/20 text-xs">
+                          <AvatarFallback className="bg-muted text-xs">
                             {message.user.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
@@ -324,7 +288,7 @@ export default function Chat() {
                     {isTyping && (
                       <div className="flex space-x-3 text-muted-foreground">
                         <Avatar className="h-8 w-8">
-                          <AvatarFallback className="bg-primary/20 text-xs">AI</AvatarFallback>
+                          <AvatarFallback className="bg-muted text-xs">AI</AvatarFallback>
                         </Avatar>
                         <div className="flex items-center space-x-1 text-sm">
                           <span>AI Assistant is typing</span>
@@ -342,24 +306,22 @@ export default function Chat() {
               </CardContent>
 
               {/* Message Input */}
-              <div className="p-4 border-t border-primary/20">
-                <div className="flex space-x-2">
+              <div className="p-4 border-t bg-background sm:bg-card">
+                <div className="flex items-center space-x-2">
                   <Input
                     placeholder={`Message #${channels.find(c => c.id === activeChannel)?.name || "general"}`}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                    className="flex-1 bg-background/50 border-primary/30"
+                    className="flex-1 bg-background"
                   />
-                  <Button variant="ghost" size="icon" className="h-10 w-10">
-                    <Smile size={16} />
-                  </Button>
                   <Button 
-                    variant="neon" 
+                    variant="default"
                     size="icon" 
-                    className="h-10 w-10"
+                    className="h-10 w-10 flex-shrink-0"
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim()}
+                    aria-label="Send Message"
                   >
                     <Send size={16} />
                   </Button>
