@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,93 +10,56 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Send, 
-  Smile, 
   Settings, 
   UserPlus, 
   Hash, 
-  Users, 
   Mic, 
   Video,
+  Menu,
   Shield,
   Crown,
   Zap,
-  Menu
 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
-
+import { getSupabase } from "@/lib/supabase";
+import type { User as SupabaseUser, SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
+import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Message {
-  id: string;
-  user: string;
+  id: number;
+  channel_id: string;
+  user_id: string;
   content: string;
-  timestamp: Date;
-  avatar?: string;
-  role?: "admin" | "moderator" | "premium" | "user";
+  created_at: string;
+  profiles: { full_name: string } | null;
 }
 
 interface Channel {
   id: string;
   name: string;
   type: "text" | "voice";
-  memberCount: number;
-  isPrivate?: boolean;
 }
 
-const demoMessages: Message[] = [
-  {
-    id: "1",
-    user: "CyberNinja",
-    content: "Just finished the new tournament! That final round was insane 🔥",
-    timestamp: new Date(Date.now() - 300000),
-    role: "premium"
-  },
-  {
-    id: "2",
-    user: "QuantumWarrior",
-    content: "GG everyone! See you in the next championship",
-    timestamp: new Date(Date.now() - 240000),
-    role: "moderator"
-  },
-  {
-    id: "3",
-    user: "NeonStriker",
-    content: "Anyone want to team up for the food delivery challenge? 🍕",
-    timestamp: new Date(Date.now() - 180000),
-    role: "user"
-  },
-  {
-    id: "4",
-    user: "Admin",
-    content: "🚀 New rental properties just added to the platform! Check them out in the #rentals channel",
-    timestamp: new Date(Date.now() - 120000),
-    role: "admin"
-  }
-];
+interface Profile {
+  id: string;
+  full_name: string;
+}
 
-const channels: Channel[] = [
-  { id: "general", name: "general", type: "text", memberCount: 1547 },
-  { id: "gaming", name: "gaming", type: "text", memberCount: 892 },
-  { id: "food", name: "food-talk", type: "text", memberCount: 634 },
-  { id: "rentals", name: "rentals", type: "text", memberCount: 423 },
-  { id: "voice1", name: "Gaming Lounge", type: "voice", memberCount: 12 },
-  { id: "voice2", name: "Chill Zone", type: "voice", memberCount: 8 }
-];
-
-
-const UserProfile = () => (
+const UserProfile = ({ user, profile }: { user: SupabaseUser | null, profile: Profile | null }) => (
     <Card className="bg-card/50">
       <CardContent className="p-4">
         <div className="flex items-center space-x-3">
           <Avatar>
             <AvatarImage src="" />
-            <AvatarFallback>YOU</AvatarFallback>
+            <AvatarFallback>{profile?.full_name?.slice(0, 2).toUpperCase() || user?.email?.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <div className="font-semibold text-sm">You</div>
+            <div className="font-semibold text-sm">{profile?.full_name || 'Anonymous'}</div>
             <div className="text-xs text-muted-foreground">Online</div>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -107,7 +70,7 @@ const UserProfile = () => (
     </Card>
 );
 
-const ChannelsList = ({activeChannel, setActiveChannel} : {activeChannel: string, setActiveChannel: (channel: string) => void}) => (
+const ChannelsList = ({ channels, activeChannel, setActiveChannel, loading }: { channels: Channel[], activeChannel: Channel | null, setActiveChannel: (channel: Channel) => void, loading: boolean }) => (
     <Card className="bg-card/50 flex-1">
       <CardHeader className="p-4">
         <CardTitle className="text-base flex items-center justify-between">
@@ -119,44 +82,174 @@ const ChannelsList = ({activeChannel, setActiveChannel} : {activeChannel: string
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[calc(100vh_-_20rem)] sm:h-[300px]">
-          <div className="space-y-1 p-2">
-            {channels.map((channel) => (
-              <Button
-                key={channel.id}
-                variant={activeChannel === channel.id ? "secondary" : "ghost"}
-                className="w-full justify-start text-sm h-9"
-                onClick={() => setActiveChannel(channel.id)}
-              >
-                {channel.type === "text" ? (
-                  <Hash size={14} className="mr-2" />
-                ) : (
-                  <Mic size={14} className="mr-2" />
-                )}
-                <span className="truncate flex-1 text-left">{channel.name}</span>
-                <Badge variant="outline" className="ml-2">
-                  {channel.memberCount}
-                </Badge>
-              </Button>
-            ))}
-          </div>
+          {loading ? (
+            <div className="space-y-2 p-2">
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}
+            </div>
+          ) : (
+            <div className="space-y-1 p-2">
+              {channels.map((channel) => (
+                <Button
+                  key={channel.id}
+                  variant={activeChannel?.id === channel.id ? "secondary" : "ghost"}
+                  className="w-full justify-start text-sm h-9"
+                  onClick={() => setActiveChannel(channel)}
+                >
+                  {channel.type === "text" ? (
+                    <Hash size={14} className="mr-2" />
+                  ) : (
+                    <Mic size={14} className="mr-2" />
+                  )}
+                  <span className="truncate flex-1 text-left">{channel.name}</span>
+                </Button>
+              ))}
+            </div>
+          )}
         </ScrollArea>
       </CardContent>
     </Card>
 );
 
-const LeftSidebar = ({activeChannel, setActiveChannel} : {activeChannel: string, setActiveChannel: (channel: string) => void}) => (
+const LeftSidebar = ({ user, profile, channels, activeChannel, setActiveChannel, loadingChannels }: { user: SupabaseUser | null, profile: Profile | null, channels: Channel[], activeChannel: Channel | null, setActiveChannel: (channel: Channel) => void, loadingChannels: boolean }) => (
     <div className="space-y-4 flex flex-col h-full">
-        <UserProfile/>
-        <ChannelsList activeChannel={activeChannel} setActiveChannel={setActiveChannel} />
+        <UserProfile user={user} profile={profile}/>
+        <ChannelsList channels={channels} activeChannel={activeChannel} setActiveChannel={setActiveChannel} loading={loadingChannels} />
     </div>
 )
 
 export default function Chat() {
-  const [messages, setMessages] = useState<Message[]>(demoMessages);
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
   const [newMessage, setNewMessage] = useState("");
-  const [activeChannel, setActiveChannel] = useState("general");
-  const [isTyping, setIsTyping] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingChannels, setLoadingChannels] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+  const realtimeChannel = useRef<RealtimeChannel | null>(null);
+  
+  useEffect(() => {
+    try {
+      const supabaseClient = getSupabase();
+      setSupabase(supabaseClient);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) return;
+
+    const fetchUserAndProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user) {
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .eq('id', user.id)
+          .single();
+        if (error) console.error('Error fetching profile', error);
+        else setProfile(profileData);
+      }
+    };
+    fetchUserAndProfile();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+        setUser(session?.user ?? null);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase]);
+  
+  const fetchChannels = useCallback(async () => {
+    if (!supabase) return;
+    setLoadingChannels(true);
+    try {
+      const { data, error } = await supabase
+        .from('channels')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      setChannels(data as Channel[]);
+      if (data.length > 0 && !activeChannel) {
+        setActiveChannel(data[0]);
+      }
+    } catch (error: any) {
+      toast({ title: "Error fetching channels", description: error.message, variant: "destructive" });
+    } finally {
+      setLoadingChannels(false);
+    }
+  }, [supabase, activeChannel, toast]);
+
+  const fetchMessages = useCallback(async (channelId: string) => {
+    if (!supabase) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*, profiles(full_name)')
+        .eq('channel_id', channelId)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      setMessages(data as Message[]);
+    } catch (error: any) {
+      toast({ title: "Error fetching messages", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase, toast]);
+  
+  useEffect(() => {
+    fetchChannels();
+  }, [fetchChannels]);
+
+  useEffect(() => {
+    if (activeChannel) {
+      fetchMessages(activeChannel.id);
+    }
+  }, [activeChannel, fetchMessages]);
+
+  useEffect(() => {
+    if (!supabase || !activeChannel) return;
+
+    // Unsubscribe from previous channel
+    if (realtimeChannel.current) {
+        realtimeChannel.current.unsubscribe();
+    }
+
+    realtimeChannel.current = supabase
+      .channel(`public:messages:channel_id=eq.${activeChannel.id}`)
+      .on<Message>(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `channel_id=eq.${activeChannel.id}` },
+        async (payload) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', payload.new.user_id)
+            .single();
+          
+          const newMessage = { ...payload.new, profiles: profileData };
+          setMessages(currentMessages => [...currentMessages, newMessage as Message]);
+        }
+      )
+      .subscribe();
+      
+      return () => {
+        if(realtimeChannel.current) {
+            realtimeChannel.current.unsubscribe();
+        }
+      }
+
+  }, [supabase, activeChannel]);
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -166,68 +259,33 @@ export default function Chat() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !user || !activeChannel || !supabase) return;
 
-    const message: Message = {
-      id: Date.now().toString(),
-      user: "You",
-      content: newMessage,
-      timestamp: new Date(),
-      role: "user"
-    };
-
-    setMessages([...messages, message]);
+    const content = newMessage.trim();
     setNewMessage("");
+    
+    const { error } = await supabase.from('messages').insert({
+      content,
+      user_id: user.id,
+      channel_id: activeChannel.id,
+    });
 
-    // Simulate typing indicator
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      const botResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        user: "AI Assistant",
-        content: "Thanks for your message! This is a demo response.",
-        timestamp: new Date(),
-        role: "admin"
-      };
-      setMessages(prev => [...prev, botResponse]);
-    }, 2000);
-  };
-
-  const getRoleIcon = (role?: string) => {
-    switch (role) {
-      case "admin": return <Crown size={12} className="text-yellow-400" />;
-      case "moderator": return <Shield size={12} className="text-blue-400" />;
-      case "premium": return <Zap size={12} className="text-purple-400" />;
-      default: return null;
-    }
-  };
-
-  const getRoleColor = (role?: string) => {
-    switch (role) {
-      case "admin": return "text-yellow-400";
-      case "moderator": return "text-blue-400";
-      case "premium": return "text-purple-400";
-      default: return "text-foreground";
+    if (error) {
+      toast({ title: "Error sending message", description: error.message, variant: "destructive" });
+      setNewMessage(content); // Restore message on error
     }
   };
 
   return (
     <div className="bg-background">
       <div className="container mx-auto px-0 sm:px-4 h-screen py-0 sm:py-4">
-
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
-            
-          {/* Sidebar - Channels & Users */}
           <div className="hidden lg:block lg:col-span-1 h-full">
-                <LeftSidebar activeChannel={activeChannel} setActiveChannel={setActiveChannel}/>
+            <LeftSidebar user={user} profile={profile} channels={channels} activeChannel={activeChannel} setActiveChannel={setActiveChannel} loadingChannels={loadingChannels} />
           </div>
-
-          {/* Main Chat Area */}
           <div className="lg:col-span-3 h-full">
             <Card className="border-0 sm:border h-full flex flex-col rounded-none sm:rounded-lg">
-              {/* Chat Header */}
               <CardHeader className="pb-3 border-b">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -239,13 +297,13 @@ export default function Chat() {
                             </Button>
                           </SheetTrigger>
                           <SheetContent side="left" className="w-[300px] bg-background p-4">
-                              <LeftSidebar activeChannel={activeChannel} setActiveChannel={setActiveChannel}/>
+                              <LeftSidebar user={user} profile={profile} channels={channels} activeChannel={activeChannel} setActiveChannel={setActiveChannel} loadingChannels={loadingChannels} />
                           </SheetContent>
                       </Sheet>
                     </div>
-                    <Hash size={20} className="text-muted-foreground" />
+                    {activeChannel && <Hash size={20} className="text-muted-foreground" />}
                     <CardTitle className="text-lg">
-                      {channels.find(c => c.id === activeChannel)?.name || "general"}
+                      {activeChannel?.name || "Select a channel"}
                     </CardTitle>
                   </div>
                   <div className="flex items-center space-x-1">
@@ -259,68 +317,65 @@ export default function Chat() {
                 </div>
               </CardHeader>
 
-              {/* Messages */}
               <CardContent className="flex-1 p-0 overflow-hidden">
                 <ScrollArea className="h-full p-4">
                   <div className="space-y-4">
-                    {messages.map((message) => (
-                      <div key={message.id} className="flex space-x-3 group">
-                        <Avatar className="h-8 w-8 flex-shrink-0">
-                          <AvatarImage src={message.avatar} />
-                          <AvatarFallback className="bg-muted text-xs">
-                            {message.user.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <span className={`font-semibold text-sm ${getRoleColor(message.role)}`}>
-                              {message.user}
-                            </span>
-                            {getRoleIcon(message.role)}
-                            <span className="text-xs text-muted-foreground">
-                              {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-                          <p className="text-sm text-foreground break-words">{message.content}</p>
+                    {loading ? (
+                       <div className="space-y-4">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="flex items-center space-x-3">
+                               <Skeleton className="h-8 w-8 rounded-full" />
+                               <div className="space-y-2">
+                                  <Skeleton className="h-4 w-[250px]" />
+                                  <Skeleton className="h-4 w-[200px]" />
+                               </div>
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                    ))}
-                    {isTyping && (
-                      <div className="flex space-x-3 text-muted-foreground">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="bg-muted text-xs">AI</AvatarFallback>
-                        </Avatar>
-                        <div className="flex items-center space-x-1 text-sm">
-                          <span>AI Assistant is typing</span>
-                          <div className="flex space-x-1">
-                            <div className="w-1 h-1 bg-primary rounded-full animate-pulse"></div>
-                            <div className="w-1 h-1 bg-primary rounded-full animate-pulse delay-100"></div>
-                            <div className="w-1 h-1 bg-primary rounded-full animate-pulse delay-200"></div>
+                    ) : (
+                      messages.map((message) => (
+                        <div key={message.id} className="flex space-x-3 group">
+                          <Avatar className="h-8 w-8 flex-shrink-0">
+                            <AvatarImage src="" />
+                            <AvatarFallback className="bg-muted text-xs">
+                              {message.profiles?.full_name?.slice(0, 2).toUpperCase() || 'AN'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className={`font-semibold text-sm`}>
+                                {message.profiles?.full_name || 'Anonymous'}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <p className="text-sm text-foreground break-words">{message.content}</p>
                           </div>
                         </div>
-                      </div>
+                      ))
                     )}
                     <div ref={messagesEndRef} />
                   </div>
                 </ScrollArea>
               </CardContent>
 
-              {/* Message Input */}
               <div className="p-4 border-t bg-background sm:bg-card">
                 <div className="flex items-center space-x-2">
                   <Input
-                    placeholder={`Message #${channels.find(c => c.id === activeChannel)?.name || "general"}`}
+                    placeholder={user ? `Message #${activeChannel?.name || "..."}` : "Please log in to chat"}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                     className="flex-1 bg-background"
+                    disabled={!user || !activeChannel}
                   />
                   <Button 
                     variant="default"
                     size="icon" 
                     className="h-10 w-10 flex-shrink-0"
                     onClick={handleSendMessage}
-                    disabled={!newMessage.trim()}
+                    disabled={!newMessage.trim() || !user || !activeChannel}
                     aria-label="Send Message"
                   >
                     <Send size={16} />
@@ -329,9 +384,10 @@ export default function Chat() {
               </div>
             </Card>
           </div>
-
         </div>
       </div>
     </div>
   );
 }
+
+    
