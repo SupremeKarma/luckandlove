@@ -13,6 +13,7 @@ import type { Shop } from '@/lib/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 const FoodDeliveryPage = () => {
   const [search, setSearch] = useState('');
@@ -147,7 +148,9 @@ const FoodDeliveryPage = () => {
                     </div>
                   </div>
 
-                  <Button className="w-full mt-4">View Menu</Button>
+                  <Button asChild className="w-full mt-4">
+                    <Link href={`/shop/${shop.id}`}>View Products</Link>
+                  </Button>
                 </CardContent>
               </Card>
              </motion.div>

@@ -13,6 +13,7 @@ export interface Product {
   stock: number;
   subcategory?: string;
   rating?: number;
+  shop_id?: string;
 }
 
 export interface CartItem extends Product {
