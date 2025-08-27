@@ -37,6 +37,10 @@ export function Navigation() {
   const mainNavItems = [
     { path: '/', label: 'Home'},
     { path: '/products', label: 'Products' },
+    { path: '/food-delivery', label: 'Food'},
+    { path: '/wholesale', label: 'Wholesale'},
+    { path: '/gaming', label: 'Gaming'},
+    { path: '/rentals', label: 'Rentals'},
   ];
 
   const allNavItems = [
