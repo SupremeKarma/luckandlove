@@ -18,7 +18,8 @@ import {
   Gamepad2,
   Car,
   Utensils,
-  MessageSquare
+  MessageSquare,
+  Archive
 } from 'lucide-react';
 import {
   Sheet,
@@ -42,8 +43,9 @@ export function Navigation() {
     { path: '/', label: 'Home', icon: Home },
     { path: '/products', label: 'Products', icon: ShoppingBag },
     { path: '/gaming', label: 'Gaming', icon: Gamepad2 },
-    { path: '/rentals', label: 'Rentals', icon: Car },
     { path: '/food-delivery', label: 'Food Delivery', icon: Utensils },
+    { path: '/wholesale', label: 'Wholesale', icon: Archive },
+    { path: '/rentals', label: 'Rentals', icon: Car },
     { path: '/chat', label: 'Chat', icon: MessageSquare },
   ];
 

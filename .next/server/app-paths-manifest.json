@@ -1,8 +1,10 @@
 {
   "/account/page": "app/account/page.js",
+  "/gaming/page": "app/gaming/page.js",
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
   "/products/[productId]/page": "app/products/[productId]/page.js",
   "/products/page": "app/products/page.js",
-  "/register/page": "app/register/page.js"
+  "/register/page": "app/register/page.js",
+  "/rentals/page": "app/rentals/page.js"
 }

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Gamepad2, Utensils, Car, Home, ShoppingBag, MessageSquare } from 'lucide-react';
+import { Gamepad2, Utensils, Car, Home, ShoppingBag, MessageSquare, Archive } from 'lucide-react';
 import { Button } from './ui/button';
 import Link from 'next/link';
 
@@ -34,6 +34,15 @@ const features = [
     color: 'from-orange-500/20 to-red-500/20',
     borderColor: 'border-orange-500/50',
     buttonClass: 'bg-orange-600 hover:bg-orange-700',
+  },
+  {
+    title: 'Wholesale',
+    description: 'Buy in bulk and save. All your business and home needs in one place.',
+    icon: Archive,
+    href: '/wholesale',
+    color: 'from-yellow-500/20 to-amber-500/20',
+    borderColor: 'border-yellow-500/50',
+    buttonClass: 'bg-yellow-600 hover:bg-yellow-700',
   },
   {
     title: 'Property Rentals',
