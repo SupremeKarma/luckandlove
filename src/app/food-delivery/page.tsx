@@ -1,30 +1,70 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, Star, Clock, CircleDollarSign } from 'lucide-react';
+import { getSupabase } from '@/lib/supabase';
+import type { Shop } from '@/lib/types';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 const FoodDeliveryPage = () => {
   const [search, setSearch] = useState('');
-  
-  const restaurants = [
-    { id: '1', name: 'Pizza Palace', image: 'https://picsum.photos/600/400', category: 'Fast Food', hint: 'pizza restaurant' },
-    { id: '2', name: 'Sushi Stop', image: 'https://picsum.photos/600/400', category: 'Japanese', hint: 'sushi restaurant' },
-    { id: '3', name: 'Burger Barn', image: 'https://picsum.photos/600/400', category: 'American', hint: 'burger joint' },
-    { id: '4', name: 'Taco Town', image: 'https://picsum.photos/600/400', category: 'Mexican', hint: 'taco stand' },
-    { id: '5', name: 'Pasta Place', image: 'https://picsum.photos/600/400', category: 'Italian', hint: 'italian pasta' },
-    { id: '6', name: 'Salad Station', image: 'https://picsum.photos/600/400', category: 'Healthy', hint: 'fresh salad' },
-  ];
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
-  const filteredRestaurants = restaurants.filter(
-    (restaurant) =>
-      restaurant.name.toLowerCase().includes(search.toLowerCase()) ||
-      restaurant.category.toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+    try {
+      const supabaseClient = getSupabase();
+      setSupabase(supabaseClient);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchShops = async () => {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.from('shops').select('*');
+        if (error) throw error;
+        if (data) {
+          const shopsData = data.map(s => ({
+            ...s,
+            imageUrl: s.image_url,
+            deliveryTimeMinutes: s.delivery_time_minutes,
+            deliveryFee: s.delivery_fee,
+          })) as Shop[];
+          setShops(shopsData);
+        }
+      } catch (error) {
+        console.error("Error fetching shops:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (supabase) {
+      fetchShops();
+    }
+  }, [supabase]);
+
+  const filteredShops = shops.filter(
+    (shop) =>
+      shop.name.toLowerCase().includes(search.toLowerCase()) ||
+      shop.category.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -49,39 +89,72 @@ const FoodDeliveryPage = () => {
           />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRestaurants.map((restaurant, index) => (
-          <motion.div
-            key={restaurant.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            whileHover={{ scale: 1.03 }}
-          >
-            <Card className="flex h-full flex-col overflow-hidden transition-all hover:border-primary/50 hover:shadow-md">
-              <CardHeader className="p-0">
-                  <div className="relative aspect-video w-full">
-                    <Image 
-                      src={restaurant.image} 
-                      alt={restaurant.name} 
-                      width={600}
-                      height={400}
-                      className="object-cover"
-                      data-ai-hint={restaurant.hint}
-                    />
-                  </div>
-              </CardHeader>
-              <CardContent className="p-4 flex flex-col flex-1">
-                <CardTitle className="text-xl font-semibold">{restaurant.name}</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">{restaurant.category}</p>
-                <div className="flex-grow" />
-                <Button className="w-full mt-4">View Menu</Button>
-              </CardContent>
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="space-y-4 p-4">
+              <Skeleton className="h-40 w-full" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-4 w-1/4" />
+              </div>
+              <Skeleton className="h-10 w-full" />
             </Card>
-           </motion.div>
-        ))}
-      </div>
-       {filteredRestaurants.length === 0 && (
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredShops.map((shop, index) => (
+            <motion.div
+              key={shop.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ y: -5 }}
+              className="h-full"
+            >
+              <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+                <CardHeader className="p-0">
+                    <div className="relative aspect-video w-full">
+                      <Image 
+                        src={shop.imageUrl} 
+                        alt={shop.name} 
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        data-ai-hint={`${shop.category} restaurant`}
+                      />
+                       <Badge className="absolute top-2 right-2 flex items-center gap-1">
+                          <Star className="h-3 w-3" /> {shop.rating.toFixed(1)}
+                        </Badge>
+                    </div>
+                </CardHeader>
+                <CardContent className="p-4 flex flex-col flex-1">
+                  <Badge variant="outline" className="w-fit mb-2">{shop.category}</Badge>
+                  <CardTitle className="text-xl font-semibold">{shop.name}</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1 flex-grow">{shop.description}</p>
+                  
+                  <div className="flex items-center justify-between text-sm text-muted-foreground mt-4">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      <span>{shop.deliveryTimeMinutes} min</span>
+                    </div>
+                     <div className="flex items-center gap-1.5">
+                      <CircleDollarSign className="h-4 w-4" />
+                      <span>${shop.deliveryFee.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <Button className="w-full mt-4">View Menu</Button>
+                </CardContent>
+              </Card>
+             </motion.div>
+          ))}
+        </div>
+      )}
+       {filteredShops.length === 0 && !loading && (
           <div className="text-center text-muted-foreground mt-8">
             <p>No restaurants found for "{search}". Try a different search.</p>
           </div>

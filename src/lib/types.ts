@@ -41,3 +41,24 @@ export interface Tournament {
   imageUrl?: string;
   hint?: string;
 }
+
+export interface Shop {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  category: string;
+  rating: number;
+  deliveryTimeMinutes: number;
+  deliveryFee: number;
+}
+
+export interface MenuItem {
+  id: string;
+  shop_id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  category: string;
+}
