@@ -1,65 +1,69 @@
 
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Users, Calendar, Target, Award, GamepadIcon } from "lucide-react";
+import { Trophy, Calendar, Target } from "lucide-react";
 import Image from "next/image";
-
-const tournaments = [
-  {
-    id: "1",
-    name: "Cyber Battle Royale 2085",
-    game: "Free Fire",
-    prize: 10000,
-    participants: 2847,
-    maxParticipants: 5000,
-    entryFee: 25,
-    startDate: "2024-12-15",
-    status: "Open",
-    difficulty: "Pro",
-    image: "https://picsum.photos/600/400",
-    hint: "battle royale game"
-  },
-  {
-    id: "2",
-    name: "Neural Strike Championship",
-    game: "CS:GO",
-    prize: 15000,
-    participants: 1256,
-    maxParticipants: 2000,
-    entryFee: 50,
-    startDate: "2024-12-20",
-    status: "Open",
-    difficulty: "Elite",
-    image: "https://picsum.photos/600/400",
-    hint: "csgo tournament"
-  },
-  {
-    id: "3",
-    name: "Quantum Quest Tournament",
-    game: "Valorant",
-    prize: 8000,
-    participants: 892,
-    maxParticipants: 1500,
-    entryFee: 20,
-    startDate: "2024-12-18",
-    status: "Registration",
-    difficulty: "Amateur",
-    image: "https://picsum.photos/600/400",
-    hint: "valorant tournament"
-  }
-];
+import { getSupabase } from "@/lib/supabase";
+import type { Tournament } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const games = ["All", "Free Fire", "PUBG", "CS:GO", "Valorant", "Fortnite"];
 const difficulties = ["All", "Amateur", "Pro", "Elite"];
 
 export default function GamingPage() {
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [selectedGame, setSelectedGame] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
+
+  useEffect(() => {
+    try {
+      const supabaseClient = getSupabase();
+      setSupabase(supabaseClient);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.from('tournaments').select('*');
+        if (error) throw error;
+        if (data) {
+           const tournamentsData = data.map(t => ({
+            ...t,
+            imageUrl: t.image_url,
+            startDate: t.start_date,
+            maxParticipants: t.max_participants,
+            entryFee: t.entry_fee
+          })) as Tournament[];
+          setTournaments(tournamentsData);
+        }
+      } catch (error) {
+        console.error("Error fetching tournaments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (supabase) {
+      fetchTournaments();
+    }
+  }, [supabase]);
 
   const filteredTournaments = tournaments.filter(tournament => {
     const matchesGame = selectedGame === "All" || tournament.game === selectedGame;
@@ -127,73 +131,84 @@ export default function GamingPage() {
             </Card>
           </div>
         
-
-        {/* Tournament Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTournaments.map((tournament) => {
-            const participationPercentage = (tournament.participants / tournament.maxParticipants) * 100;
-            
-            return (
-              <Card key={tournament.id} className="group bg-card overflow-hidden transition-all duration-300 hover:shadow-md hover:border-primary/50">
-                <div className="relative">
-                  <Image
-                    src={tournament.image}
-                    alt={tournament.name}
-                    width={600}
-                    height={400}
-                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                    data-ai-hint={tournament.hint}
-                  />
-                  <Badge 
-                    variant="outline" 
-                    className={`absolute top-2 left-2 text-xs ${getDifficultyColor(tournament.difficulty)}`}
-                  >
-                    {tournament.difficulty}
-                  </Badge>
-                  <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
-                    {tournament.game}
-                  </Badge>
-                </div>
-                
-                <CardHeader className="p-4">
-                  <CardTitle className="text-lg leading-tight">{tournament.name}</CardTitle>
-                  <div className="flex items-center text-accent font-bold pt-1">
-                      <Trophy className="mr-2" size={20} />
-                      <span>${tournament.prize.toLocaleString()}</span>
-                    </div>
-                </CardHeader>
-                
-                <CardContent className="p-4 pt-0">
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Participants</span>
-                      <span>{tournament.participants.toLocaleString()} / {tournament.maxParticipants.toLocaleString()}</span>
-                    </div>
-                    <Progress value={participationPercentage} className="h-2 bg-muted" />
-                    
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Starts</span>
-                      <span className="flex items-center"><Calendar size={14} className="mr-1.5"/>{new Date(tournament.startDate).toLocaleDateString()}</span>
-                    </div>
-                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Entry Fee</span>
-                      <span>${tournament.entryFee}</span>
-                    </div>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="space-y-4 p-4">
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-10 w-full" />
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTournaments.map((tournament) => {
+              const participationPercentage = (tournament.participants / tournament.maxParticipants) * 100;
+              
+              return (
+                <Card key={tournament.id} className="group bg-card overflow-hidden transition-all duration-300 hover:shadow-md hover:border-primary/50">
+                  <div className="relative">
+                    <Image
+                      src={tournament.imageUrl || 'https://picsum.photos/600/400'}
+                      alt={tournament.name}
+                      width={600}
+                      height={400}
+                      className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                      data-ai-hint={tournament.hint || 'gaming tournament'}
+                    />
+                    <Badge 
+                      variant="outline" 
+                      className={`absolute top-2 left-2 text-xs ${getDifficultyColor(tournament.difficulty)}`}
+                    >
+                      {tournament.difficulty}
+                    </Badge>
+                    <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
+                      {tournament.game}
+                    </Badge>
                   </div>
                   
-                  <Button 
-                    variant="default" 
-                    className="w-full"
-                    disabled={tournament.status === "Full"}
-                  >
-                    <Target size={16} className="mr-2" />
-                    {tournament.status === "Full" ? "Tournament Full" : "Join Tournament"}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  <CardHeader className="p-4">
+                    <CardTitle className="text-lg leading-tight">{tournament.name}</CardTitle>
+                    <div className="flex items-center text-accent font-bold pt-1">
+                        <Trophy className="mr-2" size={20} />
+                        <span>${tournament.prize.toLocaleString()}</span>
+                      </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-4 pt-0">
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Participants</span>
+                        <span>{tournament.participants.toLocaleString()} / {tournament.maxParticipants.toLocaleString()}</span>
+                      </div>
+                      <Progress value={participationPercentage} className="h-2 bg-muted" />
+                      
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Starts</span>
+                        <span className="flex items-center"><Calendar size={14} className="mr-1.5"/>{new Date(tournament.startDate).toLocaleDateString()}</span>
+                      </div>
+                       <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Entry Fee</span>
+                        <span>${tournament.entryFee}</span>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      variant="default" 
+                      className="w-full"
+                      disabled={tournament.status === "Full"}
+                    >
+                      <Target size={16} className="mr-2" />
+                      {tournament.status === "Full" ? "Tournament Full" : "Join Tournament"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

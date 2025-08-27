@@ -26,3 +26,18 @@ export interface Order {
     total: number;
     status: 'Processing' | 'Shipped' | 'Delivered';
 }
+
+export interface Tournament {
+  id: string;
+  name: string;
+  game: string;
+  prize: number;
+  participants: number;
+  maxParticipants: number;
+  entryFee: number;
+  startDate: string;
+  status: string;
+  difficulty: string;
+  imageUrl?: string;
+  hint?: string;
+}
