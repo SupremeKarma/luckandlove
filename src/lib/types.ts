@@ -5,7 +5,7 @@ export interface Category {
 
 export interface Product {
   id: string;
-  name: string;
+  name:string;
   description: string;
   price: number;
   category: string;
