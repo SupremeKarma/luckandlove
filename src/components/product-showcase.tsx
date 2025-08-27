@@ -12,13 +12,15 @@ export function ProductShowcase() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
       const supabaseClient = getSupabase();
       setSupabase(supabaseClient);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
+      setError('Could not connect to the database.');
       setLoading(false);
     }
   }, []);
@@ -31,15 +33,16 @@ export function ProductShowcase() {
       }
 
       setLoading(true);
+      setError(null);
 
       try {
-        const { data, error } = await supabase
+        const { data, error: queryError } = await supabase
           .from('products')
           .select('*')
-          .limit(8); // Limit to 8 products for the showcase
+          .limit(8);
 
-        if (error) {
-          throw error;
+        if (queryError) {
+          throw queryError;
         }
 
         if (data) {
@@ -51,8 +54,9 @@ export function ProductShowcase() {
         } else {
           setProducts([]);
         }
-      } catch (error) {
-        console.error('Error fetching products:', error);
+      } catch (err: any) {
+        console.error('Error fetching products:', err.message || err);
+        setError('Could not load featured products.');
         setProducts([]);
       } finally {
         setLoading(false);
@@ -84,6 +88,10 @@ export function ProductShowcase() {
                 <Skeleton className="h-6 w-1/2" />
               </div>
             ))}
+          </div>
+        ) : error ? (
+          <div className="text-center text-destructive mt-16">
+             <p className="text-xl">{error}</p>
           </div>
         ) : (
           <>
