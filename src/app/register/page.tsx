@@ -43,7 +43,10 @@ export default function RegisterPage() {
         password,
       });
       
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        // Throw the specific error from Supabase to be caught by the catch block
+        throw signUpError;
+      }
 
       if (!authData.user) {
         throw new Error("User registration failed, no user returned.");
@@ -61,10 +64,10 @@ export default function RegisterPage() {
       
       toast({
         title: 'Registration Successful',
-        description: 'Please check your email to verify your account.',
+        description: 'You have been successfully logged in.',
       });
       
-      router.push('/login');
+      router.push('/account');
 
     } catch (error: any) {
       // Display the specific error message from Supabase or our custom error
