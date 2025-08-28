@@ -8,8 +8,6 @@ import { Label } from '@/components/ui/label';
 import { getSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -18,9 +16,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const { toast } = useToast();
-  const router = useRouter();
-
+  
   const supabase = getSupabase();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -40,12 +36,13 @@ export default function RegisterPage() {
 
     try {
       // Sign up the user with their full name in the metadata
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({ 
+      // The database trigger will use this to create the profile.
+      const { data, error: signUpError } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
           data: {
-            full_name: name
+            full_name: name,
           }
         }
       });
@@ -53,15 +50,14 @@ export default function RegisterPage() {
       if (signUpError) {
         throw signUpError;
       }
-
-      // If email confirmation is required, the user object will exist but the session will be null.
-      // This is the expected flow. The database trigger will handle profile creation.
-      if (authData.user) {
-        setSuccessMessage("Registration successful! Please check your email to confirm your account.");
-      }
+      
+      // If email confirmation is required, signUpError will be null, and data.user will exist.
+      // This is the expected flow. The database trigger handles profile creation.
+      setSuccessMessage("Registration successful! Please check your email to confirm your account.");
 
     } catch (error: any) {
       console.error("Registration Error:", error);
+      // Display the actual error message from Supabase
       setError(error.message || 'An unknown error occurred during registration.');
     }
   };
