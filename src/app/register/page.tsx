@@ -55,23 +55,9 @@ export default function RegisterPage() {
       }
 
       // If email confirmation is required, the user object will exist but the session will be null.
-      if (authData.user && !authData.session) {
+      // This is the expected flow. The database trigger will handle profile creation.
+      if (authData.user) {
         setSuccessMessage("Registration successful! Please check your email to confirm your account.");
-      } else if (authData.user && authData.session) {
-        // This case handles instant login if email confirmation is off.
-        // We still need to update the profile manually if the trigger isn't used.
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ full_name: name })
-          .eq('id', authData.user.id);
-          
-        if (profileError) throw profileError;
-
-        toast({
-          title: 'Registration Successful',
-          description: 'You have been successfully logged in.',
-        });
-        router.push('/account');
       }
 
     } catch (error: any) {
