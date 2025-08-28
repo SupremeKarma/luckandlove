@@ -226,10 +226,11 @@ export default function Chat() {
 
     realtimeChannel.current = supabase
       .channel(`public:messages:channel_id=eq.${activeChannel.id}`)
-      .on<Message>(
+      .on<Omit<Message, 'profiles'>>(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `channel_id=eq.${activeChannel.id}` },
         async (payload) => {
+          // Manually fetch the profile for the new message
           const { data: profileData } = await supabase
             .from('profiles')
             .select('full_name')
@@ -389,5 +390,3 @@ export default function Chat() {
     </div>
   );
 }
-
-    
