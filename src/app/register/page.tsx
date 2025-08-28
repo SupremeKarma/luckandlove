@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const { toast } = useToast();
   const router = useRouter();
 
@@ -25,6 +26,7 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -37,42 +39,44 @@ export default function RegisterPage() {
     }
 
     try {
-      // Step 1: Sign up the user
+      // Sign up the user with their full name in the metadata
       const { data: authData, error: signUpError } = await supabase.auth.signUp({ 
         email, 
         password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
       });
       
       if (signUpError) {
-        // Throw the specific error from Supabase to be caught by the catch block
         throw signUpError;
       }
 
-      if (!authData.user) {
-        throw new Error("User registration failed, no user returned.");
-      }
+      // If email confirmation is required, the user object will exist but the session will be null.
+      if (authData.user && !authData.session) {
+        setSuccessMessage("Registration successful! Please check your email to confirm your account.");
+      } else if (authData.user && authData.session) {
+        // This case handles instant login if email confirmation is off.
+        // We still need to update the profile manually if the trigger isn't used.
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ full_name: name })
+          .eq('id', authData.user.id);
+          
+        if (profileError) throw profileError;
 
-      // Step 2: Manually insert the profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({ id: authData.user.id, full_name: name });
-
-      if (profileError) {
-        // This gives us a more specific error if profile creation fails
-        throw new Error(`Error creating profile: ${profileError.message}`);
+        toast({
+          title: 'Registration Successful',
+          description: 'You have been successfully logged in.',
+        });
+        router.push('/account');
       }
-      
-      toast({
-        title: 'Registration Successful',
-        description: 'You have been successfully logged in.',
-      });
-      
-      router.push('/account');
 
     } catch (error: any) {
-      // Display the specific error message from Supabase or our custom error
-      setError(error.message || 'An unknown error occurred.');
       console.error("Registration Error:", error);
+      setError(error.message || 'An unknown error occurred during registration.');
     }
   };
 
@@ -84,28 +88,34 @@ export default function RegisterPage() {
           <CardDescription>Join Zenith Commerce to start shopping.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4" onSubmit={handleRegister}>
-             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" type="text" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
+          {successMessage ? (
+            <div className="text-center text-green-500 bg-green-500/10 p-4 rounded-md">
+                <p>{successMessage}</p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john.doe@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input id="confirm-password" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-            </div>
-            {error && <p className="text-destructive text-sm">{error}</p>}
-            <Button type="submit" className="w-full">
-              Create Account
-            </Button>
-          </form>
+          ) : (
+            <form className="space-y-4" onSubmit={handleRegister}>
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input id="name" type="text" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="john.doe@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input id="confirm-password" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              </div>
+              {error && <p className="text-destructive text-sm">{error}</p>}
+              <Button type="submit" className="w-full">
+                Create Account
+              </Button>
+            </form>
+          )}
            <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
             <Link href="/login" className="font-medium text-primary hover:underline">
