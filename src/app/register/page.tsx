@@ -34,7 +34,7 @@ export default function RegisterPage() {
     if (!supabase) return;
 
     try {
-      const { data, error } = await supabase.auth.signUp({ 
+      const { data, error: signUpError } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
@@ -44,11 +44,10 @@ export default function RegisterPage() {
         }
       });
       
-      if (error) throw error;
+      if (signUpError) throw signUpError;
       
-      if (data.user) {
-         // The trigger will automatically create a profile row.
-      }
+      // The trigger should have created the profile.
+      // We don't need to manually insert it here anymore.
 
       toast({
         title: 'Registration Successful',
@@ -58,7 +57,9 @@ export default function RegisterPage() {
       router.push('/login');
 
     } catch (error: any) {
-      setError(error.message);
+      // Display the specific error message from Supabase
+      setError(error.message || 'An unknown error occurred.');
+      console.error("Registration Error:", error);
     }
   };
 
