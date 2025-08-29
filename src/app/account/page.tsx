@@ -14,8 +14,8 @@ import { getSupabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import type { User as SupabaseUser, SupabaseClient } from '@supabase/supabase-js';
+import { RequireAuth } from '@/components/require-auth';
 
 interface Address {
   id?: string;
@@ -26,11 +26,10 @@ interface Address {
   country: string;
 }
 
-export default function AccountPage() {
+function AccountPageContent() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [newAddress, setNewAddress] = useState<Address>({ street: '', city: '', state: '', zip: '', country: '' });
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
@@ -44,14 +43,12 @@ export default function AccountPage() {
       setSupabase(supabaseClient);
     } catch (error) {
       console.error(error);
-      setLoading(false);
     }
   }, []);
   
   useEffect(() => {
     const fetchUserAndProfile = async () => {
       if (!supabase) {
-        setLoading(false);
         return;
       }
       
@@ -90,7 +87,6 @@ export default function AccountPage() {
             console.error('Error fetching profile:', error);
         }
       }
-      setLoading(false);
     };
 
     if (supabase) {
@@ -169,27 +165,9 @@ export default function AccountPage() {
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
     router.push('/');
   };
-
-  if (loading) {
-    return <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">Loading...</div>;
-  }
-
+  
   if (!user) {
-    return (
-      <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>Please log in to view your account details.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/login">
-              <Button className="w-full">Go to Login</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return null; // The RequireAuth wrapper will handle the loading/redirect state
   }
 
   return (
@@ -350,4 +328,11 @@ export default function AccountPage() {
   );
 }
 
-    
+
+export default function AccountPage() {
+  return (
+    <RequireAuth redirectTo="/login">
+      <AccountPageContent />
+    </RequireAuth>
+  )
+}
