@@ -1,5 +1,4 @@
+
 {
-  "projects": {
-    "default": "zenith-commerce-59d83"
-  }
+  "projects": { "default": "YOUR_FIREBASE_PROJECT_ID" }
 }

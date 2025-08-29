@@ -6,14 +6,7 @@ dotenv.config({ path: '.env.local' });
 
 const nextConfig: NextConfig = {
   output: 'export',
-  /* config options here */
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  images: {
+  images: { 
     unoptimized: true,
     remotePatterns: [
       {
@@ -57,7 +50,7 @@ const nextConfig: NextConfig = {
         hostname: 'www.gopro.com',
       },
       {
-        protocol: 'https',
+        protocol: 'httpss',
         hostname: 'dyson-h.assetsadobe2.com',
       },
       {
@@ -85,6 +78,13 @@ const nextConfig: NextConfig = {
         hostname: 'www.vitamix.com',
       }
     ],
+  },
+  /* config options here */
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
