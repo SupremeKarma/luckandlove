@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useCart } from '@/context/cart-context';
+import { useAuth } from '@/context/auth-context';
 import {
   ShoppingCart,
   Menu,
@@ -19,7 +20,8 @@ import {
   Car,
   Utensils,
   MessageSquare,
-  Archive
+  Archive,
+  Shield,
 } from 'lucide-react';
 import {
   Sheet,
@@ -33,6 +35,7 @@ export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { cartCount } = useCart();
+  const { role } = useAuth();
 
   const mainNavItems = [
     { path: '/', label: 'Home'},
@@ -41,6 +44,7 @@ export function Navigation() {
     { path: '/wholesale', label: 'Wholesale'},
     { path: '/gaming', label: 'Gaming'},
     { path: '/rentals', label: 'Rentals'},
+    ...(role === 'admin' ? [{ path: '/admin/users', label: 'Admin' }] : []),
   ];
 
   const allNavItems = [
@@ -51,10 +55,12 @@ export function Navigation() {
     { path: '/wholesale', label: 'Wholesale', icon: Archive },
     { path: '/rentals', label: 'Rentals', icon: Car },
     { path: '/chat', label: 'Chat', icon: MessageSquare },
+    ...(role === 'admin' ? [{ path: '/admin/users', label: 'Admin', icon: Shield }] : []),
   ];
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === path;
+    if (path.startsWith('/admin')) return pathname.startsWith('/admin');
     return pathname.startsWith(path);
   };
 
