@@ -11,8 +11,16 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export function SignInWithGithubButton() {
   const { signInWithOAuth, loading } = useAuth();
+
+  function handleClick() {
+    if (typeof window !== "undefined") {
+      try { localStorage.setItem("returnTo", window.location.pathname + window.location.search); } catch {}
+    }
+    void signInWithOAuth("github");
+  }
+
   return (
-    <Button disabled={loading} variant="outline" className="w-full" onClick={() => signInWithOAuth("github")}>
+    <Button disabled={loading} variant="outline" className="w-full" onClick={handleClick}>
       <GithubIcon className="mr-2 h-4 w-4" />
       {loading ? "Signing in..." : "Sign in with GitHub"}
     </Button>

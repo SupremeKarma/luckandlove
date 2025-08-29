@@ -63,3 +63,14 @@ export interface MenuItem {
   imageUrl: string;
   category: string;
 }
+
+export type ProfileRole = "user" | "admin";
+
+export type Profile = {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: ProfileRole;
+  updated_at: string;
+};

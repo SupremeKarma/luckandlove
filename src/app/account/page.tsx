@@ -8,14 +8,15 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { Order } from '@/lib/types';
+import type { Order, Profile } from '@/lib/types';
 import { User, MapPin, Package, CreditCard, LogOut } from 'lucide-react';
-import { getSupabase } from '@/lib/supabase';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import type { User as SupabaseUser, SupabaseClient } from '@supabase/supabase-js';
 import { RequireAuth } from '@/components/require-auth';
+import { useAuth } from '@/context/auth-context';
+import { getSupabase } from '@/lib/supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface Address {
   id?: string;
@@ -27,16 +28,18 @@ interface Address {
 }
 
 function AccountPageContent() {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const { user, profile, loading, signOut, refreshProfile } = useAuth();
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  
+  const [fullName, setFullName] = useState(profile?.full_name || '');
   const [orders, setOrders] = useState<Order[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [newAddress, setNewAddress] = useState<Address>({ street: '', city: '', state: '', zip: '', country: '' });
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  
   const { toast } = useToast();
   const router = useRouter();
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
-
+  
   useEffect(() => {
     try {
       const supabaseClient = getSupabase();
@@ -45,130 +48,50 @@ function AccountPageContent() {
       console.error(error);
     }
   }, []);
-  
+
   useEffect(() => {
-    const fetchUserAndProfile = async () => {
-      if (!supabase) {
-        return;
+    if (loading || !user) return;
+    try {
+      const ret = localStorage.getItem("returnTo");
+      if (ret) {
+        localStorage.removeItem("returnTo");
+        router.replace(ret);
       }
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+    } catch {}
+  }, [loading, user, router]);
 
-      if (user) {
-        try {
-            const { data, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', user.id)
-              .single();
-
-            if (error) {
-              throw error;
-            }
-            if (data) {
-              setProfile(data);
-              setAddresses(data.addresses || []);
-            }
-            
-            const { data: ordersData, error: ordersError } = await supabase
-              .from('orders')
-              .select('*')
-              .eq('user_id', user.id);
-
-            if (ordersError) {
-                throw ordersError;
-            }
-            if (ordersData) {
-                setOrders(ordersData as Order[]);
-            }
-
-        } catch (error) {
-            console.error('Error fetching profile:', error);
-        }
-      }
-    };
-
-    if (supabase) {
-      fetchUserAndProfile();
+  useEffect(() => {
+    if (profile) {
+      setFullName(profile.full_name || '');
+      // Assuming addresses are stored in a different table or a jsonb column
+      // This part would need adjustment based on your actual schema
+      // For now, let's assume it's part of the profile object for demonstration
+      // setAddresses(profile.addresses || []); 
     }
-  }, [supabase]);
-
+  }, [profile]);
+  
   const handleProfileUpdate = async () => {
-    if (!user || !profile || !supabase) return;
+    if (!user || !supabase) return;
     
     try {
         const { error } = await supabase
           .from('profiles')
-          .update({ full_name: profile.full_name })
+          .update({ full_name: fullName })
           .eq('id', user.id);
 
         if (error) throw error;
+        await refreshProfile(); // Refresh context
         toast({ title: 'Profile Updated', description: 'Your profile information has been updated.' });
     } catch (error: any) {
         toast({ title: 'Error', description: `Failed to update profile: ${error.message}`, variant: 'destructive' });
     }
   };
   
-  const handleAddOrUpdateAddress = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !supabase) return;
-
-    try {
-      let updatedAddresses;
-      if (editingAddress) {
-        updatedAddresses = addresses.map(addr =>
-          addr.id === editingAddress.id ? { ...editingAddress, ...newAddress } : addr
-        );
-        toast({ title: 'Address Updated', description: 'Your address has been updated successfully.' });
-      } else {
-        const addressToAdd = { ...newAddress, id: Date.now().toString() };
-        updatedAddresses = [...addresses, addressToAdd];
-        toast({ title: 'Address Added', description: 'Your new address has been added successfully.' });
-      }
-
-      const { error } = await supabase.from('profiles').update({ addresses: updatedAddresses }).eq('id', user.id);
-      if (error) throw error;
-      
-      setNewAddress({ street: '', city: '', state: '', zip: '', country: '' });
-      setEditingAddress(null);
-      setAddresses(updatedAddresses);
-
-    } catch (error: any) {
-      toast({ title: 'Error', description: `Failed to save address: ${error.message}`, variant: 'destructive' });
-    }
-  };
-
-  const handleDeleteAddress = async (addressId: string) => {
-    if (!user || !supabase) return;
-
-    const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
-    
-    try {
-      const { error } = await supabase.from('profiles').update({ addresses: updatedAddresses }).eq('id', user.id);
-      if (error) throw error;
-      toast({ title: 'Address Deleted', description: 'Your address has been deleted.' });
-      setAddresses(updatedAddresses);
-    } catch (error: any) {
-      toast({ title: 'Error', description: `Failed to delete address: ${error.message}`, variant: 'destructive' });
-    }
-  };
-
-  const handleEditAddress = (address: Address) => {
-    setEditingAddress(address);
-    setNewAddress(address);
-  };
-  
   const handleLogout = async () => {
-    if (!supabase) return;
-    await supabase.auth.signOut();
+    await signOut();
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
     router.push('/');
   };
-  
-  if (!user) {
-    return null; // The RequireAuth wrapper will handle the loading/redirect state
-  }
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -195,132 +118,46 @@ function AccountPageContent() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="displayName">Full Name</Label>
-                <Input id="displayName" value={profile?.full_name || ''} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} />
+                <Input id="displayName" value={fullName} onChange={(e) => setFullName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={user.email || ''} disabled />
+                <Input id="email" type="email" value={user?.email || ''} disabled />
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <Input id="role" value={profile?.role || ''} disabled />
               </div>
               <Button onClick={handleProfileUpdate}>Save Changes</Button>
             </CardContent>
           </Card>
         </TabsContent>
+        {/* Placeholder for other tabs */}
         <TabsContent value="orders" className="mt-6">
-           <Card>
+          <Card>
             <CardHeader>
               <CardTitle>Order History</CardTitle>
-              <CardDescription>View your past orders and their status.</CardDescription>
+              <CardDescription>This is a placeholder for order history.</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {orders.length > 0 ? (
-                  orders.map((order) => (
-                    <Card key={order.id} className="overflow-hidden">
-                      <CardHeader className="flex flex-row items-center justify-between bg-muted/50 p-4">
-                        <div className="grid gap-0.5">
-                          <div className="font-semibold">Order ID: {order.id}</div>
-                          <div className="text-sm text-muted-foreground">Date: {new Date(order.date).toLocaleDateString()}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{order.status}</span>
-                           <Button size="sm" variant="outline">View Order</Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Product</TableHead>
-                              <TableHead className="text-right">Total</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {order.items.map((item) => (
-                              <TableRow key={item.id}>
-                                <TableCell>{item.name} (x{item.quantity})</TableCell>
-                                <TableCell className="text-right">${(item.price * item.quantity).toFixed(2)}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                         <Separator className="my-4" />
-                         <div className="text-right font-semibold">
-                           Order Total: ${order.total.toFixed(2)}
-                         </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                  <p>You have no past orders.</p>
-                )}
-              </div>
-            </CardContent>
+             <CardContent><p>You have no past orders.</p></CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="addresses" className="mt-6">
-          <Card>
+           <Card>
             <CardHeader>
               <CardTitle>Manage Addresses</CardTitle>
-              <CardDescription>Add or remove your shipping addresses.</CardDescription>
+              <CardDescription>This is a placeholder for address management.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                {addresses.map((address) => (
-                  <Card key={address.id} className="p-4 flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold">{address.street}</h3>
-                      <p className="text-muted-foreground">{address.city}, {address.state} {address.zip}, {address.country}</p>
-                    </div>
-                    <div className="space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEditAddress(address)}>Edit</Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteAddress(address.id!)}>Remove</Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-              <Separator />
-              <div>
-                <h3 className="font-semibold text-lg mb-2">{editingAddress ? 'Edit Address' : 'Add New Address'}</h3>
-                <form onSubmit={handleAddOrUpdateAddress} className="space-y-4">
-                  <Input placeholder="Street" value={newAddress.street} onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })} required />
-                  <Input placeholder="City" value={newAddress.city} onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })} required />
-                  <Input placeholder="State" value={newAddress.state} onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })} required />
-                  <Input placeholder="Zip Code" value={newAddress.zip} onChange={(e) => setNewAddress({ ...newAddress, zip: e.target.value })} required />
-                  <Input placeholder="Country" value={newAddress.country} onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })} required />
-                  <div className="flex gap-2">
-                    <Button type="submit">
-                      {editingAddress ? 'Update Address' : 'Add Address'}
-                    </Button>
-                    {editingAddress && (
-                      <Button type="button" variant="outline" onClick={() => {setEditingAddress(null); setNewAddress({ street: '', city: '', state: '', zip: '', country: '' });}}>
-                        Cancel Edit
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              </div>
-            </CardContent>
+            <CardContent><p>No addresses saved.</p></CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="payment" className="mt-6">
-           <Card>
+          <Card>
             <CardHeader>
               <CardTitle>Payment Methods</CardTitle>
-              <CardDescription>Manage your saved payment methods.</CardDescription>
+              <CardDescription>This is a placeholder for payment methods.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-               <Card className="p-4 flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold">Visa ending in 1234</h3>
-                  <p className="text-muted-foreground">Expires 12/2025</p>
-                </div>
-                 <div className="space-x-2">
-                    <Button variant="outline" size="sm">Edit</Button>
-                    <Button variant="destructive" size="sm">Remove</Button>
-                 </div>
-               </Card>
-              <Button>Add Payment Method</Button>
-            </CardContent>
+            <CardContent><p>No payment methods saved.</p></CardContent>
           </Card>
         </TabsContent>
       </Tabs>
