@@ -48,7 +48,8 @@ export default function AdminUsersPage() {
   );
 }
 
-function initials(s: string) {
+function initials(s: string | null | undefined) {
+  if (!s) return 'U';
   const parts = s.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "U";
   const first = parts[0]?.[0] ?? "";
@@ -131,7 +132,7 @@ function UsersTable() {
                           alt={r.full_name ?? "avatar"}
                         />
                         <AvatarFallback>
-                          {initials(r.full_name ?? r.email ?? 'U')}
+                          {initials(r.full_name ?? r.email)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
