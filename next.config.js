@@ -1,10 +1,10 @@
 
-import type {NextConfig} from 'next';
 import dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local' });
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   output: 'export',
   images: { 
     unoptimized: true,
@@ -50,7 +50,7 @@ const nextConfig: NextConfig = {
         hostname: 'www.gopro.com',
       },
       {
-        protocol: 'httpss',
+        protocol: 'https',
         hostname: 'dyson-h.assetsadobe2.com',
       },
       {
@@ -79,7 +79,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
