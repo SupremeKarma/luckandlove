@@ -1,7 +1,9 @@
+
 'use client';
 
 import type { CartItem, Product } from '@/lib/types';
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -23,26 +25,12 @@ export function useCart() {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useLocalStorage<CartItem[]>('cart', []);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-    try {
-      const storedCart = localStorage.getItem('cart');
-      if (storedCart) {
-        setCartItems(JSON.parse(storedCart));
-      }
-    } catch (error) {
-      console.error("Failed to parse cart from localStorage", error);
-    }
   }, []);
-
-  useEffect(() => {
-    if (isMounted) {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
-    }
-  }, [cartItems, isMounted]);
 
   const addToCart = (product: Product) => {
     setCartItems((prevItems) => {
@@ -81,9 +69,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     cartCount,
     cartTotal,
   };
-
+  
   if (!isMounted) {
-    return null;
+    // To prevent hydration mismatch, we can return null or a loader on the server.
+    // Since the cart is client-side, this ensures no cart-related UI renders on the server.
+    return (
+        <CartContext.Provider value={{ cartItems: [], addToCart: () => {}, removeFromCart: () => {}, updateQuantity: () => {}, cartCount: 0, cartTotal: 0 }}>
+            {children}
+        </CartContext.Provider>
+    );
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
