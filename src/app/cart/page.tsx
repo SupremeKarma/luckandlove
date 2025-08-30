@@ -5,11 +5,11 @@ import { useCart } from '@/context/cart-context';
 import CartComponent from '@/components/Cart';
 
 export default function CartPage() {
-  const { cart, updateQuantity, removeFromCart } = useCart();
+  const { cartItems, updateQuantity, removeFromCart } = useCart();
 
   return (
     <CartComponent
-      cartItems={cart}
+      cartItems={cartItems}
       onUpdateQuantity={updateQuantity}
       onRemoveItem={removeFromCart}
     />

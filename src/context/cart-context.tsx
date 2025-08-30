@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { Product, ProductVariant, CartItem } from '@/lib/types';
@@ -6,8 +7,8 @@ import React, { createContext, useContext, ReactNode, useState, useEffect } from
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: Product, quantity?: number, variant?: ProductVariant) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeFromCart: (productId: string, variantId: string) => void;
+  updateQuantity: (productId: string, variantId: string, quantity: number) => void;
   clearCart: () => void;
   cartCount: number;
   cartTotal: number;
@@ -49,16 +50,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = (product: Product, quantity = 1, variant?: ProductVariant) => {
     setCartItems((prevCart) => {
-      const selectedVariant = variant || product.variants?.[0];
+      let selectedVariant = variant || product.variants?.[0];
+
       if (!selectedVariant) {
-        throw new Error("Product variant not available.");
+        // If no variants exist, create a default one from the product itself.
+        selectedVariant = {
+          id: product.id, // Use product id as variant id
+          name: 'Default',
+          price: product.price * 100, // price is in cents
+          inventory_quantity: product.stock,
+        };
       }
 
-      const existingItem = prevCart.find((item) => item.id === product.id && item.variant.id === selectedVariant.id);
+      const existingItem = prevCart.find((item) => item.id === product.id && item.variant.id === selectedVariant!.id);
 
       if (existingItem) {
         return prevCart.map((item) =>
-          item.id === product.id && item.variant.id === selectedVariant.id
+          item.id === product.id && item.variant.id === selectedVariant!.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
@@ -70,17 +78,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setCartItems((prevCart) => prevCart.filter((item) => item.id !== productId));
+  const removeFromCart = (productId: string, variantId: string) => {
+    setCartItems((prevCart) => prevCart.filter((item) => !(item.id === productId && item.variant.id === variantId)));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, variantId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, variantId);
     } else {
       setCartItems((prevCart) =>
         prevCart.map((item) =>
-          item.id === productId ? { ...item, quantity } : item
+          (item.id === productId && item.variant.id === variantId) ? { ...item, quantity } : item
         )
       );
     }
