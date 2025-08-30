@@ -10,7 +10,7 @@
   "static/chunks/node_modules_@radix-ui_3f4047ba._.js",
   "static/chunks/node_modules_@supabase_f0de07ff._.js",
   "static/chunks/node_modules_@floating-ui_1b6e7b6d._.js",
-  "static/chunks/node_modules_083de5e3._.js"
+  "static/chunks/node_modules_8793fab9._.js"
 ],
     source: "dynamic"
 });

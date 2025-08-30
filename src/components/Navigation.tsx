@@ -22,6 +22,10 @@ import {
   MessageSquare,
   Archive,
   Shield,
+  LogIn,
+  LogOut,
+  Building,
+  Store,
 } from 'lucide-react';
 import {
   Sheet,
@@ -31,98 +35,114 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { CartSheet } from './cart-sheet';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+
+const NavItem = ({ href, children }: { href: string; children: React.ReactNode }) => {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+
+  return (
+    <Link
+      href={href}
+      className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+        isActive ? 'bg-accent/20 text-accent' : 'text-muted-foreground hover:bg-primary hover:text-white'
+      }`}
+    >
+      {children}
+    </Link>
+  );
+};
+
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const pathname = usePathname();
   const { cartCount } = useCart();
-  const { role } = useAuth();
+  const { user, signOut, loading, role } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
 
-  const mainNavItems = [
-    { path: '/', label: 'Home'},
-    { path: '/products', label: 'Products' },
-    { path: '/food-delivery', label: 'Food'},
-    { path: '/wholesale', label: 'Wholesale'},
-    { path: '/gaming', label: 'Gaming'},
-    { path: '/rentals', label: 'Rentals'},
-    ...(role === 'admin' ? [{ path: '/admin/users', label: 'Admin' }] : []),
-  ];
-
-  const allNavItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/products', label: 'Products', icon: ShoppingBag },
-    { path: '/gaming', label: 'Gaming', icon: Gamepad2 },
-    { path: '/food-delivery', label: 'Food Delivery', icon: Utensils },
-    { path: '/wholesale', label: 'Wholesale', icon: Archive },
-    { path: '/rentals', label: 'Rentals', icon: Car },
-    { path: '/chat', label: 'Chat', icon: MessageSquare },
-    ...(role === 'admin' ? [{ path: '/admin/users', label: 'Admin', icon: Shield }] : []),
-  ];
-
-  const isActive = (path: string) => {
-    if (path === '/') return pathname === path;
-    if (path.startsWith('/admin')) return pathname.startsWith('/admin');
-    return pathname.startsWith(path);
+  const handleLogout = async () => {
+    await signOut();
+    toast({
+      title: 'Logged Out',
+      description: 'You have been successfully logged out.',
+    });
+    router.push('/');
   };
+  
+  const allNavItems = [
+    { href: '/products', label: 'Store', icon: Store },
+    { href: '/food-delivery', label: 'Food', icon: Utensils },
+    { href: '/wholesale', label: 'Wholesale', icon: Building },
+    { href: '/gaming', label: 'Gaming', icon: Gamepad2 },
+    { href: '/rentals', label: 'Rentals', icon: Car },
+    { href: '/chat', label: 'Chat', icon: MessageSquare },
+     ...(role === 'admin' ? [{ href: '/admin/users', label: 'Admin', icon: Shield }] : []),
+  ];
 
   return (
     <>
-    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Package2 className="text-primary-foreground h-5 w-5" />
-            </div>
-            <span className="text-xl font-bold text-foreground">Zenith</span>
-          </Link>
+    <header className="bg-primary/30 backdrop-blur-sm sticky top-0 z-40 border-b border-white/10">
+      <nav className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
+        <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-accent">
+           <Package2 className="h-7 w-7" />
+           Zenith
+        </Link>
+        <div className="hidden md:flex items-center space-x-2">
+          {allNavItems.map(item => (
+            <NavItem key={item.href} href={item.href}>
+              <item.icon className="w-4 h-4 mr-2" />
+              {item.label}
+            </NavItem>
+          ))}
+        </div>
+        <div className="flex items-center space-x-1 md:space-x-2">
+          <Button
+              variant="ghost"
+              size="icon"
+              className="relative"
+              onClick={() => setIsCartOpen(true)}
+              aria-label={`Shopping cart with ${cartCount} items`}
+            >
+              <ShoppingCart className="h-6 w-6 text-white hover:text-accent" />
+              {cartCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs rounded-full"
+                >
+                  {cartCount}
+                </Badge>
+              )}
+          </Button>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            {mainNavItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(item.path)
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
-                }`}
-              >
-                {item.label}
+          {loading ? (
+             <Button variant="ghost" size="icon" className="w-9 h-9 animate-pulse bg-muted/50 rounded-full" />
+          ) : user ? (
+            <>
+              <Link href="/account">
+                <Button variant="ghost" size="icon">
+                  <User className="h-6 w-6 text-white hover:text-accent" />
+                </Button>
               </Link>
-            ))}
-          </nav>
-
-          {/* Actions */}
-          <div className="flex items-center space-x-2">
-            <Link href="/account" aria-label="My Account">
-              <Button variant="ghost" size="icon">
-                <User size={20} />
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
+                <LogOut className="h-6 w-6 text-white hover:text-accent" />
+              </Button>
+            </>
+          ) : (
+            <Link href="/login">
+              <Button variant="ghost" className="hidden sm:flex">
+                <LogIn className="h-5 w-5 mr-2" />
+                Login
+              </Button>
+               <Button variant="ghost" size="icon" className="sm:hidden">
+                <LogIn className="h-6 w-6 text-white hover:text-accent" />
               </Button>
             </Link>
+          )}
 
-            <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-                onClick={() => setIsCartOpen(true)}
-                aria-label={`Shopping cart with ${cartCount} items`}
-              >
-                <ShoppingCart size={20} />
-                {cartCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs rounded-full"
-                  >
-                    {cartCount}
-                  </Badge>
-                )}
-            </Button>
-
-            {/* Mobile Menu Button */}
+           {/* Mobile Menu Button */}
              <div className="md:hidden">
                 <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                     <SheetTrigger asChild>
@@ -131,11 +151,11 @@ export function Navigation() {
                           size="icon"
                           aria-label="Toggle mobile menu"
                         >
-                          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="w-[300px] bg-background/95">
-                        <SheetHeader>
+                    <SheetContent side="left" className="w-[300px] bg-background/95 p-4">
+                        <SheetHeader className="mb-8">
                             <SheetTitle>
                                 <Link href="/" className="flex items-center space-x-3" onClick={() => setIsMobileMenuOpen(false)}>
                                     <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -145,15 +165,15 @@ export function Navigation() {
                                   </Link>
                             </SheetTitle>
                         </SheetHeader>
-                        <nav className="mt-8">
+                        <nav>
                             <div className="grid gap-2">
                               {allNavItems.map((item) => (
                                 <Link
-                                  key={item.path}
-                                  href={item.path}
+                                  key={item.href}
+                                  href={item.href}
                                   onClick={() => setIsMobileMenuOpen(false)}
                                   className={`flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
-                                    isActive(item.path)
+                                    usePathname() === item.href
                                       ? 'bg-accent text-accent-foreground'
                                       : 'text-muted-foreground'
                                   }`}
@@ -167,9 +187,8 @@ export function Navigation() {
                     </SheetContent>
                 </Sheet>
             </div>
-          </div>
         </div>
-      </div>
+      </nav>
     </header>
     <CartSheet isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
     </>
