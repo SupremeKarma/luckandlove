@@ -22,14 +22,14 @@ export default function LoginPage() {
   const { login, isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
-    // If user is already logged in, redirect to account page
     if (isAuthenticated) {
       router.replace('/account');
     }
   }, [isAuthenticated, router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (!email || !password) {
       toast({
         title: "Error",
@@ -39,14 +39,21 @@ export default function LoginPage() {
       return;
     }
     try {
-      login(email);
+      const { error } = await login(email, password);
+      if (error) throw error;
+      
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${email.split('@')[0]}!`,
+        description: `Welcome back!`,
       });
       router.push('/account');
     } catch (error: any) {
         setError(error.message);
+        toast({
+            title: "Login Failed",
+            description: error.message,
+            variant: "destructive",
+        });
     }
   };
   
@@ -55,7 +62,7 @@ export default function LoginPage() {
   }
   
   if (isAuthenticated) {
-    return null; // or a loading spinner while redirecting
+    return null;
   }
 
   return (

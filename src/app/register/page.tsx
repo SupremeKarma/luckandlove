@@ -32,8 +32,7 @@ export default function RegisterPage() {
     setSuccessMessage('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
-       toast({
+      toast({
         title: "Error",
         description: "Passwords do not match.",
         variant: "destructive",
@@ -58,6 +57,7 @@ export default function RegisterPage() {
         options: {
           data: {
             full_name: name,
+            role: email.includes('admin') ? 'admin' : 'user'
           }
         }
       });
