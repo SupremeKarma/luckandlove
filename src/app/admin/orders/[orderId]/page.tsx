@@ -28,6 +28,15 @@ type Order = {
 type Item = { id: string; name: string; qty: number; unit_price: number; line_total: number };
 type Event = { id: string; order_id: string; type: string; message: string; created_at: string };
 
+const statusColors: Record<Order['status'], string> = {
+  pending: "bg-amber-500/15 text-amber-400",
+  paid: "bg-emerald-500/15 text-emerald-400",
+  shipped: "bg-sky-500/15 text-sky-400",
+  cancelled: "bg-gray-500/15 text-gray-400",
+  refunded: "bg-rose-500/15 text-rose-400",
+};
+
+
 export default function AdminOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const router = useRouter();
@@ -74,11 +83,11 @@ export default function AdminOrderDetailPage() {
     if (!order) return;
     const originalOrder = order;
     setIsUpdating(true);
-    // Optimistic update
-    setOrder({ ...order, status: "refunded" });
+    
+    // We don't do an optimistic update here because the webhook is what changes the status
     try {
       await refundOrder(order.id);
-      toast({ title: "Success", description: "Order has been refunded." });
+      toast({ title: "Success", description: "Refund has been initiated. The status will update once confirmed by Stripe." });
       await load();
     } catch (e: any) {
       setOrder(originalOrder);
@@ -87,17 +96,12 @@ export default function AdminOrderDetailPage() {
       setIsUpdating(false);
     }
   };
-
-  const getStatusColor = (status: Order['status']) => {
-    switch(status) {
-      case 'paid': return 'bg-green-500/20 text-green-400';
-      case 'shipped': return 'bg-blue-500/20 text-blue-400';
-      case 'pending': return 'bg-yellow-500/20 text-yellow-400';
-      case 'cancelled': return 'bg-red-500/20 text-red-400';
-      case 'refunded': return 'bg-gray-500/20 text-gray-400';
-      default: return 'bg-gray-500/20 text-gray-400';
-    }
+  
+  const getStatusBadge = (status: Order['status']) => {
+    const s = statusColors[status] ?? statusColors.pending;
+    return <Badge className={`rounded-full capitalize ${s}`}>{status}</Badge>
   }
+
 
   if (loading) return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
   if (err || !order) return <div className="p-6 text-sm text-red-500">{err ?? "Not found"}</div>;
@@ -111,7 +115,7 @@ export default function AdminOrderDetailPage() {
           <CardTitle className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
                 <span className="font-semibold">Order {order.id.slice(0,8)}…</span>
-                <Badge className={`${getStatusColor(order.status)} hover:${getStatusColor(order.status)} rounded-full capitalize`}>{order.status}</Badge>
+                {getStatusBadge(order.status)}
             </div>
             <div className="flex items-center gap-2">
               <Select defaultValue={order.status} onValueChange={(v:any)=>onStatus(v)} disabled={isUpdating}>
@@ -121,7 +125,7 @@ export default function AdminOrderDetailPage() {
                 </SelectContent>
               </Select>
               <Button onClick={onRefund} disabled={order.status !== "paid" || isUpdating}>
-                {isUpdating && order.status === 'refunded' ? "Refunding..." : "Refund"}
+                {isUpdating ? "Refunding..." : "Refund"}
               </Button>
             </div>
           </CardTitle>
@@ -184,3 +188,5 @@ export default function AdminOrderDetailPage() {
     </div>
   );
 }
+
+    

@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { updateOrderStatus } from "./_actions";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
+import Link from 'next/link';
 
 type Order = {
   id: string;
@@ -21,6 +22,14 @@ type Order = {
   shipping: number;
   total: number;
   created_at: string;
+};
+
+const statusColors: Record<Order['status'], string> = {
+  pending: "bg-amber-500/15 text-amber-400",
+  paid: "bg-emerald-500/15 text-emerald-400",
+  shipped: "bg-sky-500/15 text-sky-400",
+  cancelled: "bg-gray-500/15 text-gray-400",
+  refunded: "bg-rose-500/15 text-rose-400",
 };
 
 export default function AdminOrdersPage() {
@@ -83,16 +92,11 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const getStatusColor = (status: Order['status']) => {
-    switch(status) {
-      case 'paid': return 'bg-green-500/20 text-green-400';
-      case 'shipped': return 'bg-blue-500/20 text-blue-400';
-      case 'pending': return 'bg-yellow-500/20 text-yellow-400';
-      case 'cancelled': return 'bg-red-500/20 text-red-400';
-      case 'refunded': return 'bg-gray-500/20 text-gray-400';
-      default: return 'bg-gray-500/20 text-gray-400';
-    }
+  const getStatusBadge = (status: Order['status']) => {
+    const s = statusColors[status] ?? statusColors.pending;
+    return <Badge className={`rounded-full capitalize ${s}`}>{status}</Badge>
   }
+
 
   return (
     <div className="p-6 space-y-4">
@@ -142,10 +146,14 @@ export default function AdminOrdersPage() {
                 <TableBody>
                   {filtered.map(o => (
                     <TableRow key={o.id} onClick={() => router.push(`/admin/orders/${o.id}`)} className="cursor-pointer">
-                      <TableCell className="font-mono text-xs">{o.id.slice(0,8)}…</TableCell>
+                       <TableCell className="font-mono text-xs">
+                          <Link href={`/admin/orders/${o.id}`} className="underline-offset-2 hover:underline">
+                            {o.id.slice(0,8)}…
+                          </Link>
+                      </TableCell>
                       <TableCell className="text-sm">{o.email ?? "—"}</TableCell>
                       <TableCell className="text-sm capitalize">
-                        <Badge className={`${getStatusColor(o.status)} hover:${getStatusColor(o.status)} rounded-full`}>{o.status}</Badge>
+                        {getStatusBadge(o.status)}
                       </TableCell>
                       <TableCell className="text-right">NPR {Number(o.total).toFixed(2)}</TableCell>
                       <TableCell className="text-sm">{new Date(o.created_at).toLocaleString()}</TableCell>
@@ -177,3 +185,5 @@ export default function AdminOrdersPage() {
     </div>
   );
 }
+
+    
