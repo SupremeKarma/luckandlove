@@ -1,42 +1,35 @@
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+// import type { Database } from "./types"; // If you have generated types
 
-'use client';
+let browserClient: SupabaseClient /*<Database>*/ | null = null;
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+function requiredEnv(name: string): string {
+  const v = process.env[name];
+  if (!v) throw new Error(`Missing environment variable: ${name}`);
+  return v;
+}
 
-let supabase: SupabaseClient | null = null;
+const SUPABASE_URL = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
+const SUPABASE_ANON_KEY = requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
-/**
- * Gets a Supabase client instance.
- *
- * This function ensures that only one instance of the Supabase client is created.
- * It retrieves the Supabase URL and anon key from environment variables.
- *
- * Note: This function is client-side safe. The anon key is designed to be
- * public and only allows access based on your Row Level Security (RLS) policies.
- *
- * @returns {SupabaseClient} The Supabase client instance.
- * @throws {Error} If Supabase environment variables are not set or are empty.
- */
-export function getSupabase(): SupabaseClient {
-  if (supabase) {
-    return supabase;
+export function getSupabase(): SupabaseClient /*<Database>*/ {
+  if (typeof window === "undefined") {
+    // In SSR contexts, prefer getServerSupabase()
+    return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
   }
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    // This will be caught by the developer during development.
-    // In a production environment, these variables should be set.
-    throw new Error('Supabase credentials are not loaded. Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are in your .env.local file.');
+  if (!browserClient) {
+    browserClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true },
+    });
   }
+  return browserClient;
+}
 
-  try {
-    // Initialize the Supabase client.
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-    return supabase;
-  } catch (error) {
-    console.error("Error initializing Supabase client:", error);
-    throw new Error("Failed to initialize Supabase client. Please check if the Supabase URL is valid in your environment variables.");
-  }
+export function getServerSupabase(): SupabaseClient /*<Database>*/ {
+  // New client per request on the server (no session persistence)
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
