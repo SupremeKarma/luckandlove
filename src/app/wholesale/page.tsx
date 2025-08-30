@@ -20,7 +20,7 @@ const WholesalePage = () => (
   <PageComponent title="Wholesale">
     <div className="bg-card/50 p-8 rounded-lg shadow-lg">
         <p className="text-muted-foreground text-lg">
-            Find suppliers for your business with our wholesale listings. Feature coming soon!
+            Find suppliers for your business with our wholesale listings.
         </p>
     </div>
   </PageComponent>
