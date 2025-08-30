@@ -13,28 +13,16 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 function ProductsPageContent() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   useEffect(() => {
-    try {
-      const supabaseClient = getSupabase();
-      setSupabase(supabaseClient);
-    } catch (error) {
-      console.error(error);
-      setLoading(false);
-    }
-  }, []);
-  
-  useEffect(() => {
     const fetchProducts = async () => {
-      if (!supabase) {
-        setLoading(false);
-        return;
-      };
-      
       setLoading(true);
-      
       try {
+        const supabase: SupabaseClient = getSupabase();
+        if (!supabase) {
+          throw new Error("Supabase client not available");
+        }
+
         let query = supabase
           .from('products')
           .select(`
@@ -72,10 +60,8 @@ function ProductsPageContent() {
       }
     };
 
-    if (supabase) {
-      fetchProducts();
-    }
-  }, [supabase]);
+    fetchProducts();
+  }, []);
 
 
   return (
