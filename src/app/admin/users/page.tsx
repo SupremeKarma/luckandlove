@@ -14,8 +14,8 @@ function AdminUsersContent() {
       transition={{ duration: 0.5 }}
       className="container mx-auto px-4 py-12"
     >
-      <h1 className="text-4xl font-bold text-accent mb-8">Admin: User Management</h1>
-      <Card>
+      <h1 className="text-4xl font-bold text-gradient mb-8">User Management</h1>
+      <Card className="glass-effect">
         <CardHeader>
           <CardTitle>Manage Users</CardTitle>
            <CardDescription>

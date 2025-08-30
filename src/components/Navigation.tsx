@@ -23,6 +23,7 @@ import {
   Shield,
   LogIn,
   LogOut,
+  LayoutDashboard,
 } from 'lucide-react';
 import {
   Sheet,
@@ -75,7 +76,7 @@ export function Navigation() {
     { href: '/gaming', label: 'Gaming', icon: Gamepad2 },
     { href: '/rentals', label: 'Rentals', icon: Car },
     { href: '/chat', label: 'Chat', icon: MessageSquare },
-     ...(isAdmin ? [{ href: '/admin/users', label: 'Admin', icon: Shield }] : []),
+     ...(isAdmin ? [{ href: '/admin/dashboard', label: 'Admin', icon: Shield }] : []),
   ];
 
   return (
