@@ -12,7 +12,7 @@ import { RequireAuth } from '@/components/require-auth';
 import { useRouter } from 'next/navigation';
 
 function AccountPageContent() {
-    const { user, logout } = useAuth();
+    const { profile, logout } = useAuth();
     const { toast } = useToast();
     const router = useRouter();
 
@@ -24,8 +24,8 @@ function AccountPageContent() {
       });
     };
 
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await logout();
         toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
         router.push('/');
     };
@@ -41,7 +41,7 @@ function AccountPageContent() {
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
               <div>
                 <h1 className="text-4xl font-bold">My Account</h1>
-                <p className="text-lg text-muted-foreground mt-2">Welcome back, {user?.name}!</p>
+                <p className="text-lg text-muted-foreground mt-2">Welcome back, {profile?.full_name}!</p>
               </div>
               <Button onClick={handleLogout} variant="outline"><LogOut className="mr-2 h-4 w-4" />Logout</Button>
             </div>
@@ -60,9 +60,9 @@ function AccountPageContent() {
                     <CardDescription>Your personal information.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div><strong>Name:</strong> {user?.name}</div>
-                    <div><strong>Email:</strong> {user?.email}</div>
-                    <div><strong>Role:</strong> <span className="capitalize">{user?.role}</span></div>
+                    <div><strong>Name:</strong> {profile?.full_name}</div>
+                    <div><strong>Email:</strong> {profile?.email}</div>
+                    <div><strong>Role:</strong> <span className="capitalize">{profile?.role}</span></div>
                     <Button variant="outline" onClick={handleNotImplemented}>Edit Profile</Button>
                   </CardContent>
                 </Card>

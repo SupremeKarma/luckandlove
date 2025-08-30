@@ -1,11 +1,25 @@
 
 
+export type ProfileRole = "user" | "admin";
+
+export interface Profile {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: ProfileRole;
+}
+
 export interface ProductVariant {
   id: string;
   name: string;
   price: number;
   sale_price?: number | null;
   inventory_quantity: number;
+  product_id: string;
+  sku?: string | null;
+  attributes?: Record<string, unknown> | null;
+  created_at?: string | null;
 }
 
 export interface Product {
@@ -24,6 +38,9 @@ export interface Product {
   product_variants?: ProductVariant[] | null;
   ribbon_text?: string;
   sku?: string | null;
+  active: boolean;
+  created_at?: string | null;
+  image_url?: string | null;
 }
 
 export interface CartItem {
@@ -80,22 +97,12 @@ export interface MenuItem {
   category: string;
 }
 
-export type ProfileRole = "user" | "admin";
-
-export type Profile = {
-  id: string;
-  email: string | null;
-  full_name: string | null;
-  avatar_url: string | null;
-  role: ProfileRole;
-};
-
 export function mapProductRow(row: any): Product {
   return {
     id: row.id,
     name: row.name ?? "",
-    price: Number(row.price_in_cents ? row.price_in_cents / 100 : 0),
-    stock: Number(row.inventory_quantity ?? 0),
+    price: Number(row.price_in_cents ? row.price_in_cents / 100 : (row.price ?? 0)),
+    stock: Number(row.inventory_quantity ?? (row.stock ?? 0)),
     category: row.category ?? null,
     imageUrl: row.image_url ?? null,
     active: !!row.active,
@@ -105,5 +112,6 @@ export function mapProductRow(row: any): Product {
     description: row.description,
     ribbon_text: row.ribbon_text,
     sku: row.sku ?? null,
+    image_url: row.image_url ?? null,
   };
 }

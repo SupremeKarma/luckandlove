@@ -33,8 +33,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const { data: { session } } = await supabaseClient.auth.getSession();
         setUser(session?.user ?? null);
+        if (session?.user) {
+            const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
+            if (error) throw error;
+            setProfile(data as Profile);
+        } else {
+            setProfile(null);
+        }
       } catch (e) {
-        console.error("Error fetching session:", e);
+        console.error("Error fetching session or profile:", e);
       } finally {
         setLoading(false);
       }
@@ -45,6 +52,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session: Session | null) => {
         setUser(session?.user ?? null);
+        if (session?.user) {
+             try {
+                const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
+                if (error) throw error;
+                setProfile(data as Profile);
+            } catch (error) {
+                console.error('Error fetching profile on auth change:', error);
+                setProfile(null);
+            }
+        } else {
+            setProfile(null);
+        }
         setLoading(false);
       }
     );
@@ -53,24 +72,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       subscription?.unsubscribe();
     };
   }, []);
-  
-  useEffect(() => {
-    const fetchProfile = async () => {
-        if (user && supabase) {
-            try {
-                const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-                if (error) throw error;
-                setProfile(data as Profile);
-            } catch (error) {
-                console.error('Error fetching profile:', error);
-                setProfile(null);
-            }
-        } else {
-            setProfile(null);
-        }
-    };
-    fetchProfile();
-  }, [user, supabase]);
 
   const login = useCallback(async (email: string, pass: string) => {
     if (!supabase) throw new Error("Supabase client not initialized.");
@@ -104,5 +105,7 @@ export const useAuth = () => {
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context;
+  // This hook is updated to provide the full context, including the profile.
+  // The isAuthenticated property is derived from the user object's presence.
+  return { ...context, isAuthenticated: !!context.user };
 };
