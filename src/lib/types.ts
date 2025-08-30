@@ -24,6 +24,7 @@ export interface Product {
   rating?: number;
   shop_id?: string;
   variants: ProductVariant[];
+  product_variants: ProductVariant[];
   ribbon_text?: string;
 }
 

@@ -78,7 +78,7 @@ function ProductDetailPageContent() {
           .from('products')
           .select(`
             *,
-            variants:product_variants(*)
+            product_variants(*)
           `)
           .eq('id', productId)
           .single();
@@ -89,7 +89,7 @@ function ProductDetailPageContent() {
           ...data,
           name: data.name,
           imageUrl: data.image_url,
-          variants: data.variants.map((v: any) => ({
+          variants: data.product_variants.map((v: any) => ({
             ...v,
             price: v.price_in_cents,
             sale_price: v.sale_price_in_cents,

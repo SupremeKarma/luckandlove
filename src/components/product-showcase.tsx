@@ -40,7 +40,7 @@ export function ProductShowcase() {
           .from('products')
           .select(`
             *,
-            variants:product_variants(*)
+            product_variants(*)
           `)
           .limit(8);
 
@@ -53,7 +53,7 @@ export function ProductShowcase() {
             ...p,
             name: p.name,
             imageUrl: p.image_url,
-            variants: p.variants.map((v: any) => ({
+            variants: p.product_variants.map((v: any) => ({
                 ...v,
                 price: v.price_in_cents,
                 sale_price: v.sale_price_in_cents,

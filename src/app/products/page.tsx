@@ -14,16 +14,29 @@ function ProductsPageContent() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+
+  useEffect(() => {
+    try {
+      const supabaseClient = getSupabase();
+      setSupabase(supabaseClient);
+    } catch (error: any) {
+        setError(error.message);
+        setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!supabase) return;
+
       try {
-        const supabase = getSupabase();
+        setLoading(true);
         let query = supabase
           .from('products')
           .select(`
             *,
-            variants:product_variants(*)
+            product_variants(*)
           `);
 
         const { data, error: queryError } = await query;
@@ -37,7 +50,7 @@ function ProductsPageContent() {
             ...p,
             name: p.name,
             imageUrl: p.image_url,
-            variants: p.variants.map((v: any) => ({
+            variants: p.product_variants.map((v: any) => ({
               ...v,
               price: v.price_in_cents,
               sale_price: v.sale_price_in_cents,
@@ -57,8 +70,10 @@ function ProductsPageContent() {
       }
     };
 
-    fetchProducts();
-  }, []);
+    if (supabase) {
+        fetchProducts();
+    }
+  }, [supabase]);
 
 
   return (
