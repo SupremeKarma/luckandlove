@@ -18,9 +18,21 @@ type CartItem = {
   qty: number;
 };
 
+type Address = {
+  name: string;
+  phone?: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state?: string;
+  postal_code?: string;
+  country: string;
+};
+
 export async function createCheckoutSession(input: {
   email: string;
   items: CartItem[];
+  address: Address;
 }) {
   if (!input.email?.includes("@")) throw new Error("Valid email required");
   if (!Array.isArray(input.items) || input.items.length === 0) throw new Error("Cart is empty");
@@ -30,12 +42,14 @@ export async function createCheckoutSession(input: {
   const supabase = createClient(supabaseUrl, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-
-  // Compute totals safely on the server
-  const currency = process.env.STRIPE_CURRENCY || "usd";
+  
+  // estimate shipping using DB helper
+  const { data: shipRow, error: shipErr } = await supabase
+    .rpc("estimate_shipping", { addr: input.address as any });
+  if (shipErr) throw new Error(shipErr.message);
+  const shipping = Number(shipRow ?? 0);
   const subtotal = input.items.reduce((n, i) => n + (i.price || 0) * (i.qty || 0), 0);
-  const tax = 0; // plug in your tax calc if needed
-  const shipping = 0; // plug in shipping if needed
+  const tax = 0;
   const total = subtotal + tax + shipping;
 
   // Create order
@@ -49,7 +63,9 @@ export async function createCheckoutSession(input: {
         tax,
         shipping,
         total,
-        currency: currency.toUpperCase(),
+        currency: (process.env.STRIPE_CURRENCY || "usd").toUpperCase(),
+        shipping_address: input.address,
+        shipping_method: "standard"
       },
     ])
     .select()
@@ -84,7 +100,7 @@ export async function createCheckoutSession(input: {
   const line_items = input.items.map((i) => ({
     quantity: i.qty,
     price_data: {
-      currency,
+      currency: process.env.STRIPE_CURRENCY || "usd",
       product_data: { name: i.name },
       unit_amount: Math.round((i.price || 0) * 100), // cents
     },

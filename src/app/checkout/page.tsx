@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
+import { Label } from "@/components/ui/label";
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -16,10 +17,19 @@ export default function CheckoutPage() {
   const [email, setEmail] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
+
+  const [address, setAddress] = React.useState({
+    name: "", phone: "",
+    line1: "", line2: "",
+    city: "", state: "", postal_code: "", country: "NP",
+  });
   
   React.useEffect(() => {
     if (profile?.email) {
       setEmail(profile.email);
+    }
+     if (profile?.full_name) {
+      setAddress(prev => ({...prev, name: profile.full_name!}));
     }
   }, [profile]);
 
@@ -33,8 +43,9 @@ export default function CheckoutPage() {
           productId: i.productId,
           name: i.name,
           price: i.price,
-          qty: i.quantity, // Match CartItem type
+          qty: i.quantity,
         })),
+        address,
       };
       const res = await createCheckoutSession(payload);
       if (res.checkoutUrl) {
@@ -90,11 +101,57 @@ export default function CheckoutPage() {
           )}
         </CardContent>
       </Card>
+      
+      <Card className="rounded-2xl">
+        <CardHeader><CardTitle className="text-sm text-muted-foreground">Shipping Address</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+           <div className="grid gap-2">
+             <Label htmlFor="name">Full Name</Label>
+            <Input id="name" placeholder="Full name" value={address.name} onChange={(e)=>setAddress({...address, name: e.target.value})} />
+           </div>
+            <div className="grid md:grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label htmlFor="phone">Phone (optional)</Label>
+                <Input id="phone" placeholder="Phone" value={address.phone} onChange={(e)=>setAddress({...address, phone: e.target.value})}/>
+              </div>
+               <div className="grid gap-2">
+                <Label htmlFor="line1">Address line 1</Label>
+                <Input id="line1" placeholder="Address line 1" value={address.line1} onChange={(e)=>setAddress({...address, line1: e.target.value})}/>
+              </div>
+            </div>
+             <div className="grid gap-2">
+                <Label htmlFor="line2">Address line 2 (optional)</Label>
+                <Input id="line2" placeholder="Address line 2" value={address.line2} onChange={(e)=>setAddress({...address, line2: e.target.value})}/>
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+               <div className="grid gap-2">
+                 <Label htmlFor="city">City</Label>
+                <Input id="city" placeholder="City" value={address.city} onChange={(e)=>setAddress({...address, city: e.target.value})}/>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="state">State/Province</Label>
+                <Input id="state" placeholder="State/Province" value={address.state} onChange={(e)=>setAddress({...address, state: e.target.value})}/>
+              </div>
+               <div className="grid gap-2">
+                 <Label htmlFor="postal_code">Postal code</Label>
+                <Input id="postal_code" placeholder="Postal code" value={address.postal_code} onChange={(e)=>setAddress({...address, postal_code: e.target.value})}/>
+              </div>
+            </div>
+             <div className="grid gap-2">
+                <Label htmlFor="country">Country</Label>
+                <Input id="country" placeholder="Country code (e.g., NP, US)" value={address.country} onChange={(e)=>setAddress({...address, country: e.target.value.toUpperCase()})}/>
+             </div>
+        </CardContent>
+      </Card>
+
 
       <Card className="rounded-2xl">
-        <CardHeader><CardTitle className="text-sm text-muted-foreground">Contact</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm text-muted-foreground">Contact & Payment</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <Input placeholder="Email for receipt" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <div className="grid gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" placeholder="Email for receipt" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
           {err && <div className="text-sm text-red-500">{err}</div>}
           <div className="flex gap-2">
             <Button disabled={busy || items.length === 0 || !email} onClick={onPay}>
@@ -106,3 +163,4 @@ export default function CheckoutPage() {
     </div>
   );
 }
+

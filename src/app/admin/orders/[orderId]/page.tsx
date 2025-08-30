@@ -25,6 +25,8 @@ type Order = {
   created_at: string;
   stripe_session_id?: string | null;
   stripe_payment_intent_id?: string | null;
+  shipping_address?: Record<string, any> | null;
+  shipping_method?: string | null;
 };
 type Item = { id: string; name: string; qty: number; unit_price: number; line_total: number };
 type Event = { id: string; order_id: string; type: string; message: string; created_at: string };
@@ -149,6 +151,18 @@ export default function AdminOrderDetailPage() {
                 <div className="flex items-center justify-between text-sm font-semibold"><span>Total</span><span>NPR {Number(order.total).toFixed(2)}</span></div>
               </div>
             </div>
+             <div className="rounded-2xl border">
+                <div className="px-4 py-3 border-b text-sm text-muted-foreground">Shipping</div>
+                <div className="p-4 text-sm space-y-1">
+                    <div>{order.shipping_address?.name ?? "—"}</div>
+                    <div>{order.shipping_address?.line1 ?? "—"}</div>
+                    <div>{order.shipping_address?.line2 ?? ""}</div>
+                    <div>{order.shipping_address?.city ?? "—"}, {order.shipping_address?.state ?? ""} {order.shipping_address?.postal_code ?? ""}</div>
+                    <div>{order.shipping_address?.country ?? "—"}</div>
+                    <div className="text-muted-foreground">Method: {order.shipping_method ?? "—"}</div>
+                    <div className="text-muted-foreground">Cost: NPR {Number(order.shipping).toFixed(2)}</div>
+                </div>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -174,7 +188,6 @@ export default function AdminOrderDetailPage() {
               </div>
             </div>
           </div>
-
         </CardContent>
       </Card>
     </div>
