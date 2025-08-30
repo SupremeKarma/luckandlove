@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -39,8 +40,8 @@ export default function WholesalePage() {
 
   React.useEffect(() => {
     let mounted = true;
+    const supabase = getSupabase();
     (async () => {
-      const supabase = getSupabase();
       setLoading(true);
       setError(null);
       const { data, error } = await supabase

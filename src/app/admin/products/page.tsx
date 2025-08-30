@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { mapProductRow, type Product } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = React.useState<Product[]>([]);
 
   const load = React.useCallback(async () => {
+    const supabase = getSupabase();
     setLoading(true);
     setError(null);
     const order = sort.startsWith("created") ? "created_at" : "price";
@@ -94,6 +95,7 @@ export default function AdminProductsPage() {
   };
 
   const addProduct = async () => {
+    const supabase = getSupabase();
     setError(null);
     const { data, error } = await supabase
       .from("products")
@@ -108,6 +110,7 @@ export default function AdminProductsPage() {
   };
 
   const toggleActive = async (p: Product) => {
+    const supabase = getSupabase();
     setError(null);
     const nextActive = !p.active;
     setProducts((prev) => prev.map((x) => (x.id === p.id ? { ...x, active: nextActive } : x)));
@@ -119,6 +122,7 @@ export default function AdminProductsPage() {
   };
 
   const remove = async (p: Product) => {
+    const supabase = getSupabase();
     setError(null);
     const prev = products;
     setProducts((cur) => cur.filter((x) => x.id !== p.id));
