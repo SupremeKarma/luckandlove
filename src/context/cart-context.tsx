@@ -1,15 +1,13 @@
-
 'use client';
 
-import type { CartItem, Product, ProductVariant } from '@/lib/types';
+import type { Product, CartItem } from '@/lib/types';
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { useLocalStorage } from '@/hooks/use-local-storage';
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, variant: ProductVariant, quantity?: number) => void;
-  removeFromCart: (cartItemId: string) => void;
-  updateQuantity: (cartItemId: string, quantity: number) => void;
+  addToCart: (product: Product, quantity?: number) => void;
+  removeFromCart: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   cartCount: number;
   cartTotal: number;
@@ -26,76 +24,74 @@ export function useCart() {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useLocalStorage<CartItem[]>('cart', []);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    try {
+      const storedCart = localStorage.getItem('zenithCart');
+      if (storedCart) {
+        setCartItems(JSON.parse(storedCart));
+      }
+    } catch (error) {
+      console.error("Failed to parse cart from localStorage", error);
+      localStorage.removeItem('zenithCart');
+    } finally {
+        setIsMounted(true);
+    }
   }, []);
 
-  const addToCart = (product: Product, variant: ProductVariant, quantity: number = 1) => {
-    setCartItems((prevItems) => {
-      // A cart item is unique by product ID and variant ID
-      const cartItemId = `${product.id}-${variant.id}`;
-      const existingItem = prevItems.find((item) => `${item.id}-${item.variant.id}` === cartItemId);
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('zenithCart', JSON.stringify(cartItems));
+    }
+  }, [cartItems, isMounted]);
 
+  const addToCart = (product: Product, quantity = 1) => {
+    setCartItems((prevCart) => {
+      const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
-        return prevItems.map((item) =>
-          `${item.id}-${item.variant.id}` === cartItemId
+        return prevCart.map((item) =>
+          item.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
+      const variant = product.variants?.[0];
+      const price = variant ? (variant.sale_price ?? variant.price) / 100 : product.price;
       
-      const newCartItem: CartItem = {
-          ...product,
-          price: (variant.sale_price ?? variant.price)/100, // Price in dollars
-          variant,
-          quantity,
-      };
-
-      return [...prevItems, newCartItem];
+      return [...prevCart, { ...product, quantity, price, variant: variant }];
     });
   };
 
-  const removeFromCart = (cartItemId: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => `${item.id}-${item.variant.id}` !== cartItemId));
+  const removeFromCart = (productId: string) => {
+    setCartItems((prevCart) => prevCart.filter((item) => item.id !== productId));
   };
 
-  const updateQuantity = (cartItemId: string, quantity: number) => {
-     if (quantity <= 0) {
-      removeFromCart(cartItemId);
+  const updateQuantity = (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeFromCart(productId);
     } else {
-      setCartItems((prevItems) =>
-        prevItems.map((item) =>
-          `${item.id}-${item.variant.id}` === cartItemId ? { ...item, quantity } : item
+      setCartItems((prevCart) =>
+        prevCart.map((item) =>
+          item.id === productId ? { ...item, quantity } : item
         )
       );
     }
   };
-  
+
   const clearCart = () => {
     setCartItems([]);
-  }
-
-  const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0);
-  const cartTotal = cartItems.reduce((total, item) => {
-    const price = item.price; // Price is already in dollars
-    return total + price * item.quantity;
-  }, 0);
-
-  const value = {
-    cartItems,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    cartCount,
-    cartTotal,
   };
-  
+
+  const cartCount = isMounted ? cartItems.reduce((total, item) => total + item.quantity, 0) : 0;
+  const cartTotal = isMounted ? cartItems.reduce((total, item) => total + item.price * item.quantity, 0) : 0;
+
+
+  const value = { cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal };
+
   if (!isMounted) {
-     const dummyContext: CartContextType = {
+    const dummyContext: CartContextType = {
       cartItems: [],
       addToCart: () => {},
       removeFromCart: () => {},
@@ -104,12 +100,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       cartCount: 0,
       cartTotal: 0,
     };
-    return (
-        <CartContext.Provider value={dummyContext}>
-            {children}
-        </CartContext.Provider>
-    );
+     return <CartContext.Provider value={dummyContext}>{children}</CartContext.Provider>;
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
-}
+};

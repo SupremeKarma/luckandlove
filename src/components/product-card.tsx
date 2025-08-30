@@ -26,26 +26,27 @@ export function ProductCard({ product, index }: ProductCardProps) {
 
   const displayVariant = useMemo(() => product.variants && product.variants[0], [product]);
   const hasSale = useMemo(() => displayVariant && displayVariant.sale_price !== null && displayVariant.sale_price !== undefined, [displayVariant]);
-  const displayPrice = useMemo(() => hasSale ? (displayVariant.sale_price! / 100).toFixed(2) : (displayVariant.price / 100).toFixed(2), [displayVariant, hasSale]);
-  const originalPrice = useMemo(() => hasSale ? (displayVariant.price / 100).toFixed(2) : null, [displayVariant, hasSale]);
+  const displayPrice = useMemo(() => {
+      if (!displayVariant) return product.price.toFixed(2);
+      return hasSale ? (displayVariant.sale_price! / 100).toFixed(2) : (displayVariant.price / 100).toFixed(2)
+    }, [product, displayVariant, hasSale]);
+  const originalPrice = useMemo(() => {
+      if (!displayVariant) return null;
+      return hasSale ? (displayVariant.price / 100).toFixed(2) : null
+  }, [displayVariant, hasSale]);
 
 
   const handleAddToCart = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!displayVariant) {
-        toast({ title: "Product not available", description: "This product has no variants.", variant: 'destructive' });
-        return;
-    }
-
-    if (product.variants.length > 1) {
+    if (product.variants && product.variants.length > 1) {
       router.push(`/products/${product.id}`);
       return;
     }
 
     try {
-      addToCart(product, displayVariant, 1);
+      addToCart(product, 1);
       toast({
         title: "Added to Cart! 🛒",
         description: `${product.name} has been added to your cart.`,
@@ -57,12 +58,8 @@ export function ProductCard({ product, index }: ProductCardProps) {
         variant: 'destructive',
       });
     }
-  }, [product, addToCart, toast, router, displayVariant]);
+  }, [product, addToCart, toast, router]);
   
-  if (!displayVariant) {
-    return null; // Or a placeholder for products without variants
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

@@ -11,8 +11,8 @@ import Image from "next/image";
 
 interface CartProps {
   cartItems: CartItem[];
-  onUpdateQuantity: (cartItemId: string, quantity: number) => void;
-  onRemoveItem: (cartItemId: string) => void;
+  onUpdateQuantity: (productId: string, quantity: number) => void;
+  onRemoveItem: (productId: string) => void;
 }
 
 export default function Cart({ cartItems, onUpdateQuantity, onRemoveItem }: CartProps) {
@@ -48,7 +48,7 @@ export default function Cart({ cartItems, onUpdateQuantity, onRemoveItem }: Cart
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map((item) => (
-            <Card key={`${item.id}-${item.variant.id}`} className="overflow-hidden">
+            <Card key={item.id} className="overflow-hidden">
               <div className="flex items-center gap-4 p-4">
                 <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md bg-card">
                    <Image
@@ -69,7 +69,7 @@ export default function Cart({ cartItems, onUpdateQuantity, onRemoveItem }: Cart
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => onUpdateQuantity(`${item.id}-${item.variant.id}`, Math.max(1, item.quantity - 1))}
+                      onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
                       aria-label="Decrease quantity"
                     >
                       <Minus size={14} />
@@ -81,7 +81,7 @@ export default function Cart({ cartItems, onUpdateQuantity, onRemoveItem }: Cart
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => onUpdateQuantity(`${item.id}-${item.variant.id}`, item.quantity + 1)}
+                      onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
                        aria-label="Increase quantity"
                     >
                       <Plus size={14} />
@@ -95,7 +95,7 @@ export default function Cart({ cartItems, onUpdateQuantity, onRemoveItem }: Cart
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => onRemoveItem(`${item.id}-${item.variant.id}`)}
+                    onClick={() => onRemoveItem(item.id)}
                     aria-label="Remove item"
                   >
                     <Trash2 size={16} />

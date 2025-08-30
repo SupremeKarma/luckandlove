@@ -10,9 +10,8 @@ import Link from 'next/link';
 
 export const CartSheet = ({ isCartOpen, setIsCartOpen }: { isCartOpen: boolean, setIsCartOpen: (isOpen: boolean) => void }) => {
   const { toast } = useToast();
-  const { cartItems, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
 
-  const totalItems = useMemo(() => cartItems.reduce((sum, item) => sum + item.quantity, 0), [cartItems]);
   const currency = useMemo(() => cartItems[0]?.price ? '$' : '', [cartItems]);
   const handleCheckout = () => {
     setIsCartOpen(false);
@@ -38,7 +37,7 @@ export const CartSheet = ({ isCartOpen, setIsCartOpen }: { isCartOpen: boolean, 
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-white/10">
-              <h2 className="text-2xl font-bold">Shopping Cart ({totalItems})</h2>
+              <h2 className="text-2xl font-bold">Shopping Cart ({cartCount})</h2>
               <Button onClick={() => setIsCartOpen(false)} variant="ghost" size="icon" className="hover:bg-white/10">
                 <X />
               </Button>
@@ -51,22 +50,22 @@ export const CartSheet = ({ isCartOpen, setIsCartOpen }: { isCartOpen: boolean, 
                 </div>
               ) : (
                 cartItems.map(item => (
-                  <div key={`${item.id}-${item.variant.id}`} className="flex items-center gap-4 bg-muted/50 p-3 rounded-lg">
+                  <div key={item.id} className="flex items-center gap-4 bg-muted/50 p-3 rounded-lg">
                     <img src={item.imageUrl || 'https://via.placeholder.com/80'} alt={item.name} className="w-20 h-20 object-cover rounded-md" />
                     <div className="flex-grow">
                       <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-sm text-muted-foreground">{item.variant.name}</p>
+                      {item.variant && <p className="text-sm text-muted-foreground">{item.variant.name}</p>}
                       <p className="text-sm text-accent font-bold">
                         {currency}{(item.price).toFixed(2)}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <div className="flex items-center border border-white/20 rounded-md">
-                        <Button onClick={() => updateQuantity(`${item.id}-${item.variant.id}`, Math.max(1, item.quantity - 1))} size="sm" variant="ghost" className="px-2 hover:bg-white/10">-</Button>
+                        <Button onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))} size="sm" variant="ghost" className="px-2 hover:bg-white/10">-</Button>
                         <span className="px-2">{item.quantity}</span>
-                        <Button onClick={() => updateQuantity(`${item.id}-${item.variant.id}`, item.quantity + 1)} size="sm" variant="ghost" className="px-2 hover:bg-white/10">+</Button>
+                        <Button onClick={() => updateQuantity(item.id, item.quantity + 1)} size="sm" variant="ghost" className="px-2 hover:bg-white/10">+</Button>
                       </div>
-                      <Button onClick={() => removeFromCart(`${item.id}-${item.variant.id}`)} size="sm" variant="link" className="text-destructive hover:text-destructive/80 text-xs p-0 h-auto">Remove</Button>
+                      <Button onClick={() => removeFromCart(item.id)} size="sm" variant="link" className="text-destructive hover:text-destructive/80 text-xs p-0 h-auto">Remove</Button>
                     </div>
                   </div>
                 ))
