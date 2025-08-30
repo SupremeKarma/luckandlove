@@ -148,7 +148,7 @@ export function Navigation() {
                           size="icon"
                           aria-label="Toggle mobile menu"
                         >
-                          {isMobileMenuOpe_n ? <X size={24} /> : <Menu size={24} />}
+                          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="w-[300px] bg-background/95 p-4">
