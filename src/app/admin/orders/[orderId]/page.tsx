@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { updateOrderStatus } from "../_actions";
 import { refundOrder } from "./refund-action";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import StatusTimeline from "@/components/StatusTimeline";
 
 type Order = {
   id: string;
@@ -46,6 +47,7 @@ export default function AdminOrderDetailPage() {
   const [loading, setLoading] = React.useState(true);
   const [err, setErr] = React.useState<string | null>(null);
   const [isUpdating, setIsUpdating] = React.useState(false);
+  const { toast } = useToast();
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -81,16 +83,13 @@ export default function AdminOrderDetailPage() {
 
   const onRefund = async () => {
     if (!order) return;
-    const originalOrder = order;
     setIsUpdating(true);
     
-    // We don't do an optimistic update here because the webhook is what changes the status
     try {
       await refundOrder(order.id);
-      toast({ title: "Success", description: "Refund has been initiated. The status will update once confirmed by Stripe." });
+      toast({ title: "Refund Initiated", description: "The status will update once confirmed by Stripe." });
       await load();
     } catch (e: any) {
-      setOrder(originalOrder);
       toast({ title: "Refund Failed", description: e.message, variant: "destructive" });
     } finally {
       setIsUpdating(false);
@@ -170,15 +169,8 @@ export default function AdminOrderDetailPage() {
             </div>
             <div className="rounded-2xl border">
               <div className="px-4 py-3 border-b text-sm text-muted-foreground">Timeline</div>
-              <div className="p-4 space-y-2 text-sm">
-                {events.length === 0 ? (
-                  <div className="text-muted-foreground">No events yet.</div>
-                ) : events.map(ev => (
-                  <div key={ev.id} className="flex items-center justify-between">
-                    <span>{ev.message}</span>
-                    <span className="text-xs text-muted-foreground">{new Date(ev.created_at).toLocaleString()}</span>
-                  </div>
-                ))}
+              <div className="p-4">
+                <StatusTimeline events={events} />
               </div>
             </div>
           </div>
@@ -188,5 +180,3 @@ export default function AdminOrderDetailPage() {
     </div>
   );
 }
-
-    

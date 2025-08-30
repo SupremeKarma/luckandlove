@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { updateOrderStatus } from "./_actions";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
@@ -39,6 +39,7 @@ export default function AdminOrdersPage() {
   const [status, setStatus] = React.useState<"" | Order["status"]>("");
   const [q, setQ] = React.useState("");
   const router = useRouter();
+  const { toast } = useToast();
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -185,5 +186,3 @@ export default function AdminOrdersPage() {
     </div>
   );
 }
-
-    
