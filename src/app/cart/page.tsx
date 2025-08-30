@@ -1,6 +1,5 @@
 'use client';
 
-import { CartSheet } from '@/components/cart-sheet';
 import { useCart } from '@/context/cart-context';
 import CartComponent from '@/components/Cart';
 

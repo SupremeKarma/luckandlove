@@ -29,10 +29,12 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
+import { CartSheet } from './cart-sheet';
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const pathname = usePathname();
   const { cartCount } = useCart();
   const { role } = useAuth();
@@ -65,6 +67,7 @@ export function Navigation() {
   };
 
   return (
+    <>
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
@@ -101,8 +104,13 @@ export function Navigation() {
               </Button>
             </Link>
 
-            <Link href="/cart" aria-label={`Shopping cart with ${cartCount} items`}>
-              <Button variant="ghost" size="icon" className="relative">
+            <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={() => setIsCartOpen(true)}
+                aria-label={`Shopping cart with ${cartCount} items`}
+              >
                 <ShoppingCart size={20} />
                 {cartCount > 0 && (
                   <Badge
@@ -112,8 +120,7 @@ export function Navigation() {
                     {cartCount}
                   </Badge>
                 )}
-              </Button>
-            </Link>
+            </Button>
 
             {/* Mobile Menu Button */}
              <div className="md:hidden">
@@ -164,5 +171,7 @@ export function Navigation() {
         </div>
       </div>
     </header>
+    <CartSheet isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
+    </>
   );
 }

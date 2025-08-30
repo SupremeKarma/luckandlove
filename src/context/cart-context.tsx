@@ -10,6 +10,7 @@ interface CartContextType {
   addToCart: (product: Product, variant: ProductVariant, quantity?: number) => void;
   removeFromCart: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
+  clearCart: () => void;
   cartCount: number;
   cartTotal: number;
 }
@@ -48,7 +49,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       const newCartItem: CartItem = {
           ...product,
-          price: variant.sale_price ?? variant.price,
+          price: (variant.sale_price ?? variant.price)/100, // Price in dollars
           variant,
           quantity,
       };
@@ -72,10 +73,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       );
     }
   };
+  
+  const clearCart = () => {
+    setCartItems([]);
+  }
 
   const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0);
   const cartTotal = cartItems.reduce((total, item) => {
-    const price = item.variant.sale_price ?? item.variant.price;
+    const price = item.price; // Price is already in dollars
     return total + price * item.quantity;
   }, 0);
 
@@ -84,13 +89,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     addToCart,
     removeFromCart,
     updateQuantity,
+    clearCart,
     cartCount,
     cartTotal,
   };
   
   if (!isMounted) {
+     const dummyContext: CartContextType = {
+      cartItems: [],
+      addToCart: () => {},
+      removeFromCart: () => {},
+      updateQuantity: () => {},
+      clearCart: () => {},
+      cartCount: 0,
+      cartTotal: 0,
+    };
     return (
-        <CartContext.Provider value={{ cartItems: [], addToCart: () => {}, removeFromCart: () => {}, updateQuantity: () => {}, cartCount: 0, cartTotal: 0 }}>
+        <CartContext.Provider value={dummyContext}>
             {children}
         </CartContext.Provider>
     );
