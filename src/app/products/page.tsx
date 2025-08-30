@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ProductList } from '@/components/product-list';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
-import type { Product } from '@/lib/types';
+import type { Product, ProductVariant } from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -32,32 +32,34 @@ function ProductsPageContent() {
 
       try {
         setLoading(true);
-        let query = supabase
+        const { data: productsData, error: productsError } = await supabase
           .from('products')
-          .select(`
-            *,
-            product_variants!inner(*)
-          `);
+          .select('*');
 
-        const { data, error: queryError } = await query;
-        
-        if (queryError) {
-          throw queryError;
-        }
+        if (productsError) throw productsError;
 
-        if (data) {
-          const productsData = data.map(p => ({
-            ...p,
-            name: p.name,
-            imageUrl: p.image_url,
-            variants: p.product_variants.map((v: any) => ({
-              ...v,
-              price: v.price_in_cents,
-              sale_price: v.sale_price_in_cents,
-              inventory_quantity: v.inventory_quantity
-            }))
-          })) as Product[]
-          setAllProducts(productsData);
+        if (productsData) {
+            const productIds = productsData.map(p => p.id);
+            const { data: variantsData, error: variantsError } = await supabase
+                .from('product_variants')
+                .select('*')
+                .in('product_id', productIds);
+
+            if (variantsError) throw variantsError;
+
+            const productsWithVariants = productsData.map(p => ({
+                ...p,
+                name: p.name,
+                imageUrl: p.image_url,
+                variants: variantsData.filter(v => v.product_id === p.id).map(v => ({
+                    ...v,
+                    price: v.price_in_cents,
+                    sale_price: v.sale_price_in_cents,
+                    inventory_quantity: v.inventory_quantity
+                }))
+            })) as Product[];
+            
+            setAllProducts(productsWithVariants);
         } else {
           setAllProducts([]);
         }

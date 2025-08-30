@@ -36,31 +36,34 @@ export function ProductShowcase() {
       setError(null);
 
       try {
-        const { data, error: queryError } = await supabase
+        const { data: productsData, error: productsError } = await supabase
           .from('products')
-          .select(`
-            *,
-            product_variants!inner(*)
-          `)
+          .select('*')
           .limit(8);
 
-        if (queryError) {
-          throw queryError;
-        }
+        if (productsError) throw productsError;
 
-        if (data) {
-          const productsData = data.map((p) => ({
-            ...p,
-            name: p.name,
-            imageUrl: p.image_url,
-            variants: p.product_variants.map((v: any) => ({
-                ...v,
-                price: v.price_in_cents,
-                sale_price: v.sale_price_in_cents,
-                inventory_quantity: v.inventory_quantity
-            }))
-          })) as Product[];
-          setProducts(productsData);
+        if (productsData) {
+            const productIds = productsData.map(p => p.id);
+            const { data: variantsData, error: variantsError } = await supabase
+                .from('product_variants')
+                .select('*')
+                .in('product_id', productIds);
+
+            if (variantsError) throw variantsError;
+
+            const productsWithVariants = productsData.map(p => ({
+                ...p,
+                name: p.name,
+                imageUrl: p.image_url,
+                variants: variantsData.filter(v => v.product_id === p.id).map(v => ({
+                    ...v,
+                    price: v.price_in_cents,
+                    sale_price: v.sale_price_in_cents,
+                    inventory_quantity: v.inventory_quantity
+                }))
+            })) as Product[];
+            setProducts(productsWithVariants);
         } else {
           setProducts([]);
         }

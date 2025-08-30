@@ -74,22 +74,27 @@ function ProductDetailPageContent() {
         setLoading(true);
         setError(null);
 
-        const { data, error: productError } = await supabase
+        const { data: productData, error: productError } = await supabase
           .from('products')
-          .select(`
-            *,
-            product_variants!inner(*)
-          `)
+          .select(`*`)
           .eq('id', productId)
           .single();
 
         if (productError) throw productError;
+        if (!productData) throw new Error("Product not found");
 
-        const productData = {
-          ...data,
-          name: data.name,
-          imageUrl: data.image_url,
-          variants: data.product_variants.map((v: any) => ({
+        const { data: variantsData, error: variantsError } = await supabase
+            .from('product_variants')
+            .select('*')
+            .eq('product_id', productData.id);
+        
+        if (variantsError) throw variantsError;
+
+        const fullProductData = {
+          ...productData,
+          name: productData.name,
+          imageUrl: productData.image_url,
+          variants: variantsData.map((v: any) => ({
             ...v,
             price: v.price_in_cents,
             sale_price: v.sale_price_in_cents,
@@ -97,9 +102,9 @@ function ProductDetailPageContent() {
           }))
         } as Product;
         
-        setProduct(productData);
-        if (productData.variants && productData.variants.length > 0) {
-            setSelectedVariant(productData.variants[0]);
+        setProduct(fullProductData);
+        if (fullProductData.variants && fullProductData.variants.length > 0) {
+            setSelectedVariant(fullProductData.variants[0]);
         }
 
       } catch (err: any) {
