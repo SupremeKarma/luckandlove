@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
 import { ShoppingCart, Loader2, ArrowLeft, CheckCircle, Minus, Plus, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
 const placeholderImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzc0MTUxIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzlDQTNBRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K";
 
@@ -28,17 +27,6 @@ function ProductDetailPageContent() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
-
-  useEffect(() => {
-    try {
-      const supabaseClient = getSupabase();
-      setSupabase(supabaseClient);
-    } catch (error: any) {
-      setError(error.message);
-      setLoading(false);
-    }
-  }, []);
 
   const handleAddToCart = useCallback(() => {
     if (product && selectedVariant) {
@@ -69,8 +57,9 @@ function ProductDetailPageContent() {
 
   useEffect(() => {
     const fetchProductData = async () => {
-      if (!supabase || !productId) return;
+      if (!productId) return;
       try {
+        const supabase = getSupabase();
         setLoading(true);
         setError(null);
 
@@ -93,6 +82,7 @@ function ProductDetailPageContent() {
         const fullProductData = {
           ...productData,
           name: productData.name,
+          price: productData.price_in_cents / 100,
           imageUrl: productData.image_url,
           variants: variantsData.map((v: any) => ({
             ...v,
@@ -114,10 +104,8 @@ function ProductDetailPageContent() {
       }
     };
 
-    if (supabase) {
-        fetchProductData();
-    }
-  }, [productId, supabase]);
+    fetchProductData();
+  }, [productId]);
 
   if (loading) {
     return (

@@ -14,23 +14,11 @@ function ProductsPageContent() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
-
-  useEffect(() => {
-    try {
-      const supabaseClient = getSupabase();
-      setSupabase(supabaseClient);
-    } catch (error: any) {
-        setError(error.message);
-        setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!supabase) return;
-
       try {
+        const supabase = getSupabase();
         setLoading(true);
         const { data: productsData, error: productsError } = await supabase
           .from('products')
@@ -47,17 +35,23 @@ function ProductsPageContent() {
 
             if (variantsError) throw variantsError;
 
-            const productsWithVariants = productsData.map(p => ({
+            const productsWithVariants = productsData.map(p => {
+              const productVariants = variantsData?.filter(v => v.product_id === p.id) || [];
+              const priceInCents = productVariants.length > 0 ? (productVariants[0].sale_price_in_cents ?? productVariants[0].price_in_cents) : p.price_in_cents;
+
+              return {
                 ...p,
                 name: p.name,
+                price: priceInCents / 100,
                 imageUrl: p.image_url,
-                variants: variantsData.filter(v => v.product_id === p.id).map(v => ({
+                variants: productVariants.map(v => ({
                     ...v,
                     price: v.price_in_cents,
                     sale_price: v.sale_price_in_cents,
                     inventory_quantity: v.inventory_quantity
                 }))
-            })) as Product[];
+              } as Product
+            });
             
             setAllProducts(productsWithVariants);
         } else {
@@ -72,10 +66,8 @@ function ProductsPageContent() {
       }
     };
 
-    if (supabase) {
-        fetchProducts();
-    }
-  }, [supabase]);
+    fetchProducts();
+  }, []);
 
 
   return (

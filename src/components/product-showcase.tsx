@@ -4,38 +4,21 @@
 import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductList } from './product-list';
 
 export function ProductShowcase() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const supabaseClient = getSupabase();
-      setSupabase(supabaseClient);
-    } catch (err) {
-      console.error(err);
-      setError('Could not connect to the database.');
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
     const fetchProducts = async () => {
-      if (!supabase) {
-        setLoading(false);
-        return;
-      }
-
       setLoading(true);
       setError(null);
 
       try {
+        const supabase = getSupabase();
         const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select('*')
@@ -52,17 +35,23 @@ export function ProductShowcase() {
 
             if (variantsError) throw variantsError;
 
-            const productsWithVariants = productsData.map(p => ({
+            const productsWithVariants = productsData.map(p => {
+              const productVariants = variantsData?.filter(v => v.product_id === p.id) || [];
+              const priceInCents = productVariants.length > 0 ? (productVariants[0].sale_price_in_cents ?? productVariants[0].price_in_cents) : p.price_in_cents;
+              
+              return {
                 ...p,
                 name: p.name,
+                price: priceInCents / 100,
                 imageUrl: p.image_url,
-                variants: variantsData.filter(v => v.product_id === p.id).map(v => ({
+                variants: productVariants.map(v => ({
                     ...v,
                     price: v.price_in_cents,
                     sale_price: v.sale_price_in_cents,
                     inventory_quantity: v.inventory_quantity
                 }))
-            })) as Product[];
+              } as Product;
+            });
             setProducts(productsWithVariants);
         } else {
           setProducts([]);
@@ -76,10 +65,8 @@ export function ProductShowcase() {
       }
     };
 
-    if (supabase) {
-      fetchProducts();
-    }
-  }, [supabase]);
+    fetchProducts();
+  }, []);
 
   return (
     <section className="py-20 md:py-32">
