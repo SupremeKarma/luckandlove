@@ -13,6 +13,24 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Star, Clock, CircleDollarSign } from 'lucide-react';
 
+export async function generateStaticParams() {
+  try {
+    const supabase = getSupabase();
+    const { data: shops } = await supabase.from('shops').select('id');
+
+    if (!shops) {
+      return [];
+    }
+
+    return shops.map((shop) => ({
+      shopId: shop.id.toString(),
+    }));
+  } catch (error) {
+    console.error("Failed to generate static params for shops", error);
+    return [];
+  }
+}
+
 export default function ShopDetailPage() {
   const params = useParams();
   const shopId = params.shopId as string;

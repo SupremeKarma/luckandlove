@@ -14,6 +14,24 @@ import type { Product } from '@/lib/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export async function generateStaticParams() {
+  try {
+    const supabase = getSupabase();
+    const { data: products } = await supabase.from('products').select('id');
+    
+    if (!products) {
+      return [];
+    }
+
+    return products.map((product) => ({
+      productId: product.id.toString(),
+    }));
+  } catch (error) {
+    console.error("Failed to generate static params for products", error);
+    return [];
+  }
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
