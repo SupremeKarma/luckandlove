@@ -1,5 +1,6 @@
 {
   "/chat/page": "app/chat/page.js",
+  "/food-delivery/page": "app/food-delivery/page.js",
   "/page": "app/page.js",
   "/products/[productId]/page": "app/products/[productId]/page.js",
   "/products/page": "app/products/page.js",

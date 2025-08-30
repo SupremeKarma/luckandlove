@@ -30,7 +30,7 @@ export async function refundOrder(orderId: string) {
   const secret = req("STRIPE_SECRET_KEY");
   const stripe = new Stripe(secret, { apiVersion: "2024-06-20" });
 
-  // Stripe will trigger a 'charge.refunded' webhook, which will handle the status update and restock.
+  // Stripe will trigger a 'charge.refunded' webhook, which will handle the status update and restock via DB trigger.
   // We only need to initiate the refund here.
   await stripe.refunds.create({ payment_intent: order.stripe_payment_intent_id });
 

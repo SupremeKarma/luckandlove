@@ -10,14 +10,9 @@ async function restockItems(supabase: ReturnType<typeof createClient>, orderId: 
     const { data: items } = await supabase.from("order_items").select("product_id, qty").eq("order_id", orderId);
     if (items && items.length) {
         for (const item of items) {
-            const { error: stockError } = await supabase.rpc('increment_product_stock', {
-                p_product_id: item.product_id,
-                p_quantity: item.qty
-            });
-
-            if (stockError) {
-                console.error(`Webhook: Failed to restock product ${item.product_id} for order ${orderId}:`, stockError);
-            }
+            // This logic is now handled by the on_order_status_change trigger when status moves to 'refunded'.
+            // The RPC is not needed here. Keeping the shell of the function in case other logic is added later.
+            // For example, if you wanted to log something specific during webhook-triggered restock.
         }
     }
 }
@@ -52,6 +47,7 @@ export async function POST(req: Request) {
       : session.payment_intent?.id;
 
     if (orderId) {
+        // The on_order_status_change trigger will decrement stock.
         const { error } = await supabase.from("orders")
           .update({ status: "paid", stripe_payment_intent_id: paymentIntentId ?? null })
           .eq("id", orderId)
@@ -79,11 +75,11 @@ export async function POST(req: Request) {
         .maybeSingle();
 
       if (order && order.status !== "refunded") {
+        // The on_order_status_change trigger will restock items.
         await supabase.from("orders").update({ status: "refunded" }).eq("id", order.id);
         await supabase.from("order_events").insert({
             order_id: order.id, type: "webhook", message: "Payment refunded",
         });
-        await restockItems(supabase, order.id);
       }
     }
   }
