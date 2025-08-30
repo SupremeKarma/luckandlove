@@ -3,9 +3,18 @@ export interface Category {
   subcategories: string[];
 }
 
+export interface ProductVariant {
+  id: string;
+  name: string;
+  price: number;
+  sale_price?: number | null;
+  inventory_quantity: number;
+}
+
 export interface Product {
   id: string;
   name:string;
+  subtitle?: string;
   description: string;
   price: number;
   category: string;
@@ -14,10 +23,13 @@ export interface Product {
   subcategory?: string;
   rating?: number;
   shop_id?: string;
+  variants: ProductVariant[];
+  ribbon_text?: string;
 }
 
 export interface CartItem extends Product {
   quantity: number;
+  variant: ProductVariant;
 }
 
 export interface Order {

@@ -39,7 +39,12 @@ function ProductsPageContent() {
       setLoading(true);
       
       try {
-        let query = supabase.from('products').select('*');
+        let query = supabase
+          .from('products')
+          .select(`
+            *,
+            variants:product_variants(*)
+          `);
 
         if (selectedCategory) {
           query = query.eq('category', selectedCategory);
@@ -60,7 +65,14 @@ function ProductsPageContent() {
         if (data) {
           const productsData = data.map(p => ({
             ...p,
+            name: p.name,
             imageUrl: p.image_url,
+            variants: p.variants.map((v: any) => ({
+              ...v,
+              price: v.price_in_cents,
+              sale_price: v.sale_price_in_cents,
+              inventory_quantity: v.inventory_quantity
+            }))
           })) as Product[]
           setProducts(productsData);
         } else {
