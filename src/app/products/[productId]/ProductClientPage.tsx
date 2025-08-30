@@ -1,14 +1,16 @@
 
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import * as React from "react";
+import { supabase } from "@/lib/supabase";
+import { mapProductRow, type Product } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { getSupabase } from '@/lib/supabase';
-import type { Product, ProductVariant } from '@/lib/types';
-import { mapProductRow } from '@/lib/types';
+import type { ProductVariant } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
@@ -20,18 +22,18 @@ export default function ProductClientPage() {
   const params = useParams();
   const productId = params.productId as string;
 
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = React.useState<Product | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | null>(null);
+  const [quantity, setQuantity] = React.useState(1);
   const { addToCart } = useCart();
   const { toast } = useToast();
 
-  const handleAddToCart = useCallback(() => {
+  const handleAddToCart = React.useCallback(() => {
     if (product) {
       try {
-        addToCart(product, { qty: quantity, variant: selectedVariant });
+        addToCart(product, { quantity, variant: selectedVariant });
         toast({
           title: "Added to Cart! 🛒",
           description: `${quantity} x ${product.name} ${selectedVariant ? `(${selectedVariant.name})` : ''} added.`,
@@ -46,16 +48,16 @@ export default function ProductClientPage() {
     }
   }, [product, selectedVariant, quantity, addToCart, toast]);
 
-  const handleQuantityChange = useCallback((amount: number) => {
+  const handleQuantityChange = React.useCallback((amount: number) => {
     setQuantity(prevQuantity => Math.max(1, prevQuantity + amount));
   }, []);
   
-  const handleVariantSelect = useCallback((variant: ProductVariant) => {
+  const handleVariantSelect = React.useCallback((variant: ProductVariant) => {
     setSelectedVariant(variant);
     setQuantity(1);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchProductData = async () => {
       if (!productId) return;
       try {
