@@ -28,12 +28,17 @@ export function ProductShowcase() {
 
         if (productsData) {
             const productIds = productsData.map(p => p.id);
-            const { data: variantsData, error: variantsError } = await supabase
-                .from('product_variants')
-                .select('*')
-                .in('product_id', productIds);
-
-            if (variantsError) throw variantsError;
+            let variantsData: any[] = [];
+            try {
+                const { data, error: variantsError } = await supabase
+                    .from('product_variants')
+                    .select('*')
+                    .in('product_id', productIds);
+                if (variantsError) throw variantsError;
+                variantsData = data || [];
+            } catch(variantError) {
+                console.warn("Could not fetch product_variants. This might be expected if the table doesn't exist.", variantError);
+            }
 
             const productsWithVariants = productsData.map(p => {
               const productVariants = variantsData?.filter(v => v.product_id === p.id) || [];
@@ -100,11 +105,4 @@ export function ProductShowcase() {
               <div className="text-center text-muted-foreground mt-16">
                 <p className="text-xl">No products found.</p>
                 <p>Check back later for new arrivals.</p>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </section>
-  );
-}
+              

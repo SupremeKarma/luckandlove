@@ -23,8 +23,8 @@ export interface Product {
   subcategory?: string;
   rating?: number;
   shop_id?: string;
-  variants: ProductVariant[];
-  product_variants: ProductVariant[];
+  variants?: ProductVariant[];
+  product_variants?: ProductVariant[];
   ribbon_text?: string;
 }
 
@@ -85,5 +85,4 @@ export type Profile = {
   full_name: string | null;
   avatar_url: string | null;
   role: ProfileRole;
-  updated_at: string;
-};
+  

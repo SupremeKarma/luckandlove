@@ -72,12 +72,17 @@ function ProductDetailPageContent() {
         if (productError) throw productError;
         if (!productData) throw new Error("Product not found");
 
-        const { data: variantsData, error: variantsError } = await supabase
-            .from('product_variants')
-            .select('*')
-            .eq('product_id', productData.id);
-        
-        if (variantsError) throw variantsError;
+        let variantsData: any[] = [];
+        try {
+            const { data, error: variantsError } = await supabase
+                .from('product_variants')
+                .select('*')
+                .eq('product_id', productData.id);
+            if (variantsError) throw variantsError;
+            variantsData = data || [];
+        } catch (variantError) {
+            console.warn("Could not fetch product_variants for this product.", variantError);
+        }
 
         const fullProductData = {
           ...productData,
@@ -177,7 +182,7 @@ function ProductDetailPageContent() {
           
           <p className="text-muted-foreground mb-6">{product.description}</p>
 
-          {product.variants?.length > 1 && (
+          {product.variants && product.variants?.length > 1 && (
             <div className="mb-6">
               <h3 className="text-sm font-medium mb-2">{product.variants[0].name || "Variant"}</h3>
               <div className="flex flex-wrap gap-2">

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Suspense } from 'react';
@@ -28,12 +27,19 @@ function ProductsPageContent() {
 
         if (productsData) {
             const productIds = productsData.map(p => p.id);
-            const { data: variantsData, error: variantsError } = await supabase
-                .from('product_variants')
-                .select('*')
-                .in('product_id', productIds);
-
-            if (variantsError) throw variantsError;
+            
+            // This query might fail if the table doesn't exist, so we wrap it
+            let variantsData: any[] = [];
+            try {
+                const { data, error: variantsError } = await supabase
+                    .from('product_variants')
+                    .select('*')
+                    .in('product_id', productIds);
+                if (variantsError) throw variantsError;
+                variantsData = data || [];
+            } catch (variantError) {
+                console.warn("Could not fetch product_variants. This might be expected if the table doesn't exist.", variantError);
+            }
 
             const productsWithVariants = productsData.map(p => {
               const productVariants = variantsData?.filter(v => v.product_id === p.id) || [];
