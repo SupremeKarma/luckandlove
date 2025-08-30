@@ -2,5 +2,6 @@
   "/chat/page": "app/chat/page.js",
   "/page": "app/page.js",
   "/products/[productId]/page": "app/products/[productId]/page.js",
+  "/products/page": "app/products/page.js",
   "/rentals/page": "app/rentals/page.js"
 }

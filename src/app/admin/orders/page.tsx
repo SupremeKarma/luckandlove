@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -9,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { updateOrderStatus } from "./_actions";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 type Order = {
   id: string;
@@ -27,6 +29,7 @@ export default function AdminOrdersPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [status, setStatus] = React.useState<"" | Order["status"]>("");
   const [q, setQ] = React.useState("");
+  const router = useRouter();
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -138,7 +141,7 @@ export default function AdminOrdersPage() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map(o => (
-                    <TableRow key={o.id}>
+                    <TableRow key={o.id} onClick={() => router.push(`/admin/orders/${o.id}`)} className="cursor-pointer">
                       <TableCell className="font-mono text-xs">{o.id.slice(0,8)}…</TableCell>
                       <TableCell className="text-sm">{o.email ?? "—"}</TableCell>
                       <TableCell className="text-sm capitalize">
@@ -146,7 +149,7 @@ export default function AdminOrdersPage() {
                       </TableCell>
                       <TableCell className="text-right">NPR {Number(o.total).toFixed(2)}</TableCell>
                       <TableCell className="text-sm">{new Date(o.created_at).toLocaleString()}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <Select onValueChange={(v: any) => handleSetOrderStatus(o.id, v)} defaultValue={o.status}>
                           <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
                           <SelectContent>
