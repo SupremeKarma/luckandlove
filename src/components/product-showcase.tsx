@@ -6,6 +6,7 @@ import type { Product } from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductList } from './product-list';
+import { mapProductRow } from '@/lib/types';
 
 export function ProductShowcase() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,37 +28,7 @@ export function ProductShowcase() {
         if (productsError) throw productsError;
 
         if (productsData) {
-            const productIds = productsData.map(p => p.id);
-            let variantsData: any[] = [];
-            try {
-                const { data, error: variantsError } = await supabase
-                    .from('product_variants')
-                    .select('*')
-                    .in('product_id', productIds);
-                if (variantsError) throw variantsError;
-                variantsData = data || [];
-            } catch(variantError) {
-                console.warn("Could not fetch product_variants. This might be expected if the table doesn't exist.", variantError);
-            }
-
-            const productsWithVariants = productsData.map(p => {
-              const productVariants = variantsData?.filter(v => v.product_id === p.id) || [];
-              const priceInCents = productVariants.length > 0 ? (productVariants[0].sale_price_in_cents ?? productVariants[0].price_in_cents) : p.price_in_cents;
-              
-              return {
-                ...p,
-                name: p.name,
-                price: priceInCents / 100,
-                imageUrl: p.image_url,
-                variants: productVariants.map(v => ({
-                    ...v,
-                    price: v.price_in_cents,
-                    sale_price: v.sale_price_in_cents,
-                    inventory_quantity: v.inventory_quantity
-                }))
-              } as Product;
-            });
-            setProducts(productsWithVariants);
+            setProducts(productsData.map(mapProductRow));
         } else {
           setProducts([]);
         }
@@ -105,4 +76,11 @@ export function ProductShowcase() {
               <div className="text-center text-muted-foreground mt-16">
                 <p className="text-xl">No products found.</p>
                 <p>Check back later for new arrivals.</p>
-              
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </section>
+  );
+}

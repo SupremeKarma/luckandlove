@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Suspense } from 'react';
@@ -5,9 +6,10 @@ import { motion } from 'framer-motion';
 import { ProductList } from '@/components/product-list';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
-import type { Product, ProductVariant } from '@/lib/types';
+import type { Product } from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { mapProductRow } from '@/lib/types';
+
 
 function ProductsPageContent() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -21,51 +23,19 @@ function ProductsPageContent() {
         setLoading(true);
         const { data: productsData, error: productsError } = await supabase
           .from('products')
-          .select('*');
+          .select('*')
+          .order('created_at', { ascending: false });
 
         if (productsError) throw productsError;
 
         if (productsData) {
-            const productIds = productsData.map(p => p.id);
-            
-            // This query might fail if the table doesn't exist, so we wrap it
-            let variantsData: any[] = [];
-            try {
-                const { data, error: variantsError } = await supabase
-                    .from('product_variants')
-                    .select('*')
-                    .in('product_id', productIds);
-                if (variantsError) throw variantsError;
-                variantsData = data || [];
-            } catch (variantError) {
-                console.warn("Could not fetch product_variants. This might be expected if the table doesn't exist.", variantError);
-            }
-
-            const productsWithVariants = productsData.map(p => {
-              const productVariants = variantsData?.filter(v => v.product_id === p.id) || [];
-              const priceInCents = productVariants.length > 0 ? (productVariants[0].sale_price_in_cents ?? productVariants[0].price_in_cents) : p.price_in_cents;
-
-              return {
-                ...p,
-                name: p.name,
-                price: priceInCents / 100,
-                imageUrl: p.image_url,
-                variants: productVariants.map(v => ({
-                    ...v,
-                    price: v.price_in_cents,
-                    sale_price: v.sale_price_in_cents,
-                    inventory_quantity: v.inventory_quantity
-                }))
-              } as Product
-            });
-            
-            setAllProducts(productsWithVariants);
+            setAllProducts(productsData.map(mapProductRow));
         } else {
           setAllProducts([]);
         }
       } catch (err: any) {
         console.error("Error fetching products:", err.message);
-        setError(err.message);
+        setError("Could not load products.");
         setAllProducts([]);
       } finally {
         setLoading(false);
@@ -101,8 +71,7 @@ function ProductsPageContent() {
         </div>
       ) : error ? (
         <div className="text-center text-destructive mt-16">
-          <p className="text-xl">Could not load products.</p>
-          <p>{error}</p>
+          <p className="text-xl">{error}</p>
         </div>
       ) : (
         <>

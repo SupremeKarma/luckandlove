@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { getSupabase } from '@/lib/supabase';
 import type { Product, ProductVariant } from '@/lib/types';
+import { mapProductRow } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
@@ -29,12 +30,12 @@ function ProductDetailPageContent() {
   const { toast } = useToast();
 
   const handleAddToCart = useCallback(() => {
-    if (product && selectedVariant) {
+    if (product) {
       try {
-        addToCart(product, quantity, selectedVariant);
+        addToCart(product, quantity, selectedVariant || undefined);
         toast({
           title: "Added to Cart! 🛒",
-          description: `${quantity} x ${product.name} (${selectedVariant.name}) added.`,
+          description: `${quantity} x ${product.name} ${selectedVariant ? `(${selectedVariant.name})` : ''} added.`,
         });
       } catch (err: any) {
         toast({
@@ -72,30 +73,28 @@ function ProductDetailPageContent() {
         if (productError) throw productError;
         if (!productData) throw new Error("Product not found");
 
+        const fullProductData = mapProductRow(productData);
+        
         let variantsData: any[] = [];
-        try {
-            const { data, error: variantsError } = await supabase
-                .from('product_variants')
-                .select('*')
-                .eq('product_id', productData.id);
-            if (variantsError) throw variantsError;
-            variantsData = data || [];
-        } catch (variantError) {
-            console.warn("Could not fetch product_variants for this product.", variantError);
+        if (fullProductData.variants) { // Check if variants are even a thing for this product from the main table if we had such a column
+            try {
+                const { data, error: variantsError } = await supabase
+                    .from('product_variants')
+                    .select('*')
+                    .eq('product_id', productData.id);
+                if (variantsError) throw variantsError;
+                variantsData = data || [];
+                fullProductData.variants = variantsData.map((v: any) => ({
+                    ...v,
+                    price: v.price_in_cents,
+                    sale_price: v.sale_price_in_cents,
+                    inventory_quantity: v.inventory_quantity
+                }))
+            } catch (variantError) {
+                console.warn("Could not fetch product_variants for this product.", variantError);
+                fullProductData.variants = [];
+            }
         }
-
-        const fullProductData = {
-          ...productData,
-          name: productData.name,
-          price: productData.price_in_cents / 100,
-          imageUrl: productData.image_url,
-          variants: variantsData.map((v: any) => ({
-            ...v,
-            price: v.price_in_cents,
-            sale_price: v.sale_price_in_cents,
-            inventory_quantity: v.inventory_quantity
-          }))
-        } as Product;
         
         setProduct(fullProductData);
         if (fullProductData.variants && fullProductData.variants.length > 0) {
@@ -136,9 +135,9 @@ function ProductDetailPageContent() {
     );
   }
   
-  const displayPrice = selectedVariant ? (selectedVariant.sale_price ?? selectedVariant.price) / 100 : product.price;
+  const displayPrice = selectedVariant ? ((selectedVariant.sale_price ?? selectedVariant.price) / 100) : product.price;
   const originalPrice = selectedVariant && selectedVariant.sale_price ? selectedVariant.price / 100 : null;
-  const availableStock = selectedVariant ? selectedVariant.inventory_quantity : 0;
+  const availableStock = selectedVariant ? selectedVariant.inventory_quantity : product.stock;
   const canAddToCart = quantity <= availableStock;
   
   return (
@@ -184,7 +183,7 @@ function ProductDetailPageContent() {
 
           {product.variants && product.variants?.length > 1 && (
             <div className="mb-6">
-              <h3 className="text-sm font-medium mb-2">{product.variants[0].name || "Variant"}</h3>
+              <h3 className="text-sm font-medium mb-2">Variant</h3>
               <div className="flex flex-wrap gap-2">
                 {product.variants.map(variant => (
                   <Button

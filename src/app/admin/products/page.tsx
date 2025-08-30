@@ -3,15 +3,40 @@
 
 import React from 'react';
 import { ProductsIndex, ProductEditor } from '@/components/store/views';
-import { mockProducts } from '@/components/store/types';
 import { motion } from 'framer-motion';
 import type { Product } from '@/components/store/types';
+import { getSupabase } from '@/lib/supabase';
+import { mapProductRow } from '@/lib/types';
+import { mockProducts } from '@/components/store/types';
 
 export default function AdminProductsPage() {
   const [view, setView] = React.useState<'index' | 'editor'>('index');
-  const [products, setProducts] = React.useState(mockProducts);
-  // In a real app, you'd pass an ID here or nothing for a new product
+  const [products, setProducts] = React.useState<Product[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [selectedProductId, setSelectedProductId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .from("products")
+          .select("id, name, sku, price_in_cents, inventory_quantity, category, image_url, active, created_at, subtitle, description, ribbon_text")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        setProducts((data ?? []).map(mapProductRow));
+      } catch (err) {
+        console.error("Error fetching products for admin:", err);
+        setProducts(mockProducts); // Fallback to mock data on error
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const selectedProduct = products.find(p => p.id === selectedProductId) || undefined;
 
@@ -47,6 +72,10 @@ export default function AdminProductsPage() {
     setSelectedProductId(null);
   };
   
+  if (loading) {
+    return <div>Loading products...</div>;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -55,4 +84,7 @@ export default function AdminProductsPage() {
       transition={{ duration: 0.5 }}
     >
       {view === 'index' && <ProductsIndex products={products} onEdit={handleEdit} onAdd={handleAdd} />}
-      {view === 'editor' && <ProductEditor product={selectedProduct} onBack={
+      {view === 'editor' && <ProductEditor product={selectedProduct} onBack={handleBack} onSave={handleSave} />}
+    </motion.div>
+  );
+}

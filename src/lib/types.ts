@@ -1,7 +1,3 @@
-export interface Category {
-  name: string;
-  subcategories: string[];
-}
 
 export interface ProductVariant {
   id: string;
@@ -23,8 +19,8 @@ export interface Product {
   subcategory?: string;
   rating?: number;
   shop_id?: string;
-  variants?: ProductVariant[];
-  product_variants?: ProductVariant[];
+  variants?: ProductVariant[] | null;
+  product_variants?: ProductVariant[] | null;
   ribbon_text?: string;
 }
 
@@ -85,4 +81,21 @@ export type Profile = {
   full_name: string | null;
   avatar_url: string | null;
   role: ProfileRole;
-  
+};
+
+export function mapProductRow(row: any): Product {
+  return {
+    id: row.id,
+    name: row.name ?? "",
+    price: Number(row.price_in_cents ? row.price_in_cents / 100 : 0),
+    stock: Number(row.inventory_quantity ?? 0),
+    category: row.category ?? null,
+    imageUrl: row.image_url ?? null,
+    active: !!row.active,
+    created_at: row.created_at ?? null,
+    variants: (row.variants as ProductVariant[] | null) ?? null,
+    subtitle: row.subtitle,
+    description: row.description,
+    ribbon_text: row.ribbon_text
+  };
+}
