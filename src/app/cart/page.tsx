@@ -1,14 +1,15 @@
+
 'use client';
 
 import { useCart } from '@/context/cart-context';
 import CartComponent from '@/components/Cart';
 
 export default function CartPage() {
-  const { cartItems, updateQuantity, removeFromCart } = useCart();
+  const { cart, updateQuantity, removeFromCart } = useCart();
 
   return (
     <CartComponent
-      cartItems={cartItems}
+      cartItems={cart}
       onUpdateQuantity={updateQuantity}
       onRemoveItem={removeFromCart}
     />
