@@ -57,7 +57,7 @@ export default function RegisterPage() {
         options: {
           data: {
             full_name: name,
-            role: email.includes('admin') ? 'admin' : 'user'
+            role: email.toLowerCase() === 'amanmahato123123@gmail.com' ? 'admin' : 'user'
           }
         }
       });
