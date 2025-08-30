@@ -1,13 +1,3 @@
 {
-  "/account/page": "app/account/page.js",
-  "/chat/page": "app/chat/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/food-delivery/page": "app/food-delivery/page.js",
-  "/gaming/page": "app/gaming/page.js",
-  "/login/page": "app/login/page.js",
-  "/page": "app/page.js",
-  "/products/[productId]/page": "app/products/[productId]/page.js",
-  "/products/page": "app/products/page.js",
-  "/rentals/page": "app/rentals/page.js",
-  "/wholesale/page": "app/wholesale/page.js"
+  "/page": "app/page.js"
 }

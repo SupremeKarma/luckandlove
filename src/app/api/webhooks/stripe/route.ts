@@ -31,6 +31,21 @@ export async function POST(req: Request) {
   const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   const supabase = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
 
+  // Idempotency check: see if we've already processed this event
+  const { data: seenEvent } = await supabase
+    .from("stripe_events")
+    .select("id")
+    .eq("id", event.id)
+    .maybeSingle();
+
+  if (seenEvent) {
+    console.log(`Webhook: Already processed event ${event.id}.`);
+    return NextResponse.json({ received: true, message: "Already processed" });
+  }
+  
+  // Record the event to prevent reprocessing
+  await supabase.from("stripe_events").insert({ id: event.id, type: event.type });
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const orderId = session.metadata?.order_id;
