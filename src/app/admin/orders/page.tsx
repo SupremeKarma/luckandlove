@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { updateOrderStatus } from "./_actions";
+import { Badge } from "@/components/ui/badge";
 
 type Order = {
   id: string;
@@ -79,6 +80,17 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const getStatusColor = (status: Order['status']) => {
+    switch(status) {
+      case 'paid': return 'bg-green-500/20 text-green-400';
+      case 'shipped': return 'bg-blue-500/20 text-blue-400';
+      case 'pending': return 'bg-yellow-500/20 text-yellow-400';
+      case 'cancelled': return 'bg-red-500/20 text-red-400';
+      case 'refunded': return 'bg-gray-500/20 text-gray-400';
+      default: return 'bg-gray-500/20 text-gray-400';
+    }
+  }
+
   return (
     <div className="p-6 space-y-4">
       <div className="flex flex-wrap items-center gap-3">
@@ -129,7 +141,9 @@ export default function AdminOrdersPage() {
                     <TableRow key={o.id}>
                       <TableCell className="font-mono text-xs">{o.id.slice(0,8)}…</TableCell>
                       <TableCell className="text-sm">{o.email ?? "—"}</TableCell>
-                      <TableCell className="text-sm capitalize">{o.status}</TableCell>
+                      <TableCell className="text-sm capitalize">
+                        <Badge className={`${getStatusColor(o.status)} hover:${getStatusColor(o.status)} rounded-full`}>{o.status}</Badge>
+                      </TableCell>
                       <TableCell className="text-right">NPR {Number(o.total).toFixed(2)}</TableCell>
                       <TableCell className="text-sm">{new Date(o.created_at).toLocaleString()}</TableCell>
                       <TableCell className="text-right">
