@@ -59,6 +59,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/admin/users">
 }
 
+// Validate ../../src/app/cancel/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/cancel/page.js")
+  handler satisfies AppPageConfig<"/cancel">
+}
+
 // Validate ../../src/app/cart/page.tsx
 {
   const handler = {} as typeof import("../../src/app/cart/page.js")
@@ -123,6 +129,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   const handler = {} as typeof import("../../src/app/shop/[shopId]/page.js")
   handler satisfies AppPageConfig<"/shop/[shopId]">
+}
+
+// Validate ../../src/app/success/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/success/page.js")
+  handler satisfies AppPageConfig<"/success">
 }
 
 // Validate ../../src/app/auth/callback/route.ts
