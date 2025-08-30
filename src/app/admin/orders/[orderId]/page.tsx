@@ -120,7 +120,7 @@ export default function AdminOrderDetailPage() {
                 {getStatusBadge(order.status)}
             </div>
             <div className="flex items-center gap-2">
-              <Link href={`/api/orders/${order.id}/invoice.pdf`} target="_blank">
+              <Link href={`/admin/orders/${order.id}/invoice`} target="_blank">
                 <Button variant="secondary">Invoice PDF</Button>
               </Link>
               <Select defaultValue={order.status} onValueChange={(v:any)=>onStatus(v)} disabled={isUpdating}>
