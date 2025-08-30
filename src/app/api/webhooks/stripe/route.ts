@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
+export const runtime = "nodejs";
+
 export async function POST(req: Request) {
   const secret = process.env.STRIPE_SECRET_KEY;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -24,6 +26,10 @@ export async function POST(req: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const orderId = session.metadata?.order_id;
+    const paymentIntentId = typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
+
     if (orderId) {
       try {
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -32,7 +38,7 @@ export async function POST(req: Request) {
 
         // Idempotent: only update if not already paid
         const { error } = await supabase.from("orders")
-          .update({ status: "paid" })
+          .update({ status: "paid", stripe_payment_intent_id: paymentIntentId ?? null })
           .eq("id", orderId)
           .neq("status", "paid");
         

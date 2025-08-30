@@ -97,7 +97,13 @@ export async function createCheckoutSession(input: {
     cancel_url: cancelUrl,
     line_items,
     metadata: { order_id: order.id },
-  });
+  }, { idempotencyKey: order.id });
+
+  // save session id for later reconciliation
+  await supabase
+    .from("orders")
+    .update({ stripe_session_id: session.id })
+    .eq("id", order.id);
 
   revalidatePath("/admin/orders");
   return { orderId: order.id, checkoutUrl: session.url };
