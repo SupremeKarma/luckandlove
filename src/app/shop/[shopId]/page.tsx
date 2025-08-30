@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
@@ -16,6 +16,7 @@ export default function ShopPage() {
   React.useEffect(() => {
     let mounted = true;
     (async () => {
+      const supabase = getSupabase();
       setLoading(true);
       setError(null);
       const [shopRes, prodRes] = await Promise.all([

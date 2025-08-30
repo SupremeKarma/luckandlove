@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +40,7 @@ export default function WholesalePage() {
   React.useEffect(() => {
     let mounted = true;
     (async () => {
+      const supabase = getSupabase();
       setLoading(true);
       setError(null);
       const { data, error } = await supabase
