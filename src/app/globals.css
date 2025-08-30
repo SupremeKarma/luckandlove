@@ -3,71 +3,51 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 222 13% 16%; /* #222831 */
+    --background: 222 13% 16%;
     --foreground: 210 40% 98%;
-
     --card: 222 13% 20%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222 13% 16%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 208 39% 34%; /* #3A506B */
+    --primary: 208 39% 34%;
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 188 100% 36%; /* #009FB7 - Accent */
+    --secondary: 217 32% 27%;
     --secondary-foreground: 210 40% 98%;
-
-    --muted: 222 13% 25%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 188 100% 36%; /* #009FB7 */
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 188 100% 36%;
     --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 62% 40%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 222 13% 25%;
-    --input: 222 13% 25%;
-    --ring: 208 39% 34%;
-
+    --border: 217 32% 27%;
+    --input: 217 32% 23%;
+    --ring: 188 100% 46%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222 13% 16%; /* #222831 */
+    --background: 222 13% 16%;
     --foreground: 210 40% 98%;
-
     --card: 222 13% 20%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222 13% 16%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 208 39% 34%; /* #3A506B */
+    --primary: 208 39% 34%;
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 188 100% 36%; /* #009FB7 - Accent */
+    --secondary: 217 32% 27%;
     --secondary-foreground: 210 40% 98%;
-
-    --muted: 222 13% 25%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 188 100% 36%; /* #009FB7 */
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 188 100% 36%;
     --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 62% 40%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 222 13% 25%;
-    --input: 222 13% 25%;
-    --ring: 208 39% 34%;
+    --border: 217 32% 27%;
+    --input: 217 32% 23%;
+    --ring: 188 100% 46%;
+    --radius: 0.5rem;
   }
 }
 
@@ -75,13 +55,53 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+}
+
+@layer components {
+  .gradient-bg {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--primary)) 50%, hsl(var(--accent)) 100%);
+  }
+  
+  .glass-effect {
+    @apply backdrop-blur-lg bg-card/60 border border-white/10;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-accent/20;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', sans-serif;
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-xl border border-white/10;
+  }
+
+  .glass-card-dark {
+    @apply bg-background/80 backdrop-blur-2xl border border-white/10;
+  }
+
+  .prose {
+    --tw-prose-body: theme('colors.gray.300');
+    --tw-prose-headings: theme('colors.white');
+    --tw-prose-lead: theme('colors.gray.400');
+    --tw-prose-links: theme('colors.accent');
+    --tw-prose-bold: theme('colors.white');
+    --tw-prose-counters: theme('colors.gray.400');
+    --tw-prose-bullets: theme('colors.gray.600');
+    --tw-prose-hr: theme('colors.gray.700');
+    --tw-prose-quotes: theme('colors.gray.200');
+    --tw-prose-quote-borders: theme('colors.accent');
+    --tw-prose-captions: theme('colors.gray.400');
+    --tw-prose-code: theme('colors.white');
+    --tw-prose-pre-code: theme('colors.gray.300');
+    --tw-prose-pre-bg: theme('colors.gray.900');
+    --tw-prose-th-borders: theme('colors.gray.600');
+    --tw-prose-td-borders: theme('colors.gray.700');
   }
 }
