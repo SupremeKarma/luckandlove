@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/sheet";
 import { CartSheet } from './cart-sheet';
 import { useToast } from '@/hooks/use-toast';
+import ThemeToggle from './ThemeToggle';
 
 const NavItem = ({ href, children }: { href: string; children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -55,7 +56,7 @@ const NavItem = ({ href, children }: { href: string; children: React.ReactNode }
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const { cartCount } = useCart();
+  const { count } = useCart();
   const { user, logout, loading, isAdmin } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
@@ -94,20 +95,21 @@ export function Navigation() {
           ))}
         </div>
         <div className="flex items-center space-x-1 md:space-x-2">
+          <ThemeToggle />
           <Button
               variant="ghost"
               size="icon"
               className="relative"
               onClick={() => setIsCartOpen(true)}
-              aria-label={`Shopping cart with ${cartCount} items`}
+              aria-label={`Shopping cart with ${count} items`}
             >
               <ShoppingCart className="h-6 w-6 text-white hover:text-accent" />
-              {cartCount > 0 && (
+              {count > 0 && (
                 <Badge
                   variant="destructive"
                   className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs rounded-full"
                 >
-                  {cartCount}
+                  {count}
                 </Badge>
               )}
           </Button>
@@ -146,7 +148,7 @@ export function Navigation() {
                           size="icon"
                           aria-label="Toggle mobile menu"
                         >
-                          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                          {isMobileMenuOpe_n ? <X size={24} /> : <Menu size={24} />}
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="w-[300px] bg-background/95 p-4">

@@ -25,11 +25,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MoreHorizontal, Download, Plus, RefreshCcw, EyeOff, Eye } from "lucide-react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export default function AdminProductsPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [q, setQ] = React.useState("");
+  const qd = useDebouncedValue(q, 300);
   const [status, setStatus] = React.useState<"" | "active" | "inactive">("");
   const [sort, setSort] = React.useState<"created_desc" | "created_asc" | "price_desc" | "price_asc">("created_desc");
   const [products, setProducts] = React.useState<Product[]>([]);
@@ -59,7 +62,7 @@ export default function AdminProductsPage() {
 
   const filtered = products
     .filter((p) => (status === "" ? true : status === "active" ? p.active : !p.active))
-    .filter((p) => `${p.name} ${p.sku ?? ""} ${p.category ?? ""}`.toLowerCase().includes(q.toLowerCase()));
+    .filter((p) => `${p.name} ${p.sku ?? ""} ${p.category ?? ""}`.toLowerCase().includes(qd.toLowerCase()));
 
   const exportCsv = () => {
     const rows = [
@@ -78,7 +81,7 @@ export default function AdminProductsPage() {
     const csv = rows.map((r) =>
       r.map((v) => {
         const s = String(v ?? "");
-        return s.includes(",") || s.includes("\"") || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
+        return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
       }).join(",")
     ).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -117,8 +120,6 @@ export default function AdminProductsPage() {
 
   const remove = async (p: Product) => {
     setError(null);
-    const ok = window.confirm(`Delete "${p.name}"?`);
-    if (!ok) return;
     const prev = products;
     setProducts((cur) => cur.filter((x) => x.id !== p.id));
     const { error } = await supabase.from("products").delete().eq("id", p.id);
@@ -213,7 +214,13 @@ export default function AdminProductsPage() {
                               {p.active ? <><EyeOff className="h-4 w-4 mr-2" />Hide</> : <><Eye className="h-4 w-4 mr-2" />Show</>}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-500" onClick={() => remove(p)}>Delete</DropdownMenuItem>
+                            <ConfirmDialog
+                              trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-500">Delete</DropdownMenuItem>}
+                              title={`Delete "${p.name}"?`}
+                              description="This will permanently remove the product."
+                              confirmText="Delete"
+                              onConfirm={() => remove(p)}
+                            />
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -235,4 +242,3 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-

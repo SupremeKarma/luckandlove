@@ -2,7 +2,7 @@ var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/food-delive
 R.c("server/chunks/ssr/node_modules_bb681d96._.js")
 R.c("server/chunks/ssr/[root-of-the-server]__f0336b73._.js")
 R.c("server/chunks/ssr/src_app_ca777385._.js")
-R.c("server/chunks/ssr/[root-of-the-server]__e3c6c4b4._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__83b828ab._.js")
 R.c("server/chunks/ssr/src_app_not-found_tsx_0f6131ce._.js")
 R.c("server/chunks/ssr/node_modules_next_dist_client_components_2fffaa3a._.js")
 R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_unauthorized_15817684.js")
