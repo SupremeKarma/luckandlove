@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
@@ -10,7 +10,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';
-import { Separator } from '@/components/ui/separator';
+import { motion } from 'framer-motion';
+import { Mail, Lock } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -18,8 +19,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const { toast } = useToast();
-  const { user, loading, login, isAuthenticated } = useAuth();
-  
+  const { login, isAuthenticated, loading } = useAuth();
+
   useEffect(() => {
     // If user is already logged in, redirect to account page
     if (isAuthenticated) {
@@ -27,73 +28,99 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
-    // Simple validation
     if (!email || !password) {
-        setError('Please enter both email and password.');
-        return;
+      toast({
+        title: "Error",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
     }
-
     try {
       login(email);
-      
       toast({
-        title: 'Login Successful',
-        description: 'You have been successfully logged in.',
+        title: "Login Successful",
+        description: `Welcome back, ${email.split('@')[0]}!`,
       });
-      router.push('/account'); // Redirect to account page
+      router.push('/account');
     } catch (error: any) {
-      setError(error.message);
+        setError(error.message);
     }
   };
-
-  if (loading || user) {
+  
+  if (loading) {
     return <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">Loading...</div>;
+  }
+  
+  if (isAuthenticated) {
+    return null; // or a loading spinner while redirecting
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+      className="container mx-auto px-4 py-16 flex items-center justify-center min-h-[calc(100vh-10rem)]"
+    >
+      <Card className="w-full max-w-md glass-effect">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Enter your credentials to access your account.</CardDescription>
+          <CardTitle className="text-3xl font-bold text-accent">Welcome Back</CardTitle>
+          <CardDescription>Sign in to continue to Zenith Commerce</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="you@example.com" 
+                  required 
+                  className="pl-10"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
             </div>
-            <form className="space-y-4" onSubmit={handleLogin}>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="john.doe@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                  id="password" 
+                  type="password" 
+                  required 
+                  className="pl-10"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              {error && <p className="text-destructive text-sm">{error}</p>}
-              <Button type="submit" className="w-full">
-                Login
-              </Button>
-            </form>
-          </div>
-          <div className="mt-4 text-center text-sm">
-            Don't have an account?{' '}
-            <Link href="/register" className="font-medium text-primary hover:underline">
-              Sign up
-            </Link>
-          </div>
-        </CardContent>
+            </div>
+            {error && <p className="text-destructive text-sm">{error}</p>}
+            <div className="flex items-center justify-end">
+              <Link href="#" className="text-sm text-accent hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <Button type="submit" className="w-full font-bold">Sign In</Button>
+            <p className="text-center text-sm text-muted-foreground">
+              Don't have an account?{' '}
+              <Link href="/register" className="font-semibold text-accent hover:underline">
+                Sign up
+              </Link>
+            </p>
+          </CardFooter>
+        </form>
       </Card>
-    </div>
+    </motion.div>
   );
 }
