@@ -1,31 +1,22 @@
-
-'use client';
-
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
-  const pathname = usePathname();
-
-  useEffect(() => {
-    console.error(
-      `404 Error: User attempted to access non-existent route: ${pathname}`
-    );
-  }, [pathname]);
-
   return (
-    <div className="min-h-[calc(100vh-10rem)] flex items-center justify-center text-center">
-      <div>
-        <h1 className="text-9xl font-bold text-primary">404</h1>
-        <p className="text-2xl font-semibold mt-4 mb-2">Oops! Page Not Found</p>
-        <p className="text-muted-foreground mb-6">
-          The page you are looking for does not exist or has been moved.
+    <div className="container-app py-24 text-center">
+      <div className="mx-auto max-w-md space-y-4">
+        <div className="text-4xl font-semibold">404</div>
+        <p className="text-muted-foreground">
+          We couldn’t find that page. It might have moved or no longer exists.
         </p>
-        <Link href="/">
-          <Button variant="default">Return to Home</Button>
-        </Link>
+        <div className="flex items-center justify-center gap-2">
+          <Button asChild>
+            <Link href="/">Go home</Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link href="/products">Browse products</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );
