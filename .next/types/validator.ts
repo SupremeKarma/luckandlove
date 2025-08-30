@@ -77,18 +77,6 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/checkout">
 }
 
-// Validate ../../src/app/food-delivery/page.tsx
-{
-  const handler = {} as typeof import("../../src/app/food-delivery/page.js")
-  handler satisfies AppPageConfig<"/food-delivery">
-}
-
-// Validate ../../src/app/gaming/page.tsx
-{
-  const handler = {} as typeof import("../../src/app/gaming/page.js")
-  handler satisfies AppPageConfig<"/gaming">
-}
-
 // Validate ../../src/app/login/page.tsx
 {
   const handler = {} as typeof import("../../src/app/login/page.js")
@@ -119,28 +107,10 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/register">
 }
 
-// Validate ../../src/app/rentals/page.tsx
-{
-  const handler = {} as typeof import("../../src/app/rentals/page.js")
-  handler satisfies AppPageConfig<"/rentals">
-}
-
-// Validate ../../src/app/ride-sharing/page.tsx
-{
-  const handler = {} as typeof import("../../src/app/ride-sharing/page.js")
-  handler satisfies AppPageConfig<"/ride-sharing">
-}
-
 // Validate ../../src/app/shop/[shopId]/page.tsx
 {
   const handler = {} as typeof import("../../src/app/shop/[shopId]/page.js")
   handler satisfies AppPageConfig<"/shop/[shopId]">
-}
-
-// Validate ../../src/app/wholesale/page.tsx
-{
-  const handler = {} as typeof import("../../src/app/wholesale/page.js")
-  handler satisfies AppPageConfig<"/wholesale">
 }
 
 // Validate ../../src/app/auth/callback/route.ts
