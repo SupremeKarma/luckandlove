@@ -185,6 +185,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies RouteHandlerConfig<"/api/health">
 }
 
+// Validate ../../src/app/api/webhooks/stripe/route.ts
+{
+  const handler = {} as typeof import("../../src/app/api/webhooks/stripe/route.js")
+  handler satisfies RouteHandlerConfig<"/api/webhooks/stripe">
+}
+
 // Validate ../../src/app/auth/callback/route.ts
 {
   const handler = {} as typeof import("../../src/app/auth/callback/route.js")

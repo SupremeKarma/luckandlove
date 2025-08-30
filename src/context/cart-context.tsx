@@ -16,13 +16,13 @@ export type CartItem = {
 };
 
 type CartContextValue = {
-  cartItems: CartItem[];
+  items: CartItem[]; // Renamed from cartItems
   addToCart: (product: Product, opts?: { variant?: ProductVariant | null; quantity?: number }) => void;
   removeFromCart: (productId: string, variantId: string) => void;
   updateQuantity: (productId: string, variantId: string, quantity: number) => void;
   clearCart: () => void;
   cartCount: number;
-  cartTotal: number;
+  subtotal: number; // Renamed from cartTotal
 };
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -32,7 +32,10 @@ function getDefaultVariant(product: Product): ProductVariant {
     id: `default:${product.id}`,
     name: "Default",
     price: product.price,
-    inventory_quantity: product.stock,
+    stock: product.stock,
+    product_id: product.id,
+    sku: product.sku,
+    attributes: null,
   };
 }
 
@@ -47,7 +50,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart: CartContextValue["addToCart"] = (product, opts) => {
     const variant = opts?.variant ?? (product.variants?.[0] ?? getDefaultVariant(product));
-    const quantity = clampQty(opts?.quantity ?? 1, variant.inventory_quantity ?? product.stock);
+    const stock = variant.stock ?? product.stock;
+    const quantity = clampQty(opts?.quantity ?? 1, stock);
 
     if (quantity === 0) return;
 
@@ -55,7 +59,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const idx = prev.findIndex((i) => i.productId === product.id && i.variantId === variant.id);
       if (idx !== -1) {
         const next = [...prev];
-        const newQty = clampQty(next[idx].quantity + quantity, variant.inventory_quantity ?? product.stock);
+        const newQty = clampQty(next[idx].quantity + quantity, stock);
         next[idx] = { ...next[idx], quantity: newQty };
         return next;
         }
@@ -68,7 +72,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           price: Number(variant.price ?? product.price ?? 0),
           quantity: quantity,
           sku: product.sku ?? null,
-          imageUrl: product.imageUrl ?? null,
+          imageUrl: product.image_url ?? null,
         },
       ];
     });
@@ -79,7 +83,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateQuantity: CartContextValue["updateQuantity"] = (productId, variantId, qty) => {
-    const q = clampQty(qty);
+    const itemInCart = cartItems.find(i => i.productId === productId && i.variantId === variantId);
+    if(!itemInCart) return;
+
+    // This logic is a bit naive without knowing the product stock.
+    // For now, let's just clamp to positive numbers.
+    const q = Math.max(0, qty);
     if (q === 0) {
       removeFromCart(productId, variantId);
       return;
@@ -91,13 +100,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => setCartItems([]);
 
-  const { cartCount, cartTotal } = useMemo(() => {
+  const { cartCount, subtotal } = useMemo(() => {
     const c = cartItems.reduce((n, i) => n + i.quantity, 0);
     const s = cartItems.reduce((n, i) => n + i.quantity * i.price, 0);
-    return { cartCount: c, cartTotal: s };
+    return { cartCount: c, subtotal: s };
   }, [cartItems]);
 
-  const value: CartContextValue = { cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal };
+  const value: CartContextValue = { items: cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, subtotal };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
