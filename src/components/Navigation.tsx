@@ -56,12 +56,12 @@ export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { cartCount } = useCart();
-  const { isAuthenticated, signOut, loading, isAdmin } = useAuth();
+  const { user, logout, loading, isAdmin } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
   const handleLogout = async () => {
-    signOut();
+    await logout();
     toast({
       title: 'Logged Out',
       description: 'You have been successfully logged out.',
@@ -72,11 +72,9 @@ export function Navigation() {
   const allNavItems = [
     { href: '/products', label: 'Store', icon: Store },
     { href: '/food-delivery', label: 'Food', icon: Utensils },
-    { href: '/wholesale', label: 'Wholesale', icon: Building },
+    { href: '/rentals', label: 'Rentals', icon: Building },
     { href: '/gaming', label: 'Gaming', icon: Gamepad2 },
-    { href: '/rentals', label: 'Rentals', icon: Car },
-    { href: '/chat', label: 'Chat', icon: MessageSquare },
-     ...(isAdmin ? [{ href: '/admin/dashboard', label: 'Admin', icon: Shield }] : []),
+    ...(isAdmin ? [{ href: '/admin/dashboard', label: 'Admin', icon: Shield }] : []),
   ];
 
   return (
@@ -116,7 +114,7 @@ export function Navigation() {
 
           {loading ? (
              <Button variant="ghost" size="icon" className="w-9 h-9 animate-pulse bg-muted/50 rounded-full" />
-          ) : isAuthenticated ? (
+          ) : user ? (
             <>
               <Link href="/account">
                 <Button variant="ghost" size="icon">

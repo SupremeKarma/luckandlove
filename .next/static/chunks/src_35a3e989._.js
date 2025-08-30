@@ -30,7 +30,7 @@ const Card = /*#__PURE__*/ __TURBOPACK__imported__module__$5b$project$5d2f$node_
         ...props
     }, void 0, false, {
         fileName: "[project]/src/components/ui/card.tsx",
-        lineNumber: 9,
+        lineNumber: 10,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 });
@@ -44,7 +44,7 @@ const CardHeader = /*#__PURE__*/ __TURBOPACK__imported__module__$5b$project$5d2f
         ...props
     }, void 0, false, {
         fileName: "[project]/src/components/ui/card.tsx",
-        lineNumber: 24,
+        lineNumber: 25,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 });
@@ -52,13 +52,13 @@ _c3 = CardHeader;
 CardHeader.displayName = "CardHeader";
 const CardTitle = /*#__PURE__*/ __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["forwardRef"](_c4 = (param, ref)=>{
     let { className, ...props } = param;
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
         ref: ref,
         className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])("text-2xl font-semibold leading-none tracking-tight", className),
         ...props
     }, void 0, false, {
         fileName: "[project]/src/components/ui/card.tsx",
-        lineNumber: 36,
+        lineNumber: 37,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 });
@@ -66,13 +66,13 @@ _c5 = CardTitle;
 CardTitle.displayName = "CardTitle";
 const CardDescription = /*#__PURE__*/ __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["forwardRef"](_c6 = (param, ref)=>{
     let { className, ...props } = param;
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
         ref: ref,
         className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])("text-sm text-muted-foreground", className),
         ...props
     }, void 0, false, {
         fileName: "[project]/src/components/ui/card.tsx",
-        lineNumber: 51,
+        lineNumber: 52,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 });
@@ -86,7 +86,7 @@ const CardContent = /*#__PURE__*/ __TURBOPACK__imported__module__$5b$project$5d2
         ...props
     }, void 0, false, {
         fileName: "[project]/src/components/ui/card.tsx",
-        lineNumber: 63,
+        lineNumber: 64,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 });
@@ -100,7 +100,7 @@ const CardFooter = /*#__PURE__*/ __TURBOPACK__imported__module__$5b$project$5d2f
         ...props
     }, void 0, false, {
         fileName: "[project]/src/components/ui/card.tsx",
-        lineNumber: 71,
+        lineNumber: 72,
         columnNumber: 3
     }, ("TURBOPACK compile-time value", void 0));
 });
@@ -129,192 +129,121 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 
 __turbopack_context__.s([
     "default",
-    ()=>__TURBOPACK__default__export__
+    ()=>GamingPage
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/card.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/button.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/framer-motion/dist/es/render/components/motion/proxy.mjs [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/card.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$gamepad$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Gamepad2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/gamepad-2.js [app-client] (ecmascript) <export default as Gamepad2>");
 'use client';
 ;
 ;
 ;
 ;
-;
-const GamingPage = ()=>{
-    const tournaments = [
-        {
-            id: '1',
-            name: 'Free Fire Tournament',
-            image: 'https://placehold.co/600x400.png',
-            prize: 500,
-            hint: 'Free Fire'
+function GamingPage() {
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
+        initial: {
+            opacity: 0,
+            y: 20
         },
-        {
-            id: '2',
-            name: 'PUBG Championship',
-            image: 'https://placehold.co/600x400.png',
-            prize: 1000,
-            hint: 'PUBG game'
+        animate: {
+            opacity: 1,
+            y: 0
         },
-        {
-            id: '3',
-            name: 'Valorant Champions Tour',
-            image: 'https://placehold.co/600x400.png',
-            prize: 2500,
-            hint: 'Valorant game'
+        exit: {
+            opacity: 0,
+            y: -20
         },
-        {
-            id: '4',
-            name: 'League of Legends World\'s',
-            image: 'https://placehold.co/600x400.png',
-            prize: 5000,
-            hint: 'League Legends'
-        }
-    ];
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "container mx-auto px-4 py-8",
+        transition: {
+            duration: 0.5
+        },
+        className: "container mx-auto px-4 py-12",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "space-y-4 text-center mb-12",
+                className: "text-center mb-12",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                        className: "text-4xl md:text-5xl font-bold tracking-tighter",
+                        className: "text-4xl md:text-5xl font-bold text-gradient mb-4",
                         children: "Gaming Tournaments"
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/gaming/page.tsx",
+                        lineNumber: 18,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-lg text-muted-foreground max-w-2xl mx-auto",
+                        children: "Compete in your favorite games, climb the ranks, and win amazing prizes."
                     }, void 0, false, {
                         fileName: "[project]/src/app/gaming/page.tsx",
                         lineNumber: 19,
                         columnNumber: 9
-                    }, ("TURBOPACK compile-time value", void 0)),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-lg text-gray-300 max-w-2xl mx-auto",
-                        children: "Compete in your favorite games and win exciting prizes."
-                    }, void 0, false, {
-                        fileName: "[project]/src/app/gaming/page.tsx",
-                        lineNumber: 22,
-                        columnNumber: 9
-                    }, ("TURBOPACK compile-time value", void 0))
+                    }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/gaming/page.tsx",
-                lineNumber: 18,
+                lineNumber: 17,
                 columnNumber: 7
-            }, ("TURBOPACK compile-time value", void 0)),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6",
-                children: tournaments.map((tournament, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].div, {
-                        initial: {
-                            opacity: 0,
-                            y: 20
-                        },
-                        animate: {
-                            opacity: 1,
-                            y: 0
-                        },
-                        transition: {
-                            duration: 0.5,
-                            delay: index * 0.1
-                        },
-                        whileHover: {
-                            scale: 1.03
-                        },
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
-                            className: "flex h-full flex-col overflow-hidden transition-all bg-gray-800/50 border-gray-700 hover:border-primary",
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
+                className: "glass-effect",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardHeader"], {
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardTitle"], {
+                            className: "flex items-center gap-4",
                             children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardHeader"], {
-                                    className: "p-0",
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "relative aspect-video w-full",
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                            src: tournament.image,
-                                            alt: tournament.name,
-                                            fill: true,
-                                            className: "object-cover",
-                                            "data-ai-hint": tournament.hint
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/app/gaming/page.tsx",
-                                            lineNumber: 39,
-                                            columnNumber: 21
-                                        }, ("TURBOPACK compile-time value", void 0))
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/gaming/page.tsx",
-                                        lineNumber: 38,
-                                        columnNumber: 19
-                                    }, ("TURBOPACK compile-time value", void 0))
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$gamepad$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Gamepad2$3e$__["Gamepad2"], {
+                                    className: "w-8 h-8 text-accent"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/gaming/page.tsx",
-                                    lineNumber: 37,
-                                    columnNumber: 16
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
-                                    className: "p-4 flex flex-col flex-1",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardTitle"], {
-                                            className: "text-xl font-semibold",
-                                            children: tournament.name
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/app/gaming/page.tsx",
-                                            lineNumber: 49,
-                                            columnNumber: 17
-                                        }, ("TURBOPACK compile-time value", void 0)),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            className: "text-lg font-bold text-accent mt-2",
-                                            children: [
-                                                "Prize: $",
-                                                tournament.prize.toLocaleString()
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/src/app/gaming/page.tsx",
-                                            lineNumber: 50,
-                                            columnNumber: 17
-                                        }, ("TURBOPACK compile-time value", void 0)),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex-grow"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/app/gaming/page.tsx",
-                                            lineNumber: 51,
-                                            columnNumber: 17
-                                        }, ("TURBOPACK compile-time value", void 0)),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
-                                            className: "w-full mt-4",
-                                            children: "Join Tournament"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/app/gaming/page.tsx",
-                                            lineNumber: 52,
-                                            columnNumber: 17
-                                        }, ("TURBOPACK compile-time value", void 0))
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/src/app/gaming/page.tsx",
-                                    lineNumber: 48,
+                                    lineNumber: 27,
                                     columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0))
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    children: "Gaming Section Coming Soon"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/gaming/page.tsx",
+                                    lineNumber: 28,
+                                    columnNumber: 15
+                                }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/gaming/page.tsx",
-                            lineNumber: 36,
+                            lineNumber: 26,
                             columnNumber: 13
-                        }, ("TURBOPACK compile-time value", void 0))
-                    }, tournament.id, false, {
+                        }, this)
+                    }, void 0, false, {
                         fileName: "[project]/src/app/gaming/page.tsx",
-                        lineNumber: 29,
-                        columnNumber: 12
-                    }, ("TURBOPACK compile-time value", void 0)))
-            }, void 0, false, {
+                        lineNumber: 25,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "text-muted-foreground",
+                            children: "We're setting up the arena! Our gaming tournament platform will be live soon, featuring a variety of games and exciting prize pools. Stay tuned, gamer!"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/gaming/page.tsx",
+                            lineNumber: 32,
+                            columnNumber: 13
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/gaming/page.tsx",
+                        lineNumber: 31,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
                 fileName: "[project]/src/app/gaming/page.tsx",
-                lineNumber: 27,
-                columnNumber: 7
-            }, ("TURBOPACK compile-time value", void 0))
+                lineNumber: 24,
+                columnNumber: 8
+            }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/gaming/page.tsx",
-        lineNumber: 17,
+        lineNumber: 10,
         columnNumber: 5
-    }, ("TURBOPACK compile-time value", void 0));
-};
+    }, this);
+}
 _c = GamingPage;
-const __TURBOPACK__default__export__ = GamingPage;
 var _c;
 __turbopack_context__.k.register(_c, "GamingPage");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {

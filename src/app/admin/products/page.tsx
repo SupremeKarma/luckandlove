@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 
-export default function AdminUsersPage() {
+export default function AdminProductsPage() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -14,17 +14,17 @@ export default function AdminUsersPage() {
       className="p-6 space-y-6"
     >
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">User Management</h1>
+        <h1 className="text-xl font-semibold">Products</h1>
       </div>
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle>Manage Users</CardTitle>
+          <CardTitle>Manage Products</CardTitle>
            <CardDescription>
-            A protected area for admins to manage user roles and permissions.
+            Add, edit, and manage all products in your store.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">User management features will be available here soon.</p>
+          <p className="text-muted-foreground">Product management features will be available here soon.</p>
         </CardContent>
       </Card>
     </motion.div>

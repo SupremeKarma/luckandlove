@@ -9,12 +9,11 @@ import type { AuthChangeEvent, Session, SupabaseClient, User } from '@supabase/s
 type AuthContextValue = {
   user: User | null;
   loading: boolean;
-  isAuthenticated: boolean;
   isAdmin: boolean;
   role: ProfileRole | null;
   profile: Profile | null;
   login: (email: string, pass: string) => Promise<any>;
-  signOut: () => Promise<any>;
+  logout: () => Promise<any>;
 };
 
 
@@ -78,7 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return supabase.auth.signInWithPassword({ email, password: pass });
   }, [supabase]);
 
-  const signOut = useCallback(async () => {
+  const logout = useCallback(async () => {
     if (!supabase) throw new Error("Supabase client not initialized.");
     return supabase.auth.signOut();
   }, [supabase]);
@@ -87,9 +86,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       user, 
       profile,
       login, 
-      signOut, 
+      logout, 
       loading, 
-      isAuthenticated: !!user, 
       isAdmin: profile?.role === 'admin',
       role: profile?.role ?? null
   };
