@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -12,9 +12,22 @@ import { mapProductRow } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Loader2, ArrowLeft, CheckCircle, Minus, Plus, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Loader2, ArrowLeft, CheckCircle, Minus, Plus, XCircle } from 'lucide-react';
 
 const placeholderImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzc0MTUxIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzlDQTNBRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K";
+
+export async function generateStaticParams() {
+  const supabase = getSupabase();
+  const { data: products, error } = await supabase.from('products').select('id');
+
+  if (error || !products) {
+    return [];
+  }
+
+  return products.map((product) => ({
+    productId: product.id,
+  }));
+}
 
 function ProductDetailPageContent() {
   const params = useParams();
@@ -25,14 +38,13 @@ function ProductDetailPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const { toast } = useToast();
 
   const handleAddToCart = useCallback(() => {
     if (product) {
       try {
-        addToCart(product, { quantity: quantity, variant: selectedVariant });
+        addToCart(product, { qty: quantity, variant: selectedVariant });
         toast({
           title: "Added to Cart! 🛒",
           description: `${quantity} x ${product.name} ${selectedVariant ? `(${selectedVariant.name})` : ''} added.`,
@@ -75,27 +87,6 @@ function ProductDetailPageContent() {
 
         const fullProductData = mapProductRow(productData);
         
-        let variantsData: any[] = [];
-        if (fullProductData.variants) { // Check if variants are even a thing for this product from the main table if we had such a column
-            try {
-                const { data, error: variantsError } = await supabase
-                    .from('product_variants')
-                    .select('*')
-                    .eq('product_id', productData.id);
-                if (variantsError) throw variantsError;
-                variantsData = data || [];
-                fullProductData.variants = variantsData.map((v: any) => ({
-                    ...v,
-                    price: v.price_in_cents,
-                    sale_price: v.sale_price_in_cents,
-                    inventory_quantity: v.inventory_quantity
-                }))
-            } catch (variantError) {
-                console.warn("Could not fetch product_variants for this product.", variantError);
-                fullProductData.variants = [];
-            }
-        }
-        
         setProduct(fullProductData);
         if (fullProductData.variants && fullProductData.variants.length > 0) {
             setSelectedVariant(fullProductData.variants[0]);
@@ -135,9 +126,8 @@ function ProductDetailPageContent() {
     );
   }
   
-  const displayPrice = selectedVariant ? ((selectedVariant.sale_price ?? selectedVariant.price) / 100) : product.price;
-  const originalPrice = selectedVariant && selectedVariant.sale_price ? (selectedVariant.price / 100) : null;
-  const availableStock = selectedVariant ? selectedVariant.inventory_quantity : product.stock;
+  const displayPrice = selectedVariant ? (selectedVariant.price ?? 0) : product.price;
+  const availableStock = selectedVariant ? (selectedVariant.stock ?? 0) : product.stock;
   const canAddToCart = quantity <= availableStock;
   
   return (
@@ -155,7 +145,7 @@ function ProductDetailPageContent() {
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
             <div className="relative overflow-hidden rounded-lg shadow-lg h-96 md:h-[500px]">
               <Image
-                src={product.imageUrl || placeholderImage}
+                src={product.image_url || placeholderImage}
                 alt={product.name}
                 fill
                 className="w-full h-full object-cover"
@@ -174,9 +164,6 @@ function ProductDetailPageContent() {
 
           <div className="flex items-baseline gap-3 mb-6">
             <span className="text-4xl font-bold text-accent">${displayPrice.toFixed(2)}</span>
-            {originalPrice && (
-              <span className="text-2xl text-muted-foreground line-through">${originalPrice.toFixed(2)}</span>
-            )}
           </div>
           
           <p className="text-muted-foreground mb-6">{product.description}</p>
