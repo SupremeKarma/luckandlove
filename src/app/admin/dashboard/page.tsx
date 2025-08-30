@@ -4,6 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { DollarSign, ShoppingCart, Package, AlertTriangle } from 'lucide-react';
+import { mockProducts, mockOrders, fmt } from '@/components/store/types';
 
 function KPI({ title, value, icon, hint }: { title: string; value: string; icon: React.ReactNode; hint?: string }) {
   return (
@@ -21,6 +22,11 @@ function KPI({ title, value, icon, hint }: { title: string; value: string; icon:
 }
 
 export default function AdminDashboardPage() {
+  const revenue = mockOrders.filter((o) => ["paid", "shipped"].includes(o.status)).reduce((s, o) => s + o.total, 0);
+  const openOrders = mockOrders.filter((o) => ["pending", "paid"].includes(o.status)).length;
+  const activeProducts = mockProducts.filter(p => p.active).length;
+  const lowStock = mockProducts.filter((p) => p.stock <= 5).length;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -34,10 +40,10 @@ export default function AdminDashboardPage() {
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <KPI title="Total Revenue" value="$0.00" icon={<DollarSign className="h-5 w-5" />} hint="All time" />
-        <KPI title="Open Orders" value="0" icon={<ShoppingCart className="h-5 w-5" />} hint="Pending / paid" />
-        <KPI title="Active Products" value="0" icon={<Package className="h-5 w-5" />} hint="Visible" />
-        <KPI title="Low Stock" value="0" icon={<AlertTriangle className="h-5 w-5" />} hint="≤ 5 units" />
+        <KPI title="Total Revenue" value={fmt.currency(revenue)} icon={<DollarSign className="h-5 w-5" />} hint="Paid & shipped" />
+        <KPI title="Open Orders" value={String(openOrders)} icon={<ShoppingCart className="h-5 w-5" />} hint="Pending / paid" />
+        <KPI title="Active Products" value={String(activeProducts)} icon={<Package className="h-5 w-5" />} hint="Visible" />
+        <KPI title="Low Stock" value={String(lowStock)} icon={<AlertTriangle className="h-5 w-5" />} hint="≤ 5 units" />
       </div>
 
        <Card className="rounded-2xl">
