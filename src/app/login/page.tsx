@@ -5,13 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';
-import { SignInWithGithubButton } from '@/components/auth-buttons';
 import { Separator } from '@/components/ui/separator';
 
 export default function LoginPage() {
@@ -20,25 +18,27 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const { toast } = useToast();
-  const { user, loading } = useAuth();
-  
-  const supabase = getSupabase();
+  const { user, loading, login, isAuthenticated } = useAuth();
   
   useEffect(() => {
     // If user is already logged in, redirect to account page
-    if (user) {
+    if (isAuthenticated) {
       router.replace('/account');
     }
-  }, [user, router]);
+  }, [isAuthenticated, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!supabase) return;
+    
+    // Simple validation
+    if (!email || !password) {
+        setError('Please enter both email and password.');
+        return;
+    }
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      login(email);
       
       toast({
         title: 'Login Successful',
@@ -63,13 +63,12 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <SignInWithGithubButton />
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <Separator />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
               </div>
             </div>
             <form className="space-y-4" onSubmit={handleLogin}>

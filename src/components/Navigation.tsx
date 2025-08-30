@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useCart } from '@/context/cart-context';
@@ -14,18 +14,15 @@ import {
   X,
   User,
   Package2,
-  Home,
-  ShoppingBag,
+  Store,
+  Utensils,
+  Building,
   Gamepad2,
   Car,
-  Utensils,
   MessageSquare,
-  Archive,
   Shield,
   LogIn,
   LogOut,
-  Building,
-  Store,
 } from 'lucide-react';
 import {
   Sheet,
@@ -36,7 +33,6 @@ import {
 } from "@/components/ui/sheet";
 import { CartSheet } from './cart-sheet';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 
 const NavItem = ({ href, children }: { href: string; children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -59,12 +55,12 @@ export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { cartCount } = useCart();
-  const { user, signOut, loading, role } = useAuth();
+  const { isAuthenticated, signOut, loading, isAdmin } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
   const handleLogout = async () => {
-    await signOut();
+    signOut();
     toast({
       title: 'Logged Out',
       description: 'You have been successfully logged out.',
@@ -79,7 +75,7 @@ export function Navigation() {
     { href: '/gaming', label: 'Gaming', icon: Gamepad2 },
     { href: '/rentals', label: 'Rentals', icon: Car },
     { href: '/chat', label: 'Chat', icon: MessageSquare },
-     ...(role === 'admin' ? [{ href: '/admin/users', label: 'Admin', icon: Shield }] : []),
+     ...(isAdmin ? [{ href: '/admin/users', label: 'Admin', icon: Shield }] : []),
   ];
 
   return (
@@ -119,7 +115,7 @@ export function Navigation() {
 
           {loading ? (
              <Button variant="ghost" size="icon" className="w-9 h-9 animate-pulse bg-muted/50 rounded-full" />
-          ) : user ? (
+          ) : isAuthenticated ? (
             <>
               <Link href="/account">
                 <Button variant="ghost" size="icon">

@@ -13,18 +13,18 @@ export function RequireAuth({
   fallback?: ReactNode;
   redirectTo?: string;
 }) {
-  const { user, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !isAuthenticated) {
       router.replace(redirectTo);
     }
-  }, [loading, user, redirectTo, router]);
+  }, [loading, isAuthenticated, redirectTo, router]);
 
   if (loading) return (fallback ?? <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">Loading...</div>);
 
-  if (!user) {
+  if (!isAuthenticated) {
     // We are redirecting, so we can show a loading state or nothing.
     // Returning null is clean because the layout won't flash.
     return null;

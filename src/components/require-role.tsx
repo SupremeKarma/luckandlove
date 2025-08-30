@@ -1,3 +1,4 @@
+
 "use client";
 import { ReactNode, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -14,17 +15,17 @@ export function RequireRole({
   fallback?: ReactNode;
   redirectTo?: string;
 }) {
-  const { user, role: userRole, loading } = useAuth();
+  const { isAuthenticated, role: userRole, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (loading) return;
-    if (!user || !userRole || (role === "admin" && userRole !== "admin")) {
+    if (!isAuthenticated || !userRole || (role === "admin" && userRole !== "admin")) {
       if (redirectTo) router.replace(redirectTo);
     }
-  }, [loading, user, userRole, role, redirectTo, router]);
+  }, [loading, isAuthenticated, userRole, role, redirectTo, router]);
 
   if (loading) return fallback ?? <div>Loading…</div>;
-  if (!user || !userRole || (role === "admin" && userRole !== "admin")) return null;
+  if (!isAuthenticated || !userRole || (role === "admin" && userRole !== "admin")) return null;
   return <>{children}</>;
 }

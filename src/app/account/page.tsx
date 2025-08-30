@@ -8,15 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { Order, Profile } from '@/lib/types';
+import type { Order } from '@/lib/types';
 import { User, MapPin, Package, CreditCard, LogOut } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { RequireAuth } from '@/components/require-auth';
 import { useAuth } from '@/context/auth-context';
-import { getSupabase } from '@/lib/supabase';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface Address {
   id?: string;
@@ -28,8 +26,7 @@ interface Address {
 }
 
 function AccountPageContent() {
-  const { user, profile, loading, signOut, refreshProfile } = useAuth();
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const { user, profile, loading, signOut, isAuthenticated } = useAuth();
   
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [orders, setOrders] = useState<Order[]>([]);
@@ -41,16 +38,7 @@ function AccountPageContent() {
   const router = useRouter();
   
   useEffect(() => {
-    try {
-      const supabaseClient = getSupabase();
-      setSupabase(supabaseClient);
-    } catch (error) {
-      console.error(error);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (loading || !user) return;
+    if (loading || !isAuthenticated) return;
     try {
       const ret = localStorage.getItem("returnTo");
       if (ret) {
@@ -58,37 +46,20 @@ function AccountPageContent() {
         router.replace(ret);
       }
     } catch {}
-  }, [loading, user, router]);
+  }, [loading, isAuthenticated, router]);
 
   useEffect(() => {
     if (profile) {
       setFullName(profile.full_name || '');
-      // Assuming addresses are stored in a different table or a jsonb column
-      // This part would need adjustment based on your actual schema
-      // For now, let's assume it's part of the profile object for demonstration
-      // setAddresses(profile.addresses || []); 
     }
   }, [profile]);
   
   const handleProfileUpdate = async () => {
-    if (!user || !supabase) return;
-    
-    try {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ full_name: fullName })
-          .eq('id', user.id);
-
-        if (error) throw error;
-        await refreshProfile(); // Refresh context
-        toast({ title: 'Profile Updated', description: 'Your profile information has been updated.' });
-    } catch (error: any) {
-        toast({ title: 'Error', description: `Failed to update profile: ${error.message}`, variant: 'destructive' });
-    }
+    toast({ title: 'Profile Updated', description: 'Your profile information has been updated (mock action).' });
   };
   
   const handleLogout = async () => {
-    await signOut();
+    signOut();
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
     router.push('/');
   };

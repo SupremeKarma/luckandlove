@@ -1,102 +1,92 @@
 
-"use client";
+'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import type { Session, User, Provider } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase-browser";
-import type { Profile, ProfileRole } from "@/lib/types";
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import type { ProfileRole, Profile } from '@/lib/types';
+import type { User } from '@supabase/supabase-js';
+
+// A type that is compatible with the old user/profile structure
+// to minimize changes in other components.
+type MockUser = {
+  id: string;
+  email: string;
+  full_name: string;
+  role: ProfileRole;
+  avatar_url?: string;
+}
 
 type AuthContextValue = {
-  user: User | null;
-  session: Session | null;
+  user: MockUser | null;
   loading: boolean;
-  profile: Profile | null;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
   role: ProfileRole | null;
-  refreshProfile: () => Promise<void>;
-  signOut: () => Promise<void>;
-  signInWithOAuth: (provider: Provider) => Promise<void>;
-  signInWithEmailLink?: (email: string) => Promise<void>;
+  profile: MockUser | null; // For compatibility
+  login: (email: string) => void;
+  signOut: () => void;
 };
+
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<MockUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<Profile | null>(null);
 
-  // Session subscription (single place)
   useEffect(() => {
-    let unsub = () => {};
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session ?? null);
+    // This effect runs only on the client
+    try {
+      const storedUser = localStorage.getItem('zenithUser');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      localStorage.removeItem('zenithUser');
+    } finally {
       setLoading(false);
-
-      const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-        setSession(s ?? null);
-      });
-      unsub = sub.subscription.unsubscribe;
-    })();
-    return () => unsub();
+    }
   }, []);
 
-  // Load profile when session/user changes
-  useEffect(() => {
-    if (!session?.user) {
-      setProfile(null);
-      return;
-    }
-    void refreshProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id]);
+  const login = (email: string) => {
+    // This is a mock login.
+    const userData: MockUser = { 
+      id: new Date().toISOString(), // simple unique id
+      email, 
+      full_name: email.split('@')[0],
+      role: email.includes('admin') ? 'admin' : 'user' 
+    };
+    setUser(userData);
+    localStorage.setItem('zenithUser', JSON.stringify(userData));
+  };
 
-  async function refreshProfile() {
-    if (!session?.user) {
-      setProfile(null);
-      return;
-    }
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .maybeSingle();
-      
-    if (!error) setProfile((data as Profile) ?? null);
+  const signOut = () => {
+    setUser(null);
+    localStorage.removeItem('zenithUser');
+  };
+
+  const value: AuthContextValue = { 
+      user, 
+      login, 
+      signOut, 
+      loading, 
+      isAuthenticated: !!user, 
+      isAdmin: user?.role === 'admin',
+      role: user?.role ?? null,
+      profile: user, // For compatibility
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-
-  const value = useMemo<AuthContextValue>(() => ({
-    user: session?.user ?? null,
-    session,
-    loading,
-    profile,
-    role: (profile?.role ?? null) as ProfileRole | null,
-    refreshProfile,
-    signOut: () => supabase.auth.signOut(),
-    async signInWithOAuth(provider) {
-      await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: typeof window !== "undefined" ? `${window.location.origin}/account` : undefined,
-        },
-      });
-    },
-    async signInWithEmailLink(email: string) {
-      await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo:
-            typeof window !== "undefined" ? `${window.location.origin}/account` : undefined,
-        },
-      });
-    },
-  }), [session, loading, profile]);
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within <AuthProvider>");
-  return ctx;
-}
+  return context;
+};
