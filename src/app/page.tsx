@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingBag, Utensils, Gamepad2, Building, Zap } from 'lucide-react';
+import SiteJsonLd from '@/components/seo/SiteJsonLd';
 
 const Home = () => {
   const featureCards = [
@@ -22,9 +23,17 @@ const Home = () => {
     { id: 2, name: "Artisanal Coffee Blend", price: 29.99, imageHint: "coffee beans", category: "Groceries" },
     { id: 3, name: "Pro Gaming Mouse", price: 89.99, imageHint: "gaming mouse", category: "Gaming" },
   ];
+  
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   return (
     <>
+      <SiteJsonLd
+        name="Luck&Love"
+        url={base}
+        logo={`${base}/icon.png`}
+        sameAs={["https://twitter.com/yourhandle","https://www.facebook.com/yourpage"]}
+      />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -39,6 +48,7 @@ const Home = () => {
               fill
               className="w-full h-full object-cover" 
               data-ai-hint="abstract network"
+              priority
             />
           </div>
           <div className="relative z-20">
@@ -119,6 +129,7 @@ const Home = () => {
                       fill 
                       className="w-full h-full object-cover" 
                       data-ai-hint={product.imageHint}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   </div>
                   <CardHeader>

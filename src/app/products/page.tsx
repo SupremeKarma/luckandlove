@@ -1,7 +1,9 @@
+
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import FiltersClient from "./FiltersClient";
 
 const PAGE_SIZE = 24;
 
@@ -36,6 +38,9 @@ export default async function ProductsPage({
     Object.entries(params).forEach(([key, value]) => search.set(key, value));
     return `/products?${search.toString()}`;
   }
+  
+  const { data: cats } = await supabase.from("products").select("category").not("category","is",null);
+  const categories = Array.from(new Set((cats ?? []).map((r:any)=>r.category))).filter(Boolean).slice(0,50);
 
   return (
     <div className="container-app py-6 space-y-4">
@@ -43,8 +48,8 @@ export default async function ProductsPage({
         <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-4">Zenith Store</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Discover exclusive products, curated just for you. Your next favorite item is just a click away.</p>
       </div>
-
-      {/* Optional: render filters/search using client components that sync to the URL */}
+      
+      <FiltersClient categories={categories as string[]} />
 
       {(!data || data.length === 0) ? (
         <div className="rounded-2xl border p-8 text-center text-sm text-muted-foreground">
