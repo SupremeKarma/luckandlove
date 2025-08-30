@@ -5,23 +5,18 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { Minus, Plus, Trash2, ShoppingBag, CreditCard } from "lucide-react";
-import type { CartItem } from "@/lib/types";
+import type { CartItem } from "@/context/cart-context";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/cart-context";
 
-interface CartProps {
-  cartItems: CartItem[];
-  onUpdateQuantity: (productId: string, variantId: string, quantity: number) => void;
-  onRemoveItem: (productId: string, variantId: string) => void;
-}
+export default function CartComponent() {
+  const { cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
 
-export default function CartComponent({ cartItems, onUpdateQuantity, onRemoveItem }: CartProps) {
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const taxRate = 0.1; // 10% tax
-  const tax = subtotal * taxRate;
-  const shipping = subtotal > 50 ? 0 : 9.99;
-  const total = subtotal + tax + shipping;
+  const tax = cartTotal * taxRate;
+  const shipping = cartTotal > 50 ? 0 : 9.99;
+  const total = cartTotal + tax + shipping;
 
   if (cartItems.length === 0) {
     return (
@@ -49,11 +44,11 @@ export default function CartComponent({ cartItems, onUpdateQuantity, onRemoveIte
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map((item) => (
-            <Card key={`${item.id}-${item.variant.id}`} className="overflow-hidden">
+            <Card key={`${item.productId}-${item.variantId}`} className="overflow-hidden">
               <div className="flex items-center gap-4 p-4">
                 <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md bg-card">
                    <Image
-                    src={item.imageUrl}
+                    src={item.imageUrl || 'https://picsum.photos/100'}
                     alt={item.name}
                     fill
                     className="object-cover"
@@ -62,7 +57,6 @@ export default function CartComponent({ cartItems, onUpdateQuantity, onRemoveIte
                 
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-base mb-1 truncate">{item.name}</h3>
-                  {item.variant.name !== 'Default' && <p className="text-sm text-muted-foreground">{item.variant.name}</p>}
                    <div className="flex items-center text-sm text-muted-foreground">
                       <span>${item.price.toFixed(2)}</span>
                     </div>
@@ -71,7 +65,7 @@ export default function CartComponent({ cartItems, onUpdateQuantity, onRemoveIte
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => onUpdateQuantity(item.id, item.variant.id, Math.max(1, item.quantity - 1))}
+                      onClick={() => updateQuantity(item.productId, item.variantId, Math.max(1, item.quantity - 1))}
                       aria-label="Decrease quantity"
                     >
                       <Minus size={14} />
@@ -83,7 +77,7 @@ export default function CartComponent({ cartItems, onUpdateQuantity, onRemoveIte
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => onUpdateQuantity(item.id, item.variant.id, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.productId, item.variantId, item.quantity + 1)}
                        aria-label="Increase quantity"
                     >
                       <Plus size={14} />
@@ -97,7 +91,7 @@ export default function CartComponent({ cartItems, onUpdateQuantity, onRemoveIte
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => onRemoveItem(item.id, item.variant.id)}
+                    onClick={() => removeFromCart(item.productId, item.variantId)}
                     aria-label="Remove item"
                   >
                     <Trash2 size={16} />
@@ -118,7 +112,7 @@ export default function CartComponent({ cartItems, onUpdateQuantity, onRemoveIte
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>${cartTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
@@ -149,4 +143,3 @@ export default function CartComponent({ cartItems, onUpdateQuantity, onRemoveIte
     </div>
   );
 }
-

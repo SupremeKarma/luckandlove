@@ -46,7 +46,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
     }
 
     try {
-      addToCart(product, 1);
+      addToCart(product, { quantity: 1 });
       toast({
         title: "Added to Cart! 🛒",
         description: `${product.name} has been added to your cart.`,

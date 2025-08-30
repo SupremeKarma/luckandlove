@@ -1,4 +1,5 @@
 
+
 export interface ProductVariant {
   id: string;
   name: string;
@@ -22,12 +23,18 @@ export interface Product {
   variants?: ProductVariant[] | null;
   product_variants?: ProductVariant[] | null;
   ribbon_text?: string;
+  sku?: string | null;
 }
 
-export interface CartItem extends Product {
+export interface CartItem {
+  productId: string;
+  variantId: string;
+  name: string;
+  price: number;
   quantity: number;
-  variant: ProductVariant;
-}
+  sku?: string | null;
+  imageUrl?: string | null;
+};
 
 export interface Order {
     id: string;
@@ -96,6 +103,7 @@ export function mapProductRow(row: any): Product {
     variants: (row.variants as ProductVariant[] | null) ?? null,
     subtitle: row.subtitle,
     description: row.description,
-    ribbon_text: row.ribbon_text
+    ribbon_text: row.ribbon_text,
+    sku: row.sku ?? null,
   };
 }

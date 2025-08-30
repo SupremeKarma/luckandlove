@@ -50,22 +50,21 @@ export const CartSheet = ({ isCartOpen, setIsCartOpen }: { isCartOpen: boolean, 
                 </div>
               ) : (
                 cartItems.map(item => (
-                  <div key={`${item.id}-${item.variant.id}`} className="flex items-center gap-4 bg-muted/50 p-3 rounded-lg">
+                  <div key={`${item.productId}-${item.variantId}`} className="flex items-center gap-4 bg-muted/50 p-3 rounded-lg">
                     <img src={item.imageUrl || 'https://via.placeholder.com/80'} alt={item.name} className="w-20 h-20 object-cover rounded-md" />
                     <div className="flex-grow">
                       <h3 className="font-semibold">{item.name}</h3>
-                      {item.variant.name !== 'Default' && <p className="text-sm text-muted-foreground">{item.variant.name}</p>}
                       <p className="text-sm text-accent font-bold">
                         {currency}{(item.price).toFixed(2)}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <div className="flex items-center border border-white/20 rounded-md">
-                        <Button onClick={() => updateQuantity(item.id, item.variant.id, Math.max(1, item.quantity - 1))} size="sm" variant="ghost" className="px-2 hover:bg-white/10">-</Button>
+                        <Button onClick={() => updateQuantity(item.productId, item.variantId, Math.max(1, item.quantity - 1))} size="sm" variant="ghost" className="px-2 hover:bg-white/10">-</Button>
                         <span className="px-2">{item.quantity}</span>
-                        <Button onClick={() => updateQuantity(item.id, item.variant.id, item.quantity + 1)} size="sm" variant="ghost" className="px-2 hover:bg-white/10">+</Button>
+                        <Button onClick={() => updateQuantity(item.productId, item.variantId, item.quantity + 1)} size="sm" variant="ghost" className="px-2 hover:bg-white/10">+</Button>
                       </div>
-                      <Button onClick={() => removeFromCart(item.id, item.variant.id)} size="sm" variant="link" className="text-destructive hover:text-destructive/80 text-xs p-0 h-auto">Remove</Button>
+                      <Button onClick={() => removeFromCart(item.productId, item.variantId)} size="sm" variant="link" className="text-destructive hover:text-destructive/80 text-xs p-0 h-auto">Remove</Button>
                     </div>
                   </div>
                 ))

@@ -32,7 +32,7 @@ function ProductDetailPageContent() {
   const handleAddToCart = useCallback(() => {
     if (product) {
       try {
-        addToCart(product, quantity, selectedVariant || undefined);
+        addToCart(product, { quantity: quantity, variant: selectedVariant });
         toast({
           title: "Added to Cart! 🛒",
           description: `${quantity} x ${product.name} ${selectedVariant ? `(${selectedVariant.name})` : ''} added.`,
@@ -136,7 +136,7 @@ function ProductDetailPageContent() {
   }
   
   const displayPrice = selectedVariant ? ((selectedVariant.sale_price ?? selectedVariant.price) / 100) : product.price;
-  const originalPrice = selectedVariant && selectedVariant.sale_price ? selectedVariant.price / 100 : null;
+  const originalPrice = selectedVariant && selectedVariant.sale_price ? (selectedVariant.price / 100) : null;
   const availableStock = selectedVariant ? selectedVariant.inventory_quantity : product.stock;
   const canAddToCart = quantity <= availableStock;
   
