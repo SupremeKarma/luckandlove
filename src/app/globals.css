@@ -1,83 +1,127 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 222 13% 16%;
-    --foreground: 210 40% 98%;
-    --card: 222 13% 20%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 13% 16%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 208 39% 34%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217 32% 27%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 32% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 188 100% 36%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62% 40%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 32% 27%;
-    --input: 217 32% 23%;
-    --ring: 188 100% 46%;
-    --radius: 0.5rem;
-  }
+/* Theme tokens (shadcn-compatible) */
+:root {
+  --background: 222 13% 16%;
+  --foreground: 210 20% 98%;
+  --muted: 220 10% 24%;
+  --muted-foreground: 215 12% 72%;
+
+  --card: 222 13% 17%;
+  --card-foreground: 210 20% 98%;
+
+  --popover: 222 13% 17%;
+  --popover-foreground: 210 20% 98%;
+
+  --border: 220 9% 26%;
+  --input: 220 9% 26%;
+  --ring: 188 100% 36%;
+
+  --primary: 208 39% 34%;
+  --primary-foreground: 210 20% 98%;
+
+  --secondary: 220 12% 22%;
+  --secondary-foreground: 210 20% 98%;
+
+  --accent: 188 100% 36%;
+  --accent-foreground: 210 20% 98%;
+
+  --destructive: 0 85% 60%;
+  --destructive-foreground: 210 20% 98%;
+
+  --success: 142 72% 35%;
+  --warning: 38 92% 50%;
+  --info: 201 98% 37%;
+
+  --radius: 0.9rem;
 }
 
+/* Optional light mode */
+:root[data-theme="light"] {
+  --background: 210 20% 98%;
+  --foreground: 222 13% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 13% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 13% 10%;
+  --muted: 210 16% 93%;
+  --muted-foreground: 222 13% 38%;
+  --border: 214 14% 90%;
+  --input: 214 14% 90%;
+  --ring: 208 39% 34%;
+  --secondary: 210 16% 92%;
+  --secondary-foreground: 222 13% 16%;
+}
+
+/* Base */
 @layer base {
   * {
     @apply border-border;
   }
+  html, body {
+    height: 100%;
+  }
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    @apply bg-background text-foreground antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    color: hsl(var(--foreground));
+    background: hsl(var(--accent) / 0.35);
   }
 }
 
-@layer components {
-  .gradient-bg {
-    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--primary)) 50%, hsl(var(--accent)) 100%);
+/* Utilities */
+@layer utilities {
+  .container-app {
+    @apply mx-auto w-full max-w-screen-2xl px-4 md:px-6 lg:px-8;
   }
-  
-  .glass-effect {
-    @apply backdrop-blur-lg bg-card/60 border border-white/10;
+  .card-grid {
+    @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
   }
-  
-  .hover-lift {
-    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-accent/20;
-  }
-  
-  .text-gradient {
-    @apply bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent;
+  .stack-sm { @apply space-y-2; }
+  .stack-md { @apply space-y-4; }
+  .stack-lg { @apply space-y-6; }
+
+  .elev-sm { box-shadow: 0 1px 2px hsl(220 40% 2% / 0.4), 0 1px 1px hsl(220 40% 2% / 0.08); }
+  .elev-md { box-shadow: 0 8px 24px hsl(220 40% 2% / 0.35), 0 2px 6px hsl(220 40% 2% / 0.1); }
+  .elev-lg { box-shadow: 0 24px 48px hsl(220 40% 2% / 0.4), 0 8px 16px hsl(220 40% 2% / 0.12); }
+
+  .focus-ring {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
   }
 
-  .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-white/10;
-  }
-
-  .glass-card-dark {
-    @apply bg-background/80 backdrop-blur-2xl border border-white/10;
-  }
-
-  .prose {
-    --tw-prose-body: theme('colors.gray.300');
-    --tw-prose-headings: theme('colors.white');
-    --tw-prose-lead: theme('colors.gray.400');
-    --tw-prose-links: theme('colors.accent');
-    --tw-prose-bold: theme('colors.white');
-    --tw-prose-counters: theme('colors.gray.400');
-    --tw-prose-bullets: theme('colors.gray.600');
-    --tw-prose-hr: theme('colors.gray.700');
-    --tw-prose-quotes: theme('colors.gray.200');
-    --tw-prose-quote-borders: theme('colors.accent');
-    --tw-prose-captions: theme('colors.gray.400');
-    --tw-prose-code: theme('colors.white');
-    --tw-prose-pre-code: theme('colors.gray.300');
-    --tw-prose-pre-bg: theme('colors.gray.900');
-    --tw-prose-th-borders: theme('colors.gray.600');
-    --tw-prose-td-borders: theme('colors.gray.700');
-  }
+  .kbd { @apply rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground; }
 }
+
+/* Component polish */
+.button-primary {
+  @apply inline-flex items-center justify-center rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors;
+}
+.button-primary:hover { background-color: hsl(var(--primary) / 0.9); }
+.button-secondary {
+  @apply inline-flex items-center justify-center rounded-2xl bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground;
+}
+
+/* Tables */
+.table-wrap { @apply rounded-2xl border overflow-hidden bg-card; }
+.table-head { @apply bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground; }
+.table-row-hover tbody tr:hover { @apply bg-muted/30; }
+
+/* Skeletons */
+.skeleton {
+  @apply animate-pulse rounded-xl bg-muted;
+  background-image: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted) / .7) 50%, hsl(var(--muted)) 100%);
+  background-size: 200% 100%;
+}
+
+/* Forms */
+.input {
+  @apply w-full rounded-xl border bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground/70;
+}
+.input:focus { @apply ring-2 ring-offset-2; ring-color: hsl(var(--ring)); ring-offset-color: hsl(var(--background)); }
+.label { @apply text-sm font-medium text-muted-foreground; }

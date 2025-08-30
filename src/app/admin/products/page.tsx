@@ -129,7 +129,7 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center gap-3">
         <h1 className="text-xl font-semibold">Products</h1>
         <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -163,15 +163,15 @@ export default function AdminProductsPage() {
       {loading && <div className="text-sm text-muted-foreground">Loading…</div>}
 
       {!loading && (
-        <Card className="rounded-2xl">
+        <Card>
           <CardHeader>
             <CardTitle className="text-sm text-muted-foreground">All products</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="rounded-xl overflow-hidden border">
+            <div className="table-wrap">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="table-head">
                     <TableHead></TableHead>
                     <TableHead>Product</TableHead>
                     <TableHead className="text-right">Price</TableHead>
@@ -235,3 +235,4 @@ export default function AdminProductsPage() {
     </div>
   );
 }
+
