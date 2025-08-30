@@ -6,6 +6,7 @@
   "scripts": {
     "predev": "node -r dotenv/config scripts/validate-env.mjs",
     "dev": "next dev --turbopack",
+    "prebuild": "node scripts/validate-env.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
