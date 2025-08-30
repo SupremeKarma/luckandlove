@@ -221,6 +221,18 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies RouteHandlerConfig<"/auth/callback">
 }
 
+// Validate ../../src/app/robots.txt/route.ts
+{
+  const handler = {} as typeof import("../../src/app/robots.txt/route.js")
+  handler satisfies RouteHandlerConfig<"/robots.txt">
+}
+
+// Validate ../../src/app/sitemap.xml/route.ts
+{
+  const handler = {} as typeof import("../../src/app/sitemap.xml/route.js")
+  handler satisfies RouteHandlerConfig<"/sitemap.xml">
+}
+
 
 
 
