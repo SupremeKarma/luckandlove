@@ -12,6 +12,7 @@ import { refundOrder } from "./refund-action";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import StatusTimeline from "@/components/StatusTimeline";
+import Link from "next/link";
 
 type Order = {
   id: string;
@@ -119,6 +120,9 @@ export default function AdminOrderDetailPage() {
                 {getStatusBadge(order.status)}
             </div>
             <div className="flex items-center gap-2">
+              <Link href={`/api/orders/${order.id}/invoice.pdf`} target="_blank">
+                <Button variant="secondary">Invoice PDF</Button>
+              </Link>
               <Select defaultValue={order.status} onValueChange={(v:any)=>onStatus(v)} disabled={isUpdating}>
                 <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
                 <SelectContent>

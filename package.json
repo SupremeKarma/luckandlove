@@ -64,6 +64,7 @@
     "next": "latest",
     "next-themes": "^0.3.0",
     "patch-package": "^8.0.0",
+    "pdfkit": "^0.15.0",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
@@ -81,6 +82,7 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^22.16.5",
+    "@types/pdfkit": "^0.13.4",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "autoprefixer": "^10.4.19",
