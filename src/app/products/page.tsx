@@ -13,24 +13,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 function ProductsPageContent() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
-
-  useEffect(() => {
-    try {
-      const supabaseClient = getSupabase();
-      setSupabase(supabaseClient);
-    } catch (error) {
-      console.error("Failed to initialize Supabase:", error);
-      setLoading(false);
-    }
-  }, []);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!supabase) return;
-
-      setLoading(true);
       try {
+        const supabase = getSupabase();
         let query = supabase
           .from('products')
           .select(`
@@ -38,10 +26,10 @@ function ProductsPageContent() {
             variants:product_variants(*)
           `);
 
-        const { data, error } = await query;
+        const { data, error: queryError } = await query;
         
-        if (error) {
-          throw error;
+        if (queryError) {
+          throw queryError;
         }
 
         if (data) {
@@ -60,8 +48,9 @@ function ProductsPageContent() {
         } else {
           setAllProducts([]);
         }
-      } catch (error) {
-        console.error("Error fetching products:", error);
+      } catch (err: any) {
+        console.error("Error fetching products:", err.message);
+        setError(err.message);
         setAllProducts([]);
       } finally {
         setLoading(false);
@@ -69,7 +58,7 @@ function ProductsPageContent() {
     };
 
     fetchProducts();
-  }, [supabase]);
+  }, []);
 
 
   return (
@@ -95,13 +84,18 @@ function ProductsPageContent() {
             </div>
           ))}
         </div>
+      ) : error ? (
+        <div className="text-center text-destructive mt-16">
+          <p className="text-xl">Could not load products.</p>
+          <p>{error}</p>
+        </div>
       ) : (
         <>
           <ProductList products={allProducts} />
           {allProducts.length === 0 && (
             <div className="text-center text-muted-foreground mt-16">
               <p className="text-xl">No products found.</p>
-              <p>Try adjusting your search or filters.</p>
+              <p>Check back later for new arrivals.</p>
             </div>
           )}
         </>
