@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -16,8 +15,8 @@ export default function ShopPage() {
 
   React.useEffect(() => {
     let mounted = true;
+    const supabase = getSupabase();
     (async () => {
-      const supabase = getSupabase();
       setLoading(true);
       setError(null);
       const [shopRes, prodRes] = await Promise.all([
