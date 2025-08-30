@@ -167,6 +167,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/success">
 }
 
+// Validate ../../src/app/wholesale/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/wholesale/page.js")
+  handler satisfies AppPageConfig<"/wholesale">
+}
+
 // Validate ../../src/app/auth/callback/route.ts
 {
   const handler = {} as typeof import("../../src/app/auth/callback/route.js")
