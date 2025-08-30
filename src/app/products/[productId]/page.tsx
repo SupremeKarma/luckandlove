@@ -43,7 +43,7 @@ function ProductDetailPageContent() {
   const handleAddToCart = useCallback(() => {
     if (product && selectedVariant) {
       try {
-        addToCart(product, quantity);
+        addToCart(product, quantity, selectedVariant);
         toast({
           title: "Added to Cart! 🛒",
           description: `${quantity} x ${product.name} (${selectedVariant.name}) added.`,

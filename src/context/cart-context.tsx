@@ -1,11 +1,11 @@
 'use client';
 
-import type { Product, CartItem } from '@/lib/types';
+import type { Product, ProductVariant, CartItem } from '@/lib/types';
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number, variant?: ProductVariant) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -47,20 +47,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cartItems, isMounted]);
 
-  const addToCart = (product: Product, quantity = 1) => {
+  const addToCart = (product: Product, quantity = 1, variant?: ProductVariant) => {
     setCartItems((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
+      const selectedVariant = variant || product.variants?.[0];
+      if (!selectedVariant) {
+        throw new Error("Product variant not available.");
+      }
+
+      const existingItem = prevCart.find((item) => item.id === product.id && item.variant.id === selectedVariant.id);
+
       if (existingItem) {
         return prevCart.map((item) =>
-          item.id === product.id
+          item.id === product.id && item.variant.id === selectedVariant.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
-      const variant = product.variants?.[0];
-      const price = variant ? (variant.sale_price ?? variant.price) / 100 : product.price;
       
-      return [...prevCart, { ...product, quantity, price, variant: variant }];
+      const price = (selectedVariant.sale_price ?? selectedVariant.price) / 100;
+      
+      return [...prevCart, { ...product, quantity, price, variant: selectedVariant }];
     });
   };
 
