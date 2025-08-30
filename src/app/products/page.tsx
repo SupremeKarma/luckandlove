@@ -36,7 +36,7 @@ function ProductsPageContent() {
           .from('products')
           .select(`
             *,
-            product_variants(*)
+            product_variants!inner(*)
           `);
 
         const { data, error: queryError } = await query;

@@ -78,7 +78,7 @@ function ProductDetailPageContent() {
           .from('products')
           .select(`
             *,
-            product_variants(*)
+            product_variants!inner(*)
           `)
           .eq('id', productId)
           .single();

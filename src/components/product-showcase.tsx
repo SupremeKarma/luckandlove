@@ -40,7 +40,7 @@ export function ProductShowcase() {
           .from('products')
           .select(`
             *,
-            product_variants(*)
+            product_variants!inner(*)
           `)
           .limit(8);
 
