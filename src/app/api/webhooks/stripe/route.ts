@@ -2,6 +2,10 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { Resend } from "resend";
+import ReceiptEmail from "@/emails/ReceiptEmail";
+import React from "react";
+
 
 export const runtime = "nodejs";
 
@@ -48,6 +52,52 @@ export async function POST(req: Request) {
              await supabase.from("order_events").insert({
                 order_id: orderId, type: "webhook", message: "Payment succeeded",
             });
+
+            // Send receipt email
+            try {
+              const { data: fullOrder } = await supabase
+                .from("orders")
+                .select("id, email, created_at, subtotal, tax, shipping, total, currency, shipping_address")
+                .eq("id", orderId)
+                .maybeSingle();
+
+              const { data: items } = await supabase
+                .from("order_items")
+                .select("name, qty, unit_price, line_total")
+                .eq("order_id", orderId)
+                .order("created_at", { ascending: true });
+
+              if (fullOrder?.email && items) {
+                const resend = new Resend(process.env.RESEND_API_KEY!);
+                const from = process.env.EMAIL_FROM || "Store <no-reply@example.com>";
+
+                await resend.emails.send({
+                  from,
+                  to: fullOrder.email,
+                  subject: `Your receipt · Order ${String(fullOrder.id).slice(0, 8)}…`,
+                  react: React.createElement(ReceiptEmail, {
+                    orderId: fullOrder.id,
+                    email: fullOrder.email,
+                    createdAt: fullOrder.created_at,
+                    items: items as any,
+                    subtotal: Number(fullOrder.subtotal),
+                    tax: Number(fullOrder.tax),
+                    shipping: Number(fullOrder.shipping),
+                    total: Number(fullOrder.total),
+                    currency: (fullOrder.currency || "USD").toUpperCase(),
+                    shippingAddress: (fullOrder.shipping_address as any) ?? null,
+                  }),
+                });
+
+                await supabase.from("order_events").insert({
+                  order_id: orderId, type: "email", message: "Receipt sent",
+                });
+              }
+            } catch (e: any) {
+              await supabase.from("order_events").insert({
+                order_id: orderId, type: "email", message: `Receipt failed: ${e?.message ?? "unknown error"}`,
+              });
+            }
         }
     }
   }
@@ -76,5 +126,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ received: true });
 }
-
-    

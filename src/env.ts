@@ -10,6 +10,8 @@ const EnvSchema = z.object({
   STRIPE_SUCCESS_URL: z.string().url().optional(),
   STRIPE_CANCEL_URL: z.string().url().optional(),
   STRIPE_CURRENCY: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().email().optional(),
 });
 
 export const env = EnvSchema.parse({
@@ -22,4 +24,6 @@ export const env = EnvSchema.parse({
   STRIPE_SUCCESS_URL: process.env.STRIPE_SUCCESS_URL,
   STRIPE_CANCEL_URL: process.env.STRIPE_CANCEL_URL,
   STRIPE_CURRENCY: process.env.STRIPE_CURRENCY,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  EMAIL_FROM: process.env.EMAIL_FROM,
 });
