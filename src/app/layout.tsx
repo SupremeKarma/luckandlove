@@ -9,9 +9,9 @@ import Providers from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Hostinger Horizons',
-  description: 'Your one-stop shop for premium products.',
-  generator: 'Hostinger Horizons',
+  title: 'Zenith Commerce - Your Ultimate Online Marketplace',
+  description: 'Explore a vast range of products, food delivery, gaming tournaments, rentals, and more. All in one place.',
+  generator: 'Zenith Commerce',
 };
 
 export default function RootLayout({
