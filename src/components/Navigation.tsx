@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -8,12 +7,39 @@ import { Menu, X, ShoppingCart, User, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useCart } from "@/context/cart-context";
 
 export function Navigation() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const { cartCount } = useCart();
 
-  const closeMobile = () => setIsMobileMenuOpen(false);
+  const closeMobile = () => {
+    setIsMobileMenuOpen(false);
+    triggerRef.current?.focus();
+  };
+
+  React.useEffect(() => {
+    const prev = document.body.style.overflow;
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = prev || "";
+    }
+    return () => {
+      document.body.style.overflow = prev || "";
+    };
+  }, [isMobileMenuOpen]);
+
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMobile();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
 
   const links = [
     { href: "/", label: "Home" },
@@ -29,11 +55,13 @@ export function Navigation() {
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container-app h-14 flex items-center gap-3">
         <Button
+          ref={triggerRef}
           variant="ghost"
           size="icon"
           className="lg:hidden"
           aria-label="Open menu"
           aria-expanded={isMobileMenuOpen}
+          aria-controls="mobile-menu"
           onClick={() => setIsMobileMenuOpen(true)}
         >
           <Menu className="h-5 w-5" />
@@ -66,14 +94,19 @@ export function Navigation() {
           <Link href="/account" className="rounded-2xl p-2 hover:bg-muted/40" aria-label="Account">
             <User className="h-5 w-5" />
           </Link>
-          <Link href="/cart" className="rounded-2xl p-2 hover:bg-muted/40" aria-label="Cart">
+          <Link href="/cart" className="relative rounded-2xl p-2 hover:bg-muted/40" aria-label="Cart">
             <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-accent text-accent-foreground text-[10px] leading-5 text-center">
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
           </Link>
         </div>
       </div>
 
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" id="mobile-menu">
           <div className="absolute inset-0 bg-black/50" onClick={closeMobile} />
           <nav
             className="absolute left-0 top-0 h-full w-[80%] max-w-xs bg-card border-r p-4 space-y-4"
@@ -109,8 +142,13 @@ export function Navigation() {
                 <Link href="/account" onClick={closeMobile} className="rounded-2xl p-2 hover:bg-muted/40" aria-label="Account">
                   <User className="h-5 w-5" />
                 </Link>
-                <Link href="/cart" onClick={closeMobile} className="rounded-2xl p-2 hover:bg-muted/40" aria-label="Cart">
+                <Link href="/cart" onClick={closeMobile} className="relative rounded-2xl p-2 hover:bg-muted/40" aria-label="Cart">
                   <ShoppingCart className="h-5 w-5" />
+                   {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-accent text-accent-foreground text-[10px] leading-5 text-center">
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
                 </Link>
               </div>
             </div>
