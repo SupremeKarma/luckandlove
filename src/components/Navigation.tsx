@@ -1,193 +1,122 @@
 
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { useCart } from '@/context/cart-context';
-import { useAuth } from '@/context/auth-context';
-import {
-  ShoppingCart,
-  Menu,
-  X,
-  User,
-  Package2,
-  Store,
-  Utensils,
-  Building,
-  Gamepad2,
-  Car,
-  MessageSquare,
-  Shield,
-  LogIn,
-  LogOut,
-  LayoutDashboard,
-} from 'lucide-react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { CartSheet } from './cart-sheet';
-import { useToast } from '@/hooks/use-toast';
-import ThemeToggle from './ThemeToggle';
-
-const NavItem = ({ href, children }: { href: string; children: React.ReactNode }) => {
-  const pathname = usePathname();
-  const isActive = pathname === href;
-
-  return (
-    <Link
-      href={href}
-      className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-        isActive ? 'bg-accent/20 text-accent' : 'text-muted-foreground hover:bg-primary hover:text-white'
-      }`}
-    >
-      {children}
-    </Link>
-  );
-};
-
+import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, X, ShoppingCart, User, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export function Navigation() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const { count } = useCart();
-  const { user, logout, loading, isAdmin } = useAuth();
-  const { toast } = useToast();
-  const router = useRouter();
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
-  const handleLogout = async () => {
-    await logout();
-    toast({
-      title: 'Logged Out',
-      description: 'You have been successfully logged out.',
-    });
-    router.push('/');
-  };
-  
-  const allNavItems = [
-    { href: '/products', label: 'Store', icon: Store },
-    { href: '/food-delivery', label: 'Food', icon: Utensils },
-    { href: '/rentals', label: 'Rentals', icon: Building },
-    { href: '/gaming', label: 'Gaming', icon: Gamepad2 },
-    ...(isAdmin ? [{ href: '/admin/dashboard', label: 'Admin', icon: Shield }] : []),
+  const closeMobile = () => setIsMobileMenuOpen(false);
+
+  const links = [
+    { href: "/", label: "Home" },
+    { href: "/products", label: "Products" },
+    { href: "/food-delivery", label: "Food Delivery" },
+    { href: "/wholesale", label: "Wholesale" },
+    { href: "/gaming", label: "Gaming" },
+    { href: "/rentals", label: "Rentals" },
+    { href: "/chat", label: "Live Chat" },
   ];
 
   return (
-    <>
-    <header className="bg-primary/30 backdrop-blur-sm sticky top-0 z-40 border-b border-white/10">
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
-        <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-accent">
-           <Package2 className="h-7 w-7" />
-           Zenith
-        </Link>
-        <div className="hidden md:flex items-center space-x-2">
-          {allNavItems.map(item => (
-            <NavItem key={item.href} href={item.href}>
-              <item.icon className="w-4 h-4 mr-2" />
-              {item.label}
-            </NavItem>
+    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container-app h-14 flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden"
+          aria-label="Open menu"
+          aria-expanded={isMobileMenuOpen}
+          onClick={() => setIsMobileMenuOpen(true)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+
+        <Link href="/" className="font-semibold">Luck&Love</Link>
+
+        <div className="hidden md:flex items-center gap-6 ml-6">
+          {links.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={`text-sm transition-colors hover:text-foreground ${
+                pathname === l.href ? "text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              {l.label}
+            </Link>
           ))}
         </div>
-        <div className="flex items-center space-x-1 md:space-x-2">
-          <ThemeToggle />
-          <Button
-              variant="ghost"
-              size="icon"
-              className="relative"
-              onClick={() => setIsCartOpen(true)}
-              aria-label={`Shopping cart with ${count} items`}
-            >
-              <ShoppingCart className="h-6 w-6 text-white hover:text-accent" />
-              {count > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs rounded-full"
-                >
-                  {count}
-                </Badge>
-              )}
-          </Button>
 
-          {loading ? (
-             <Button variant="ghost" size="icon" className="w-9 h-9 animate-pulse bg-muted/50 rounded-full" />
-          ) : user ? (
-            <>
-              <Link href="/account">
-                <Button variant="ghost" size="icon">
-                  <User className="h-6 w-6 text-white hover:text-accent" />
-                </Button>
-              </Link>
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
-                <LogOut className="h-6 w-6 text-white hover:text-accent" />
-              </Button>
-            </>
-          ) : (
-            <Link href="/login">
-              <Button variant="ghost" className="hidden sm:flex">
-                <LogIn className="h-5 w-5 mr-2" />
-                Login
-              </Button>
-               <Button variant="ghost" size="icon" className="sm:hidden">
-                <LogIn className="h-6 w-6 text-white hover:text-accent" />
-              </Button>
-            </Link>
-          )}
-
-           {/* Mobile Menu Button */}
-             <div className="md:hidden">
-                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                    <SheetTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Toggle mobile menu"
-                        >
-                          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="w-[300px] bg-background/95 p-4">
-                        <SheetHeader className="mb-8">
-                            <SheetTitle>
-                                <Link href="/" className="flex items-center space-x-3" onClick={() => setIsMobileMenuOpen(false)}>
-                                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                                      <Package2 className="text-primary-foreground h-5 w-5" />
-                                    </div>
-                                    <span className="text-xl font-bold text-foreground">Zenith Commerce</span>
-                                  </Link>
-                            </SheetTitle>
-                        </SheetHeader>
-                        <nav>
-                            <div className="grid gap-2">
-                              {allNavItems.map((item) => (
-                                <Link
-                                  key={item.href}
-                                  href={item.href}
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                                  className={`flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
-                                    usePathname() === item.href
-                                      ? 'bg-accent text-accent-foreground'
-                                      : 'text-muted-foreground'
-                                  }`}
-                                >
-                                  <item.icon size={20} />
-                                  {item.label}
-                                </Link>
-                              ))}
-                            </div>
-                        </nav>
-                    </SheetContent>
-                </Sheet>
+        <div className="ml-auto flex items-center gap-2">
+          <div className="hidden sm:block w-64">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input className="pl-8" placeholder="Search products…" />
             </div>
+          </div>
+          <ThemeToggle />
+          <Link href="/account" className="rounded-2xl p-2 hover:bg-muted/40" aria-label="Account">
+            <User className="h-5 w-5" />
+          </Link>
+          <Link href="/cart" className="rounded-2xl p-2 hover:bg-muted/40" aria-label="Cart">
+            <ShoppingCart className="h-5 w-5" />
+          </Link>
         </div>
-      </nav>
+      </div>
+
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={closeMobile} />
+          <nav
+            className="absolute left-0 top-0 h-full w-[80%] max-w-xs bg-card border-r p-4 space-y-4"
+            aria-label="Mobile menu"
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-semibold">Menu</span>
+              <Button variant="ghost" size="icon" aria-label="Close menu" onClick={closeMobile}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input className="pl-8" placeholder="Search…" />
+            </div>
+            <div className="grid gap-2">
+              {links.map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  onClick={closeMobile}
+                  className={`rounded-xl px-3 py-2 text-sm transition-colors ${
+                    pathname === l.href ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+            <div className="pt-2 border-t">
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <Link href="/account" onClick={closeMobile} className="rounded-2xl p-2 hover:bg-muted/40" aria-label="Account">
+                  <User className="h-5 w-5" />
+                </Link>
+                <Link href="/cart" onClick={closeMobile} className="rounded-2xl p-2 hover:bg-muted/40" aria-label="Cart">
+                  <ShoppingCart className="h-5 w-5" />
+                </Link>
+              </div>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
-    <CartSheet isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
-    </>
   );
 }
