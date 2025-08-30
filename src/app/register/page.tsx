@@ -52,23 +52,19 @@ export default function RegisterPage() {
 
     try {
       // The handle_new_user trigger now creates the profile for us.
+      // We pass the full_name in the metadata so the trigger can use it.
       const { data, error: signUpError } = await supabase.auth.signUp({ 
         email, 
         password,
+        options: {
+          data: {
+            full_name: name,
+          }
+        }
       });
       
       if (signUpError) {
         throw signUpError;
-      }
-      
-      // Update profile with full_name after signup. The trigger handles the initial insert.
-      if (data.user) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ full_name: name })
-          .eq('id', data.user.id);
-        
-        if (updateError) throw updateError;
       }
       
       setSuccessMessage("Registration successful! Please check your email to confirm your account.");
@@ -78,7 +74,6 @@ export default function RegisterPage() {
       });
       // Optionally redirect user after a delay
       setTimeout(() => router.push('/login'), 3000);
-
 
     } catch (error: any) {
       console.error("Registration Error:", error);

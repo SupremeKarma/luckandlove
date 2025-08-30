@@ -1,46 +1,102 @@
 
-
 export type ProfileRole = "user" | "admin";
 
 export interface Profile {
   id: string;
   email: string | null;
+  username: string | null;
   full_name: string | null;
   avatar_url: string | null;
+  website: string | null;
   role: ProfileRole;
+  updated_at: string;
 }
 
-export interface ProductVariant {
+export interface Shop {
   id: string;
   name: string;
-  price: number;
-  sale_price?: number | null;
-  inventory_quantity: number;
-  product_id: string;
-  sku?: string | null;
-  attributes?: Record<string, unknown> | null;
+  description: string | null;
+  image_url: string | null;
+  category: string | null;
+  rating: number | null;
+  delivery_time_minutes: number | null;
+  delivery_fee: number | null;
+  created_at?: string | null;
+}
+
+export interface Channel {
+  id: string;
+  name: string;
+  type: string;
   created_at?: string | null;
 }
 
 export interface Product {
   id: string;
-  name:string;
-  subtitle?: string;
-  description: string;
+  shop_id: string | null;
+  name: string;
+  description: string | null;
   price: number;
-  category: string;
-  imageUrl: string;
+  category: string | null;
+  subcategory: string | null;
+  image_url: string | null;
   stock: number;
-  subcategory?: string;
-  rating?: number;
-  shop_id?: string;
-  variants?: ProductVariant[] | null;
-  product_variants?: ProductVariant[] | null;
-  ribbon_text?: string;
-  sku?: string | null;
-  active: boolean;
+  rating: number | null;
   created_at?: string | null;
-  image_url?: string | null;
+  
+  // These are kept for frontend convenience but are not direct DB columns.
+  // The DB uses product_variants table instead.
+  variants?: ProductVariant[] | null;
+  subtitle?: string;
+  ribbon_text?: string;
+  active: boolean; // Not in the new schema, but UI uses it. We'll manage it client-side.
+  sku?: string | null; // In new schema, this is on the variant.
+}
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  name: string | null;
+  sku: string | null;
+  price: number | null;
+  stock: number | null;
+  attributes: Record<string, unknown> | null;
+  created_at?: string | null;
+}
+
+export interface MenuItem {
+  id: string;
+  shop_id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  category: string | null;
+  created_at?: string | null;
+}
+
+export interface Message {
+  id: number;
+  channel_id: string;
+  user_id: string;
+  content: string;
+  created_at?: string | null;
+}
+
+export interface Tournament {
+  id: string;
+  name: string;
+  game: string;
+  prize: number;
+  participants: number;
+  max_participants: number;
+  entry_fee: number;
+  start_date: string;
+  status: string;
+  difficulty: string;
+  image_url: string | null;
+  hint: string | null;
+  created_at?: string | null;
 }
 
 export interface CartItem {
@@ -61,57 +117,24 @@ export interface Order {
     status: 'Processing' | 'Shipped' | 'Delivered';
 }
 
-export interface Tournament {
-  id: string;
-  name: string;
-  game: string;
-  prize: number;
-  participants: number;
-  maxParticipants: number;
-  entryFee: number;
-  startDate: string;
-  status: string;
-  difficulty: string;
-  imageUrl?: string;
-  hint?: string;
-}
-
-export interface Shop {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl: string;
-  category: string;
-  rating: number;
-  deliveryTimeMinutes: number;
-  deliveryFee: number;
-}
-
-export interface MenuItem {
-  id: string;
-  shop_id: string;
-  name: string;
-  description: string;
-  price: number;
-  imageUrl: string;
-  category: string;
-}
-
 export function mapProductRow(row: any): Product {
   return {
     id: row.id,
+    shop_id: row.shop_id,
     name: row.name ?? "",
-    price: Number(row.price_in_cents ? row.price_in_cents / 100 : (row.price ?? 0)),
-    stock: Number(row.inventory_quantity ?? (row.stock ?? 0)),
-    category: row.category ?? null,
-    imageUrl: row.image_url ?? null,
-    active: !!row.active,
-    created_at: row.created_at ?? null,
-    variants: (row.variants as ProductVariant[] | null) ?? null,
-    subtitle: row.subtitle,
     description: row.description,
-    ribbon_text: row.ribbon_text,
-    sku: row.sku ?? null,
-    image_url: row.image_url ?? null,
+    price: Number(row.price ?? 0),
+    category: row.category,
+    subcategory: row.subcategory,
+    image_url: row.image_url,
+    stock: Number(row.stock ?? 0),
+    rating: row.rating,
+    created_at: row.created_at,
+    // Frontend-only fields
+    active: true, // Defaulting to true as it's not in the new schema
+    variants: null, 
+    ribbon_text: '', 
+    subtitle: '',
+    sku: null
   };
 }
