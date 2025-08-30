@@ -647,6 +647,23 @@ export function Analytics({ products, orders }: { products: Product[]; orders: O
             <div className="h-36 rounded-xl border flex items-center justify-center text-2xl font-semibold">{fmt.currency(avgOrder)}</div>
           </CardContent>
         </Card>
+        <Card className="lg:col-span-3">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="text-sm text-muted-foreground">Total sales by product</CardTitle>
+            <Button variant="secondary" size="sm">Sort by: Sales</Button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {products.slice(0, 6).map((p) => (
+                <div key={p.id} className="flex items-center gap-3">
+                  <img src={p.imageUrl} alt={p.name} className="h-10 w-10 rounded object-cover" />
+                  <div className="text-sm flex-1">{p.name}</div>
+                  <div className="text-sm text-muted-foreground">0 sales</div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
