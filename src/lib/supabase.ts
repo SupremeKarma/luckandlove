@@ -9,10 +9,8 @@ function requiredEnv(name: string): string {
 }
 
 export function getSupabase(): SupabaseClient {
-  // Bypassing process.env for now to ensure the app can start.
-  const url = "https://kkocuxnaiiyxwimzbqkd.supabase.co";
-  const anon = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtrb2N1eG5haWl5eHdpbXpicWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwNjM3MzMsImV4cCI6MjA3MDYzOTczM30._QHOBr4QfARij4zfCO-aWakt7tK8q6ndJoVoLqOmMa8";
-
+  const url = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const anon = requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
   if (typeof window === "undefined") {
     return createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
   }
@@ -23,8 +21,7 @@ export function getSupabase(): SupabaseClient {
 }
 
 export function getServerSupabase(): SupabaseClient {
-  // Bypassing process.env for now to ensure the app can start.
-  const url = "https://kkocuxnaiiyxwimzbqkd.supabase.co";
-  const anon = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtrb2N1eG5haWl5eHdpbXpicWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwNjM3MzMsImV4cCI6MjA3MDYzOTczM30._QHOBr4QfARij4zfCO-aWakt7tK8q6ndJoVoLqOmMa8";
+  const url = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const anon = requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
   return createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
 }
