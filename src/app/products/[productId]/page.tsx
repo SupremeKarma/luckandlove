@@ -1,58 +1,29 @@
 
-import { getSupabase } from '@/lib/supabase';
-import type { Product } from '@/lib/types';
-import ProductDetailClientPage from './product-detail-client-page';
+'use client';
 
-export async function generateStaticParams() {
-  try {
-    const supabase = getSupabase();
-    const { data: products } = await supabase.from('products').select('id');
-    
-    if (!products) {
-      return [];
-    }
+import { motion } from 'framer-motion';
+import { useParams } from 'next/navigation';
 
-    return products.map((product) => ({
-      productId: product.id.toString(),
-    }));
-  } catch (error) {
-    console.error("Failed to generate static params for products", error);
-    return [];
-  }
-}
+const PageComponent = ({ title, children }: { title: string, children: React.ReactNode }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.5 }}
+    className="container mx-auto px-4 py-8"
+  >
+    <h1 className="text-4xl font-bold text-accent mb-8">{title}</h1>
+    {children}
+  </motion.div>
+);
 
-async function getProduct(productId: string): Promise<Product | null> {
-    if (!productId) return null;
-    try {
-        const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from('products')
-            .select('*')
-            .eq('id', productId)
-            .single();
-
-        if (error) throw error;
-        if (data) {
-          return { ...data, imageUrl: data.image_url } as Product;
-        }
-        return null;
-    } catch (err: any) {
-        console.error(`Failed to fetch product: ${err.message}`);
-        // In a server component, we might log this to a service
-        return null;
-    }
-}
-
-export default async function ProductDetailPage({ params }: { params: { productId: string } }) {
-  const product = await getProduct(params.productId);
-
-  if (!product) {
-    return (
-      <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center text-center text-xl text-muted-foreground">
-        Product not found.
-      </div>
-    );
-  }
+export default function ProductDetail() {
+  const params = useParams();
+  const productId = params.productId;
   
-  return <ProductDetailClientPage product={product} />;
-}
+  return (
+    <PageComponent title={`Product Details: ${productId}`}>
+      <p>Detailed view of a single product will be shown here.</p>
+    </PageComponent>
+  );
+};
