@@ -1,3 +1,4 @@
+
 'use client';
 
 import { SettingsCompany } from '@/components/store/views';
@@ -13,5 +14,3 @@ export default function AdminSettingsPage() {
     >
       <SettingsCompany />
     </motion.div>
-  );
-}

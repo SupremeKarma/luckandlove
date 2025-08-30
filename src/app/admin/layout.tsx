@@ -73,49 +73,45 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     const isSettingsPage = pathname.startsWith('/admin/settings');
 
     return (
-        <div className="grid h-screen w-full grid-cols-[260px_1fr]">
-            <aside className="border-r bg-background">
-                <div className="px-4 py-4 flex items-center gap-2 border-b">
-                    <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                        <LayoutDashboard className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                        <div className="font-semibold">Admin Panel</div>
-                        <div className="text-muted-foreground text-xs">Zenith Commerce</div>
-                    </div>
-                </div>
-                <nav className="px-2 space-y-1 overflow-y-auto h-[calc(100vh-72px)] py-4">
-                     {navItems.map((item) => (
-                        <NavItem 
-                            key={item.href}
-                            href={item.href}
-                            label={item.label}
-                            icon={item.icon}
-                            active={pathname === item.href || (item.href === '/admin/settings' && isSettingsPage)}
-                        />
-                    ))}
-                    {isSettingsPage && (
-                        <div className="pl-5 mt-1 space-y-1 border-l-2 border-muted/50 ml-4">
-                            {settingsNavItems.map(item => (
-                                 <NavItem 
-                                    key={item.href}
-                                    href={item.href}
-                                    label={item.label}
-                                    icon={item.icon}
-                                    active={pathname === item.href}
-                                    subtle
-                                />
-                            ))}
+        <RequireRole role="admin" redirectTo="/login">
+            <div className="grid h-screen w-full grid-cols-[260px_1fr]">
+                <aside className="border-r bg-background">
+                    <div className="px-4 py-4 flex items-center gap-2 border-b">
+                        <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                            <LayoutDashboard className="h-5 w-5 text-primary" />
                         </div>
-                    )}
-                </nav>
-            </aside>
-            <main className="overflow-y-auto">{children}</main>
-        </div>
-    );
-}
-
-
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <RequireRole
+                        <div>
+                            <div className="font-semibold">Admin Panel</div>
+                            <div className="text-muted-foreground text-xs">Zenith Commerce</div>
+                        </div>
+                    </div>
+                    <nav className="px-2 space-y-1 overflow-y-auto h-[calc(100vh-72px)] py-4">
+                        {navItems.map((item) => (
+                            <NavItem 
+                                key={item.href}
+                                href={item.href}
+                                label={item.label}
+                                icon={item.icon}
+                                active={pathname === item.href || (item.href === '/admin/settings' && isSettingsPage)}
+                            />
+                        ))}
+                        {isSettingsPage && (
+                            <div className="pl-5 mt-1 space-y-1 border-l-2 border-muted/50 ml-4">
+                                {settingsNavItems.map(item => (
+                                    <NavItem 
+                                        key={item.href}
+                                        href={item.href}
+                                        label={item.label}
+                                        icon={item.icon}
+                                        active={pathname === item.href}
+                                        subtle
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </nav>
+                </aside>
+                <main className="overflow-y-auto">{children}</main>
+            </div>
+        </RequireRole>
+    
