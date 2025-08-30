@@ -2,12 +2,17 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Mail, Lock, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -18,6 +23,8 @@ export default function RegisterPage() {
   const [successMessage, setSuccessMessage] = useState('');
   
   const supabase = getSupabase();
+  const router = useRouter();
+  const { toast } = useToast();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,17 +33,25 @@ export default function RegisterPage() {
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+       toast({
+        title: "Error",
+        description: "Passwords do not match.",
+        variant: "destructive",
+      });
       return;
     }
     
     if (!supabase) {
         setError('Supabase client is not available.');
+        toast({
+            title: "Error",
+            description: "Could not connect to authentication service.",
+            variant: "destructive",
+        });
         return;
     }
 
     try {
-      // Sign up the user with their full name in the metadata
-      // The database trigger will use this to create the profile.
       const { data, error: signUpError } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -51,61 +66,122 @@ export default function RegisterPage() {
         throw signUpError;
       }
       
-      // If email confirmation is required, signUpError will be null, and data.user will exist.
-      // This is the expected flow. The database trigger handles profile creation.
       setSuccessMessage("Registration successful! Please check your email to confirm your account.");
+      toast({
+        title: "Account Created!",
+        description: "Please check your email to complete registration.",
+      });
+      // Optionally redirect user after a delay
+      setTimeout(() => router.push('/login'), 3000);
+
 
     } catch (error: any) {
       console.error("Registration Error:", error);
-      // Display the actual error message from Supabase
       setError(error.message || 'An unknown error occurred during registration.');
+      toast({
+        title: "Registration Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+      className="container mx-auto px-4 py-16 flex items-center justify-center min-h-[calc(100vh-10rem)]"
+    >
+      <Card className="w-full max-w-md glass-effect">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
-          <CardDescription>Join Zenith Commerce to start shopping.</CardDescription>
+          <CardTitle className="text-3xl font-bold text-accent">Create an Account</CardTitle>
+          <CardDescription>Join Zenith Commerce and start exploring</CardDescription>
         </CardHeader>
-        <CardContent>
-          {successMessage ? (
-            <div className="text-center text-green-500 bg-green-500/10 p-4 rounded-md">
-                <p>{successMessage}</p>
-            </div>
-          ) : (
-            <form className="space-y-4" onSubmit={handleRegister}>
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" type="text" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
+         {successMessage ? (
+            <CardContent>
+                <div className="text-center text-green-400 bg-green-500/10 p-4 rounded-md">
+                    <p>{successMessage}</p>
+                </div>
+            </CardContent>
+         ) : (
+          <form onSubmit={handleRegister}>
+            <CardContent className="space-y-6">
+               <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input 
+                    id="name" 
+                    type="text" 
+                    placeholder="Your Name" 
+                    required 
+                    className="pl-10"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="john.doe@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="you@example.com" 
+                    required 
+                    className="pl-10"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    required 
+                    placeholder="••••••••"
+                    className="pl-10"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
+               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input id="confirm-password" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                 <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input 
+                      id="confirm-password" 
+                      type="password" 
+                      required 
+                      placeholder="••••••••"
+                      className="pl-10"
+                      value={confirmPassword} 
+                      onChange={(e) => setConfirmPassword(e.target.value)} 
+                    />
+                 </div>
               </div>
-              {error && <p className="text-destructive text-sm">{error}</p>}
-              <Button type="submit" className="w-full">
-                Create Account
-              </Button>
-            </form>
-          )}
-           <div className="mt-4 text-center text-sm">
+              {error && <p className="text-destructive text-sm text-center">{error}</p>}
+            </CardContent>
+            <CardFooter className="flex flex-col gap-4">
+              <Button type="submit" className="w-full font-bold">Create Account</Button>
+            </CardFooter>
+          </form>
+         )}
+         <div className="text-center text-sm text-muted-foreground pt-4">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-primary hover:underline">
-              Log in
+            <Link href="/login" className="font-semibold text-accent hover:underline">
+              Sign in
             </Link>
           </div>
-        </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
