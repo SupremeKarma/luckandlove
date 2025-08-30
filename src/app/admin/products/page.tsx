@@ -13,6 +13,8 @@ export default function AdminProductsPage() {
   // In a real app, you'd pass an ID here or nothing for a new product
   const [selectedProductId, setSelectedProductId] = React.useState<string | null>(null);
 
+  const selectedProduct = products.find(p => p.id === selectedProductId) || undefined;
+
   const handleEdit = (id: string) => {
     setSelectedProductId(id);
     setView('editor');
@@ -30,13 +32,19 @@ export default function AdminProductsPage() {
 
   const handleSave = (p: Product) => {
     setProducts((prev) => {
-      const i = prev.findIndex((x) => x.id === p.id);
-      if (i === -1) return [p, ...prev]; // New product
-      const next = [...prev];
-      next[i] = p; // Existing product
-      return next;
+      // If it's a new product (no id match) or an existing one
+      const i = selectedProductId ? prev.findIndex((x) => x.id === p.id) : -1;
+      if (i === -1) { // New product
+        const newProduct = { ...p, id: `p_${Math.random().toString(36).slice(2, 8)}`, createdAt: new Date().toISOString() };
+        return [newProduct, ...prev];
+      } else { // Existing product
+        const next = [...prev];
+        next[i] = p;
+        return next;
+      }
     });
     setView('index');
+    setSelectedProductId(null);
   };
   
   return (
@@ -47,4 +55,4 @@ export default function AdminProductsPage() {
       transition={{ duration: 0.5 }}
     >
       {view === 'index' && <ProductsIndex products={products} onEdit={handleEdit} onAdd={handleAdd} />}
-      {view === 'editor' && <ProductEditor onBack={handleBack} onSave={handleSave
+      {view === 'editor' && <ProductEditor product={selectedProduct} onBack={

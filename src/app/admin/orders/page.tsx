@@ -1,10 +1,10 @@
-
 'use client';
 
 import React from 'react';
 import { OrdersIndex, OrderDetail } from '@/components/store/views';
 import { mockOrders } from '@/components/store/types';
 import { motion } from 'framer-motion';
+import type { Order } from '@/components/store/types';
 
 export default function AdminOrdersPage() {
   const [view, setView] = React.useState<'index' | 'detail'>('index');
@@ -23,7 +23,7 @@ export default function AdminOrdersPage() {
     setSelectedOrderId(null);
   };
   
-  const handleUpdateOrder = (partial: Partial<(typeof mockOrders)[0]>) => {
+  const handleUpdateOrder = (partial: Partial<Order>) => {
     if (!selectedOrderId) return;
     setOrders(prev => prev.map(o => (o.id === selectedOrderId ? { ...o, ...partial } : o)))
   }
@@ -39,4 +39,8 @@ export default function AdminOrdersPage() {
         <OrdersIndex orders={orders} onOpen={handleOpenOrder} onExport={() => alert("Exporting not implemented yet.")} />
       )}
       {view === 'detail' && selectedOrder && (
-        <OrderDetail order={selectedOrder} onBack={handleBack
+        <OrderDetail order={selectedOrder} onBack={handleBack} onUpdate={handleUpdateOrder} />
+      )}
+    </motion.div>
+  );
+}

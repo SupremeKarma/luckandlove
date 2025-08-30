@@ -22,6 +22,7 @@ import {
   Plus, MoreHorizontal, Search, Package, ShoppingCart, DollarSign, AlertTriangle, Receipt, Eye, Download, ChevronLeft,
 } from "lucide-react";
 import { fmt, Order, Product, ShippingZone } from "./types";
+import { Textarea } from "../ui/textarea";
 
 export function MailIcon() {
   return (
@@ -356,13 +357,23 @@ export function ProductsIndex({ products, onEdit, onAdd }: { products: Product[]
   );
 }
 
-export function ProductEditor({ onBack, onSave }: { onBack: () => void; onSave: (p: Product) => void }) {
-  const [p, setP] = React.useState<Product>({ id: `p_${Math.random().toString(36).slice(2, 8)}`, name: "", price: 0, stock: 0, active: true });
+export function ProductEditor({ product: initialProduct, onBack, onSave }: { product?: Product; onBack: () => void; onSave: (p: Product) => void }) {
+  const [p, setP] = React.useState<Partial<Product>>(initialProduct || { name: "", price: 0, stock: 0, active: true });
+
+  const handleSave = () => {
+    // Basic validation
+    if (!p.name || p.price === undefined || p.stock === undefined) {
+      alert("Please fill out Title, Price, and Stock.");
+      return;
+    }
+    onSave(p as Product);
+  };
+  
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" onClick={onBack}><ChevronLeft className="h-4 w-4" /></Button>
-        <h1 className="text-xl font-semibold">Edit physical product</h1>
+        <h1 className="text-xl font-semibold">{initialProduct ? 'Edit physical product' : 'Add new product'}</h1>
       </div>
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
@@ -390,7 +401,7 @@ export function ProductEditor({ onBack, onSave }: { onBack: () => void; onSave: 
             </div>
             <div className="grid gap-2">
               <Label>Description</Label>
-              <textarea className="min-h-[140px] w-full rounded-md border bg-transparent p-3 outline-none" placeholder="Describe your product..." />
+              <Textarea className="min-h-[140px] w-full rounded-md border bg-transparent p-3 outline-none" placeholder="Describe your product..." />
             </div>
             <div className="grid gap-2">
               <Label>Pricing</Label>
@@ -408,8 +419,8 @@ export function ProductEditor({ onBack, onSave }: { onBack: () => void; onSave: 
                   <Input value={p.sku ?? ""} onChange={(e) => setP({ ...p, sku: e.target.value })} />
                 </div>
                 <div className="col-span-1">
-                  <Label className="text-xs text-muted-foreground">Weight (kg)</Label>
-                  <Input />
+                  <Label className="text-xs text-muted-foreground">Stock</Label>
+                  <Input type="number" value={String(p.stock)} onChange={(e) => setP({ ...p, stock: Number(e.target.value || 0) })} />
                 </div>
               </div>
             </div>
@@ -423,7 +434,7 @@ export function ProductEditor({ onBack, onSave }: { onBack: () => void; onSave: 
           <CardContent className="p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="font-semibold">Visibility</div>
-              <Select defaultValue="visible">
+              <Select defaultValue={p.active ? 'visible' : 'hidden'} onValueChange={(val) => setP({...p, active: val === 'visible'})}>
                 <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="visible">Visible</SelectItem>
@@ -439,7 +450,7 @@ export function ProductEditor({ onBack, onSave }: { onBack: () => void; onSave: 
             <Separator />
             <div className="flex gap-2">
               <Button variant="secondary" onClick={onBack}>Cancel</Button>
-              <Button onClick={() => onSave(p)}>Save</Button>
+              <Button onClick={handleSave}>Save</Button>
             </div>
           </CardContent>
         </Card>
@@ -495,7 +506,7 @@ export function Discounts({ onAdd }: { onAdd: () => void }) {
       </div>
       <Card className="rounded-2xl">
         <CardContent className="p-0">
-          <div className="rounded-xl overflow-hidden">
+          <div className="rounded-xl border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
