@@ -14,3 +14,5 @@ export default function AdminSettingsPage() {
     >
       <SettingsCompany />
     </motion.div>
+  );
+}
