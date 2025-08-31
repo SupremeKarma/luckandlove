@@ -3,9 +3,9 @@ node_modules
 out
 .vercel
 .DS_Store
+
+# Never commit secrets
 .env
 .env.local
 .env.*.local
-npm-debug.log*
-yarn-*.log
-pnpm-debug.log*
+src/.env
